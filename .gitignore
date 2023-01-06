@@ -1,0 +1,15 @@
+# General
+.*
+._*
+bin/
+tmp/
+*.log
+!.posh
+!.github
+!.gitignore
+!.editorconfig
+!.goreleaser.yml
+!.golangci.yml
+!.posh.yml
+go.work
+go.work.sum
