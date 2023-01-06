@@ -52,6 +52,6 @@ jobs:
         with:
           go-version-file: '${{ matrix.gomod }}/go.mod'
       - run: go test -v ./...
-        working-directory: '${{ matrix.gomod }}'
+        working-directory: ${{ matrix.gomod }}
 
 
