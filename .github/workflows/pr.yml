@@ -51,5 +51,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version-file: '${{ matrix.gomod }}/go.mod'
-      - run: go test -v ${{ matrix.gomod }}/...
+      - run: go test -v ./...
+        working-directory: '${{ matrix.gomod }}'
+
 
