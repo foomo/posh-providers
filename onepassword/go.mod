@@ -6,7 +6,7 @@ replace github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v
 
 require (
 	github.com/1Password/connect-sdk-go v1.5.0
-	github.com/foomo/posh v0.1.4
+	github.com/foomo/posh v0.1.5
 	github.com/joho/godotenv v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.14.0

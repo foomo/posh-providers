@@ -299,7 +299,7 @@ func (op *OnePassword) clientGet(ctx context.Context, vaultUUID string, itemUUID
 			op.l.Error("failed to retrieve item", err.Error())
 			return ret
 		} else if v.Vault.ID != vaultUUID {
-			op.l.Error("failed to retrieve item", "wrong vault UUID %s for item %s", vaultUUID, itemUUID)
+			op.l.Errorf("failed to retrieve item: wrong vault UUID %s for item %s", vaultUUID, itemUUID)
 			return ret
 		} else {
 			ret := map[string]string{}
