@@ -19,8 +19,8 @@ github.com/containerd/console v1.0.3/go.mod h1:7LqA/THxQ86k76b8c/EMSiaJ3h1eZkMkX
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/foomo/posh v0.1.4 h1:g6k4vMWaThuOSxn4f2P6tBVREIDgENIxvvh8tMIgC3g=
-github.com/foomo/posh v0.1.4/go.mod h1:hgoSskvleMOymCUyXDt9pBn/tyF2iZJveSS/ak2dTPU=
+github.com/foomo/posh v0.1.5 h1:rPCrjVUNkTGFsv5B2xSWK7ZYLQNi0tmtbu2z05v7bXQ=
+github.com/foomo/posh v0.1.5/go.mod h1:hgoSskvleMOymCUyXDt9pBn/tyF2iZJveSS/ak2dTPU=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5/go.mod h1:+syUfnvYJUO5A+6QMQYXAyzkxHMNlj9dH2LIeQfBSjc=
 github.com/gofrs/flock v0.8.1 h1:+gYjHKf32LDeiEEFhQaotPbLuUXjY5ZqxKgXy7n59aw=
