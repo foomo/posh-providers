@@ -36,3 +36,15 @@ func New(l log.Logger) (plugin.Plugin, error) {
 	return inst, nil
 }
 ```
+
+## Ownbrew:
+
+To install binary locally, add:
+
+```yaml
+ownbrew:
+  packages:
+    - name: zeus
+      tap: foomo/tap/dreadl0ck/zeus
+      version: 0.9.11
+```

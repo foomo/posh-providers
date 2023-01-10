@@ -1,4 +1,4 @@
-module github.com/foomo/posh/provider/onepassword
+module github.com/foomo/posh-providers/onepassword
 
 go 1.19
 

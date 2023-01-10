@@ -52,8 +52,8 @@ func WithTokenFilename(v string) Option {
 
 func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) {
 	inst := &OnePassword{
-		l:         l,
-		cache:     cache.Get("onePasswordClient"),
+		l:         l.Named("onePasswordInstance"),
+		cache:     cache.Get("onePasswordInstance"),
 		uuidRegex: regexp.MustCompile(`^[a-z0-9]{26}$`),
 		watching:  map[string]bool{},
 	}

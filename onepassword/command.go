@@ -39,7 +39,7 @@ func CommandWithConfigKey(v string) CommandOption {
 
 func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
-		l:         l,
+		l:         l.Named("onePassword"),
 		op:        op,
 		configKey: "onePassword",
 	}
@@ -99,11 +99,11 @@ func (c *Command) Description() string {
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline, d prompt.Document) []prompt.Suggest {
-	return c.commandTree.Complete(ctx, r)
+	return c.commandTree.RunCompletion(ctx, r)
 }
 
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
-	return c.commandTree.Execute(ctx, r)
+	return c.commandTree.RunExecution(ctx, r)
 }
 
 func (c *Command) Help() string {

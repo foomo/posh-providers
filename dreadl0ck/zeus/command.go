@@ -1,8 +1,10 @@
-package gotsrpc
+package zeus
 
 import (
 	"context"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/log"
@@ -26,9 +28,9 @@ type Command struct {
 
 func NewCommand(l log.Logger, cache cache.Cache) *Command {
 	return &Command{
-		l:     l,
-		name:  "gotsrpc",
-		cache: cache.Get("gotsrpc"),
+		l:     l.Named("zeus"),
+		name:  "zeus",
+		cache: cache.Get("zeus"),
 	}
 }
 
@@ -45,13 +47,6 @@ func (c *Command) Description() string {
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline, d prompt.Document) []prompt.Suggest {
-	return []prompt.Suggest{
-		{Text: "-debug"},
-		{Text: "-skipgotsrpc"},
-	}
-}
-
-func (c *Command) CompleteArguments(ctx context.Context, r *readline.Readline, d prompt.Document) []prompt.Suggest {
 	switch {
 	case r.Args().LenLte(1):
 		return c.completePaths(ctx)
@@ -59,55 +54,52 @@ func (c *Command) CompleteArguments(ctx context.Context, r *readline.Readline, d
 	return nil
 }
 
-// Validate ...
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
-	case r.Args().LenIs(0):
-		return nil
-	case r.Args().LenGt(1):
-		return errors.New("too many arguments")
+	case r.Args().LenLt(1):
+		return errors.New("missing [path] parameter")
 	}
-
-	if info, err := os.Stat(r.Args().At(0)); err != nil || info.IsDir() {
-		return errors.New("invalid [path] parameter")
+	dir := r.Args().At(0)
+	if info, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
+		if !strings.HasSuffix(dir, "/zeus") {
+			return errors.Errorf("invalid [path] parameter: %s", dir)
+		}
+	} else if err != nil || !info.IsDir() {
+		return errors.Errorf("invalid [path] parameter: %s", dir)
 	}
-
 	return nil
 }
 
-// Execute ...
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
-	var paths []string
-	if r.Args().HasIndex(0) {
-		paths = []string{r.Args().At(0)}
-	} else {
-		paths = c.paths(ctx)
-	}
-	for _, value := range paths {
-		c.l.Info("gotsrpc:", value)
-		if out, err := shell.New(ctx, c.l, "gotsrpc").
-			Args(r.Flags()...).
-			Args(value).
+	dir, args := r.Args().Shift()
+	if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
+		c.cache.Delete("")
+		c.l.Info("bootstrapping a new zeus:", dir)
+		return shell.New(ctx, c.l, "zeus", "bootstrap").
+			Args(args...).
+			Args(r.PassThroughArgs()...).
 			Args(r.AdditionalArgs()...).
-			Output(); err != nil {
-			return errors.Wrap(err, string(out))
-		}
+			Dir(path.Join(dir, "..")).
+			Run()
+	} else {
+		return shell.New(ctx, c.l, "zeus", "-C", path.Dir(dir)).
+			Args(args...).
+			Args(r.PassThroughArgs()...).
+			Args(r.AdditionalArgs()...).
+			Run()
 	}
-	return nil
 }
 
 func (c *Command) Help() string {
-	return `Generate gotsrpc files.
+	return `Find and run zeus at the given path.
+
+If the given path doesn't exist, it will bootstrap a new zeus installation.
 
 Usage:
-  gotsrpc <path> <options>
-
-Available options:
-  debug
-  skipgotsrpc
+  zeus [path] <args>...
 
 Examples:
-  gotsrpc ./path/gotsrpc.yml
+  gomod tidy ./path
 `
 }
 
@@ -122,7 +114,7 @@ func (c *Command) completePaths(ctx context.Context) []prompt.Suggest {
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		if value, err := files.Find(ctx, "gotsrpc.yml"); err != nil {
+		if value, err := files.Find(ctx, "zeus"); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return nil
 		} else {

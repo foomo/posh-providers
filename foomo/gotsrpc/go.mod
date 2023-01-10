@@ -1,4 +1,4 @@
-module github.com/foomo/posh/provider/zeus
+module github.com/foomo/posh-providers/foomo/gotsrpc
 
 go 1.19
 
