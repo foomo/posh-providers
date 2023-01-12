@@ -2,49 +2,30 @@
 
 ## === Tasks ===
 
-.PHONY: check
-## Run tests and linters
-check: tidy lint test
-
 .PHONY: tidy
 ## Run go mod tidy
-tidy: wd=$(shell pwd)
-tidy: files=$(shell find . -type f -name go.mod)
-tidy: dirs=$(foreach file,$(files),$(dir $(file)))
 tidy:
-	@for dir in $(dirs); do cd ${wd} && cd $$dir && go mod tidy; done
-
-.PHONY: outdated
-## Show outdated direct dependencies
-outdated: wd=$(shell pwd)
-outdated: files=$(shell find . -type f -name go.mod)
-outdated: dirs=$(foreach file,$(files),$(dir $(file)) )
-outdated:
-	@for dir in $(dirs); do cd ${wd} && cd $$dir && go list -u -m -json all | go-mod-outdated -update -direct; done
-
-.PHONY: test
-## Run tests
-test: wd=$(shell pwd)
-test: files=$(shell find . -type f -name go.mod)
-test: dirs=$(foreach file,$(files),$(dir $(file)) )
-test:
-	@for dir in $(dirs); do cd ${wd} && cd $$dir && go test -v ./...; done
+	go mod tidy
 
 .PHONY: lint
 ## Run linter
-lint: wd=$(shell pwd)
-lint: files=$(shell find . -type f -name go.mod)
-lint: dirs=$(foreach file,$(files),$(dir $(file)) )
 lint:
-	@for dir in $(dirs); do cd ${wd} && cd $$dir && golangci-lint run; done
+	@golangci-lint run
+
+.PHONY: outdated
+## Show outdated direct dependencies
+outdated:
+	@go list -u -m -json all | go-mod-outdated -update -direct
+
+.PHONY: test
+## Run tests
+test:
+	@go test -v ./...
 
 .PHONY: lint.fix
 ## Fix lint violations
-lint.fix: wd=$(shell pwd)
-lint.fix: files=$(shell find . -type f -name go.mod)
-lint.fix: dirs=$(foreach file,$(files),$(dir $(file)) )
 lint.fix:
-	@for dir in $(dirs); do cd ${wd} && cd $$dir && golangci-lint run --fix; done
+	@golangci-lint run --fix
 
 ## === Utils ===
 
