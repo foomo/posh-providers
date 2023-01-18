@@ -8,15 +8,12 @@ import (
 	"github.com/foomo/posh/pkg/prompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
-	"github.com/spf13/viper"
 )
 
 type (
 	Command struct {
 		l           log.Logger
 		op          *OnePassword
-		cfg         Config
-		configKey   string
 		commandTree *tree.Root
 	}
 	CommandOption func(*Command) error
@@ -26,22 +23,14 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func CommandWithConfigKey(v string) CommandOption {
-	return func(o *Command) error {
-		o.configKey = v
-		return nil
-	}
-}
-
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
 func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
-		l:         l.Named("onePassword"),
-		op:        op,
-		configKey: "onePassword",
+		l:  l.Named("onePassword"),
+		op: op,
 	}
 	for _, opt := range opts {
 		if opt != nil {
@@ -49,9 +38,6 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 				return nil, err
 			}
 		}
-	}
-	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
-		return nil, err
 	}
 	inst.commandTree = &tree.Root{
 		Name: "op",
@@ -126,7 +112,7 @@ Available commands:
 func (c *Command) get(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l,
 		"op",
-		"--account", c.cfg.Account,
+		"--account", c.op.cfg.Account,
 		"item", "get", r.Args().At(1),
 		"--format", "json",
 	).
@@ -137,7 +123,7 @@ func (c *Command) get(ctx context.Context, r *readline.Readline) error {
 func (c *Command) register(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l,
 		"op", "account", "add",
-		"--address", c.cfg.Account+".1password.eu",
+		"--address", c.op.cfg.Account+".1password.eu",
 		"--email", r.Args().At(1),
 	).
 		Args(r.AdditionalArgs()...).
@@ -145,10 +131,10 @@ func (c *Command) register(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) signin(ctx context.Context, r *readline.Readline) error {
-	if ok, _ := c.op.Session(c.cfg.Account); ok {
+	if ok, _ := c.op.Session(); ok {
 		c.l.Info("Already signed in")
 		return nil
-	} else if err := c.op.SignIn(ctx, c.cfg.Account); err != nil {
+	} else if err := c.op.SignIn(ctx); err != nil {
 		return err
 	}
 	return nil

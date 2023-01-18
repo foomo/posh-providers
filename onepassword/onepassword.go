@@ -20,17 +20,19 @@ import (
 	"github.com/foomo/posh/pkg/log"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 type (
 	OnePassword struct {
-		l             log.Logger
-		cache         cache.Namespace
-		connect       connect.Client
-		uuidRegex     *regexp.Regexp
-		tokenFilename string
-		watching      map[string]bool
-		last          time.Time
+		l         log.Logger
+		cfg       Config
+		cache     cache.Namespace
+		connect   connect.Client
+		uuidRegex *regexp.Regexp
+		watching  map[string]bool
+		configKey string
+		last      time.Time
 	}
 	Option func(*OnePassword) error
 )
@@ -39,9 +41,9 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func WithTokenFilename(v string) Option {
+func WithConfigKey(v string) Option {
 	return func(o *OnePassword) error {
-		o.tokenFilename = v
+		o.configKey = v
 		return nil
 	}
 }
@@ -56,6 +58,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) 
 		cache:     cache.Get("onePasswordInstance"),
 		uuidRegex: regexp.MustCompile(`^[a-z0-9]{26}$`),
 		watching:  map[string]bool{},
+		configKey: "onePassword",
 	}
 	for _, opt := range opts {
 		if opt != nil {
@@ -64,11 +67,15 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) 
 			}
 		}
 	}
+	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
+		return nil, err
+	}
 	if client, err := connect.NewClientFromEnvironment(); err != nil {
 		l.Debug("connect client:", err.Error())
 	} else {
 		inst.connect = client
 	}
+
 	return inst, nil
 }
 
@@ -76,23 +83,24 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) 
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
-func (op *OnePassword) Session(account string) (bool, error) {
+func (op *OnePassword) Session() (bool, error) {
 	var sessChanged bool
-	sess := os.Getenv("OP_SESSION_" + account)
+	sess := os.Getenv("OP_SESSION_" + op.cfg.Account)
 
-	if op.tokenFilename != "" {
-		if err := godotenv.Overload(op.tokenFilename); err != nil {
-			op.l.Debug("could not load session from env file")
+	if op.cfg.TokenFilename != "" {
+		if err := godotenv.Overload(op.cfg.TokenFilename); err != nil {
+			op.l.Debug("could not load session from env file:", err.Error())
 			sessChanged = true
-		} else if value := os.Getenv("OP_SESSION_" + account); sess != value {
+		} else if value := os.Getenv("OP_SESSION_" + op.cfg.Account); sess != value {
+			op.l.Debug("loaded new op session from file:", op.cfg.TokenFilename)
 			sessChanged = true
 		} else {
-			op.l.Debug("INFO: loaded op session from file " + value)
+			op.l.Trace("loaded op session from file:", op.cfg.TokenFilename)
 		}
 	}
 
 	if sessChanged || op.last.IsZero() || time.Since(op.last) > time.Minute*10 {
-		out, err := exec.Command("op", "account", "--account", account, "get", "--format", "json").Output()
+		out, err := exec.Command("op", "account", "--account", op.cfg.Account, "get", "--format", "json").Output()
 		if err != nil {
 			return false, fmt.Errorf("%w: %s", err, string(out))
 		}
@@ -105,24 +113,24 @@ func (op *OnePassword) Session(account string) (bool, error) {
 			return false, err
 		}
 
-		if data.Name == account {
+		if data.Name == op.cfg.Account {
 			op.last = time.Now()
-			op.watch(account)
+			op.watch()
 			return true, nil
 		}
 	}
 	return true, nil
 }
 
-func (op *OnePassword) SignIn(ctx context.Context, account string) error {
-	if ok, _ := op.Session(account); ok {
+func (op *OnePassword) SignIn(ctx context.Context) error {
+	if ok, _ := op.Session(); ok {
 		return nil
 	}
 
 	// create command
 	cmd := exec.CommandContext(ctx,
 		"op", "signin",
-		"--account", account,
+		"--account", op.cfg.Account,
 		"--raw",
 	)
 
@@ -140,28 +148,30 @@ func (op *OnePassword) SignIn(ctx context.Context, account string) error {
 	token := strings.TrimSuffix(stdoutBuf.String(), "\n")
 	if token == "" {
 		return errors.New("failed to retrieve 1password token!")
-	} else if err := os.Setenv(fmt.Sprintf("OP_SESSION_%s", account), token); err != nil {
+	} else if err := os.Setenv(fmt.Sprintf("OP_SESSION_%s", op.cfg.Account), token); err != nil {
 		return err
 	} else {
 		op.l.Infof(`If you need op outside the shell, run:
 
 $ export OP_SESSION_%s=%s
-`, account, token)
+
+`, op.cfg.Account, token)
 	}
 
-	if op.tokenFilename != "" {
-		if err := os.MkdirAll(path.Dir(op.tokenFilename), os.ModePerm); err != nil {
+	if op.cfg.TokenFilename != "" {
+		if err := os.MkdirAll(path.Dir(op.cfg.TokenFilename), os.ModePerm); err != nil {
 			return err
-		} else if err := os.WriteFile(op.tokenFilename, []byte(fmt.Sprintf("OP_SESSION_%s=%s\n", account, token)), 0600); err != nil {
+		} else if err := os.WriteFile(op.cfg.TokenFilename, []byte(fmt.Sprintf("OP_SESSION_%s=%s\n", op.cfg.Account, token)), 0600); err != nil {
 			return err
 		} else {
-			op.l.Info(`Session env has been stored for your convenience at:
+			op.l.Infof(`Session env has been stored for your convenience at:
 
 %s
-`, op.tokenFilename)
+
+`, op.cfg.TokenFilename)
 		}
 	}
-	op.watch(account)
+	op.watch()
 	return nil
 }
 
@@ -175,7 +185,7 @@ func (op *OnePassword) Get(ctx context.Context, account, vaultUUID, itemUUID, fi
 			return strings.ReplaceAll(strings.TrimSpace(value), "\\n", "\n"), nil
 		}
 	} else {
-		if ok, _ := op.Session(account); !ok {
+		if ok, _ := op.Session(); !ok {
 			return "", ErrNotSignedIn
 		} else if fields := op.clientGet(ctx, vaultUUID, itemUUID); len(fields) == 0 {
 			return "", fmt.Errorf("could not find secret '%s' '%s'", vaultUUID, itemUUID)
@@ -188,7 +198,7 @@ func (op *OnePassword) Get(ctx context.Context, account, vaultUUID, itemUUID, fi
 }
 
 func (op *OnePassword) GetOnetimePassword(ctx context.Context, account, uuid string) (string, error) {
-	if ok, _ := op.Session(account); !ok {
+	if ok, _ := op.Session(); !ok {
 		return "", ErrNotSignedIn
 	}
 
@@ -345,22 +355,22 @@ func (op *OnePassword) connectGet(vaultUUID, itemUUID string) map[string]string 
 	}).(map[string]string)
 }
 
-func (op *OnePassword) watch(account string) {
-	if v, ok := op.watching[account]; !ok || !v {
+func (op *OnePassword) watch() {
+	if v, ok := op.watching[op.cfg.Account]; !ok || !v {
 		go func() {
 			for {
-				if ok, err := op.Session(account); err != nil {
-					op.l.Warnf("\n1password session keep alive failed for '%s' (%s)", account, err.Error())
-					op.watching[account] = false
+				if ok, err := op.Session(); err != nil {
+					op.l.Warnf("\n1password session keep alive failed for '%s' (%s)", op.cfg.Account, err.Error())
+					op.watching[op.cfg.Account] = false
 					return
 				} else if !ok {
-					op.l.Warnf("\n1password session keep alive failed for '%s'", account)
-					op.watching[account] = false
+					op.l.Warnf("\n1password session keep alive failed for '%s'", op.cfg.Account)
+					op.watching[op.cfg.Account] = false
 					return
 				}
 				time.Sleep(time.Minute * 15)
 			}
 		}()
-		op.watching[account] = true
+		op.watching[op.cfg.Account] = true
 	}
 }

@@ -40,7 +40,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 	// ...
 
 	// 1Password
-	if onePassword, err := onepassword.New(l, inst.c, onepassword.WithTokenFilename(viper.GetString("onePassword.tokenFilename"))); err != nil {
+	if onePassword, err := onepassword.New(l, inst.c)); err != nil {
 		return nil, err
 	} else if cmd, err := onepassword.NewCommand(l, onePassword); err != nil {
 		return nil, err
