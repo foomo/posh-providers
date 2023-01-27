@@ -1,10 +1,12 @@
-package gotsrpc
+package gocontentful
 
 import (
 	"context"
 	"os"
+	"path"
 	"strings"
 
+	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
@@ -14,26 +16,49 @@ import (
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v3"
 )
 
-type Command struct {
-	l           log.Logger
-	cache       cache.Namespace
-	commandTree *tree.Root
+type (
+	Command struct {
+		l           log.Logger
+		op          *onepassword.OnePassword
+		name        string
+		cache       cache.Namespace
+		commandTree *tree.Root
+	}
+	CommandOption func(*Command)
+)
+
+// ------------------------------------------------------------------------------------------------
+// ~ Options
+// ------------------------------------------------------------------------------------------------
+
+func CommandWithName(v string) CommandOption {
+	return func(o *Command) {
+		o.name = v
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, cache cache.Cache) *Command {
+func NewCommand(l log.Logger, cache cache.Cache, op *onepassword.OnePassword, opts ...CommandOption) *Command {
 	inst := &Command{
-		l:     l.Named("gotsrpc"),
-		cache: cache.Get("gotsrpc"),
+		l:     l.Named("gocontentful"),
+		name:  "gocontentful",
+		cache: cache.Get("gocontentful"),
+		op:    op,
+	}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(inst)
+		}
 	}
 	inst.commandTree = &tree.Root{
-		Name:        "gotsrpc",
-		Description: "run gotsrpc",
+		Name:        inst.name,
+		Description: "run gocontentful",
 		Node: &tree.Node{
 			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
 				fs.Bool("debug", false, "show debug output")
@@ -41,8 +66,11 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			},
 			Args: tree.Args{
 				{
-					Name:    "path",
-					Suggest: inst.completePaths,
+					Name:     "path",
+					Optional: true,
+					Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+						return suggests.List(inst.paths(ctx))
+					},
 				},
 			},
 			Execute: inst.execute,
@@ -88,17 +116,13 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Generate gotsrpc files.
+	return `Generate gocontentful files.
 
 Usage:
-  gotsrpc <path> <options>
-
-Available options:
-  debug
-  skipgotsrpc
+  gocontentful <path>
 
 Examples:
-  gotsrpc ./path/gotsrpc.yml
+  gocontentful ./path/gocontentful.yml
 `
 }
 
@@ -113,34 +137,41 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx)
 	}
-	flags := make([]string, len(r.Flags()))
-	for i, flag := range r.Flags() {
-		flags[i] = strings.ReplaceAll(flag, "--", "-")
-	}
 
+	c.l.Info("Running gocontentful...")
 	for _, value := range paths {
-		c.l.Info("gotsrpc:", value)
-		if out, err := shell.New(ctx, c.l, "gotsrpc").
-			Args(flags...).
-			Args(value).
-			Args(r.AdditionalArgs()...).
-			Output(); err != nil {
+		c.l.Info("└  " + value)
+
+		var cfg Config
+		if out, err := c.op.RenderFile(ctx, value); err != nil {
+			return errors.Wrap(err, "failed to render gocontentful.yaml")
+		} else if err := yaml.Unmarshal(out, &cfg); err != nil {
+			return errors.Wrap(err, "failed to unmarshal gocontentful.yaml")
+		}
+
+		dir := path.Dir(value)
+		if out, err := shell.New(ctx, c.l, "rm", "-f", dir+"/gocontentful*.go").Output(); err != nil {
 			return errors.Wrap(err, string(out))
+		}
+
+		if err := shell.New(ctx, c.l, "gocontentful",
+			"-spaceid", cfg.SpaceID, "-cmakey", cfg.CMAKey,
+			"-contenttypes", strings.Join(cfg.ContentTypes, ","), dir).
+			Args(r.PassThroughFlags()...).
+			Args(r.AdditionalArgs()...).
+			Run(); err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-func (c *Command) completePaths(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
-	return suggests.List(c.paths(ctx))
-}
-
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		if value, err := files.Find(ctx, ".", "gotsrpc.yml"); err != nil {
+		if value, err := files.Find(ctx, ".", "gocontentful.yml"); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
-			return nil
+			return []string{}
 		} else {
 			return value
 		}

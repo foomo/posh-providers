@@ -175,22 +175,22 @@ $ export OP_SESSION_%s=%s
 	return nil
 }
 
-func (op *OnePassword) Get(ctx context.Context, account, vaultUUID, itemUUID, field string) (string, error) {
+func (op *OnePassword) Get(ctx context.Context, secret Secret) (string, error) {
 	if op.connect != nil {
-		if fields := op.connectGet(vaultUUID, itemUUID); len(fields) == 0 {
-			return "", fmt.Errorf("could not find secret '%s' '%s'", vaultUUID, itemUUID)
-		} else if value, ok := fields[field]; !ok {
-			return "", fmt.Errorf("could not find field %s", field)
+		if fields := op.connectGet(secret.Vault, secret.Item); len(fields) == 0 {
+			return "", fmt.Errorf("could not find secret '%s' '%s'", secret.Vault, secret.Item)
+		} else if value, ok := fields[secret.Field]; !ok {
+			return "", fmt.Errorf("could not find field %s", secret.Field)
 		} else {
 			return strings.ReplaceAll(strings.TrimSpace(value), "\\n", "\n"), nil
 		}
 	} else {
 		if ok, _ := op.Session(); !ok {
 			return "", ErrNotSignedIn
-		} else if fields := op.clientGet(ctx, vaultUUID, itemUUID); len(fields) == 0 {
-			return "", fmt.Errorf("could not find secret '%s' '%s'", vaultUUID, itemUUID)
-		} else if value, ok := fields[field]; !ok {
-			return "", fmt.Errorf("could not find field %s", field)
+		} else if fields := op.clientGet(ctx, secret.Vault, secret.Item); len(fields) == 0 {
+			return "", fmt.Errorf("could not find secret '%s' '%s'", secret.Vault, secret.Item)
+		} else if value, ok := fields[secret.Field]; !ok {
+			return "", fmt.Errorf("could not find field %s", secret.Field)
 		} else {
 			return strings.ReplaceAll(strings.TrimSpace(value), "\\n", "\n"), nil
 		}
@@ -225,8 +225,13 @@ func (op *OnePassword) Render(ctx context.Context, source string) ([]byte, error
 					}
 					return value, nil
 				},
-				"op": func(account, vaultUUID, itemUUID, field string) (string, error) {
-					return op.Get(ctx, account, vaultUUID, itemUUID, field)
+				"op": func(account, vaultID, itemID, field string) (string, error) {
+					return op.Get(ctx, Secret{
+						Field:   field,
+						Item:    itemID,
+						Vault:   vaultID,
+						Account: account,
+					})
 				},
 				"indent": func(spaces int, v string) string {
 					pad := strings.Repeat(" ", spaces)

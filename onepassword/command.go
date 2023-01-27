@@ -5,7 +5,7 @@ import (
 
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
-	"github.com/foomo/posh/pkg/prompt"
+	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 )
@@ -40,12 +40,13 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 		}
 	}
 	inst.commandTree = &tree.Root{
-		Name: "op",
-		Nodes: []*tree.Node{
+		Name:        "op",
+		Description: "execute 1Password commands",
+		Nodes: tree.Nodes{
 			{
 				Name:        "get",
 				Description: "retrieve item",
-				Args: []*tree.Arg{
+				Args: tree.Args{
 					{
 						Name: "id",
 					},
@@ -60,7 +61,7 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 			{
 				Name:        "register",
 				Description: "register an account",
-				Args: []*tree.Arg{
+				Args: tree.Args{
 					{
 						Name: "email",
 					},
@@ -81,18 +82,18 @@ func (c *Command) Name() string {
 }
 
 func (c *Command) Description() string {
-	return "run go mod"
+	return c.commandTree.Description
 }
 
-func (c *Command) Complete(ctx context.Context, r *readline.Readline, d prompt.Document) []prompt.Suggest {
-	return c.commandTree.RunCompletion(ctx, r)
+func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
+	return c.commandTree.Complete(ctx, r)
 }
 
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
-	return c.commandTree.RunExecution(ctx, r)
+	return c.commandTree.Execute(ctx, r)
 }
 
-func (c *Command) Help() string {
+func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return `1Password session helper.
 
 Usage:

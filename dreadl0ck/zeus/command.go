@@ -8,7 +8,7 @@ import (
 
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/log"
-	"github.com/foomo/posh/pkg/prompt"
+	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
@@ -46,7 +46,7 @@ func (c *Command) Description() string {
 	return "run zeus on target"
 }
 
-func (c *Command) Complete(ctx context.Context, r *readline.Readline, d prompt.Document) []prompt.Suggest {
+func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	switch {
 	case r.Args().LenLte(1):
 		return c.completePaths(ctx)
@@ -90,7 +90,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	}
 }
 
-func (c *Command) Help() string {
+func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return `Find and run zeus at the given path.
 
 If the given path doesn't exist, it will bootstrap a new zeus installation.
@@ -107,14 +107,14 @@ Examples:
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) completePaths(ctx context.Context) []prompt.Suggest {
+func (c *Command) completePaths(ctx context.Context) []goprompt.Suggest {
 	return suggests.List(c.paths(ctx))
 }
 
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		if value, err := files.Find(ctx, "zeus"); err != nil {
+		if value, err := files.Find(ctx, ".", "zeus"); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return nil
 		} else {
