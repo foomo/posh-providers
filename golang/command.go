@@ -37,7 +37,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 		Name:     "path",
 		Optional: true,
 		Suggest: func(ctx context.Context, p *tree.Root, r *readline.Readline) []prompt2.Suggest {
-			return inst.completePaths(ctx, "go.mod")
+			return inst.completePaths(ctx, "go.mod", true)
 		},
 	}
 
@@ -45,7 +45,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 		Name:     "path",
 		Optional: true,
 		Suggest: func(ctx context.Context, p *tree.Root, r *readline.Readline) []prompt2.Suggest {
-			return inst.completePaths(ctx, "generate.go")
+			return inst.completePaths(ctx, "generate.go", false)
 		},
 	}
 
@@ -101,11 +101,16 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			},
 			{
 				Name:        "generate",
-				Description: "run go mod download",
+				Description: "run go mod commands",
 				Args:        []*tree.Arg{pathGenerateArg},
 				Execute:     inst.generate,
 			},
-			// TODO test
+			{
+				Name:        "test",
+				Description: "run go test",
+				Args:        []*tree.Arg{pathModArg},
+				Execute:     inst.test,
+			},
 		},
 	}
 	return inst
@@ -151,12 +156,33 @@ Examples:
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
+func (c *Command) test(ctx context.Context, r *readline.Readline) error {
+	var paths []string
+	if r.Args().HasIndex(2) {
+		paths = []string{r.Args().At(2)}
+	} else {
+		paths = c.paths(ctx, "go.mod", true)
+	}
+	for _, value := range paths {
+		c.l.Info("go test:", value)
+		if err := shell.New(ctx, c.l,
+			"go", "test", "./...", // TODO select test
+		).
+			Args(r.AdditionalArgs()...).
+			Dir(value).
+			Run(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
 	var paths []string
 	if r.Args().HasIndex(2) {
 		paths = []string{r.Args().At(2)}
 	} else {
-		paths = c.paths(ctx, "go.mod")
+		paths = c.paths(ctx, "go.mod", true)
 	}
 	for _, value := range paths {
 		c.l.Info("go mod tidy:", value)
@@ -164,7 +190,7 @@ func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
 			"go", "mod", "tidy",
 		).
 			Args(r.AdditionalArgs()...).
-			Dir(path.Dir(value)).
+			Dir(value).
 			Run(); err != nil {
 			return err
 		}
@@ -177,7 +203,7 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 	if r.Args().HasIndex(2) {
 		paths = []string{r.Args().At(2)}
 	} else {
-		paths = c.paths(ctx, "go.mod")
+		paths = c.paths(ctx, "go.mod", true)
 	}
 	for _, value := range paths {
 		c.l.Info("go mod download:", value)
@@ -185,7 +211,7 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 			"go", "mod", "tidy",
 		).
 			Args(r.AdditionalArgs()...).
-			Dir(path.Dir(value)).
+			Dir(value).
 			Run(); err != nil {
 			return err
 		}
@@ -198,7 +224,7 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 	if r.Args().HasIndex(2) {
 		paths = []string{r.Args().At(2)}
 	} else {
-		paths = c.paths(ctx, "go.mod")
+		paths = c.paths(ctx, "go.mod", true)
 	}
 	for _, value := range paths {
 		c.l.Info("go mod outdated:", value)
@@ -218,7 +244,7 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
 	data := "go 1.19\n\nuse (\n"
-	for _, value := range c.paths(ctx, "go.mod") {
+	for _, value := range c.paths(ctx, "go.mod", true) {
 		data += "\t" + strings.TrimSuffix(value, "/go.mod") + "\n"
 	}
 	data += ")"
@@ -237,7 +263,7 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 	if r.Args().HasIndex(2) {
 		paths = append(paths, r.Args().At(2))
 	} else {
-		paths = c.paths(ctx, "generate.go")
+		paths = c.paths(ctx, "generate.go", false)
 	}
 
 	for _, value := range paths {
@@ -253,16 +279,21 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
-func (c *Command) completePaths(ctx context.Context, filename string) []goprompt.Suggest {
-	return suggests.List(c.paths(ctx, filename))
+func (c *Command) completePaths(ctx context.Context, filename string, dir bool) []goprompt.Suggest {
+	return suggests.List(c.paths(ctx, filename, dir))
 }
 
 //nolint:forcetypeassert
-func (c *Command) paths(ctx context.Context, filename string) []string {
+func (c *Command) paths(ctx context.Context, filename string, dir bool) []string {
 	return c.cache.Get("paths-"+filename, func() any {
 		if value, err := files.Find(ctx, ".", filename); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return []string{}
+		} else if dir {
+			for i, s := range value {
+				value[i] = path.Dir(s)
+			}
+			return value
 		} else {
 			return value
 		}
