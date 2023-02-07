@@ -1,13 +1,10 @@
 package gcloud
 
 import (
-	"os"
-	"path"
-
 	"github.com/foomo/posh/pkg/cache"
-	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/util/files"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -53,14 +50,8 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 		return nil, err
 	}
 
-	if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
-		return nil, err
-	} else if err := os.Setenv("CLOUDSDK_CONFIG", path.Join(os.Getenv(env.ProjectRoot), inst.cfg.ConfigPath)); err != nil {
-		return nil, err
-	}
-
-	if err := os.Setenv("CLOUDSDK_CORE_PROJECT", inst.cfg.Project); err != nil {
-		return nil, err
+	if err := files.MkdirAll(inst.cfg.ConfigDir); err != nil {
+		return nil, errors.Wrapf(err, "failed to create directory %q", inst.cfg.ConfigDir)
 	}
 
 	return inst, nil
