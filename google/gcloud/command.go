@@ -154,14 +154,6 @@ func (c *Command) completeAccounts(ctx context.Context, r *readline.Readline) []
 	return suggestions
 }
 
-func (c *Command) toAccountLabel(accountPath string) string {
-	return strings.TrimSuffix(strings.TrimSpace(filepath.Base(accountPath)), ".json")
-}
-
-func (c *Command) fromAccountLabel(label string) string {
-	return filepath.Join(c.gcloud.cfg.ConfigDir, label+".json")
-}
-
 func (c *Command) authLogin(ctx context.Context, r *readline.Readline) error {
 	if err := shell.New(ctx, c.l, "gcloud", "auth", "login").
 		Args(r.AdditionalArgs()...).
