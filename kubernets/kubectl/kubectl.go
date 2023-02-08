@@ -6,8 +6,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/foomo/posh/pkg/shell"
-
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/pkg/errors"
@@ -16,14 +14,14 @@ import (
 
 type (
 	Kubectl struct {
-		l            log.Logger
-		cfg          Config
-		cache        cache.Namespace
-		configKey    string
-		authProvider AuthProvider
+		l                 log.Logger
+		cfg               Config
+		cache             cache.Namespace
+		configKey         string
+		authTokenProvider AuthTokenProvider
 	}
-	Option       func(*Kubectl) error
-	AuthProvider func(ctx context.Context, kubeContext string, sh *shell.Shell) error
+	Option            func(*Kubectl) error
+	AuthTokenProvider func(ctx context.Context, kubeContext string) (token string, err error)
 )
 
 // ------------------------------------------------------------------------------------------------
@@ -37,9 +35,9 @@ func CommandWithConfigKey(v string) Option {
 	}
 }
 
-func CommandWithAuthProvider(provider AuthProvider) Option {
+func CommandWithAuthTokenProvider(provider AuthTokenProvider) Option {
 	return func(o *Kubectl) error {
-		o.authProvider = provider
+		o.authTokenProvider = provider
 		return nil
 	}
 }
