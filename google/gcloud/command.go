@@ -2,6 +2,7 @@ package gcloud
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -39,8 +40,8 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl) *Command
 		},
 		Nodes: tree.Nodes{
 			{
-				Name:        "accounts",
-				Description: "List of accounts to access",
+				Name:        "environments",
+				Description: "List of environments to access",
 				Values:      inst.completeAccounts,
 				Nodes: tree.Nodes{
 					{
@@ -137,7 +138,7 @@ func (c *Command) completeClusters(ctx context.Context, t *tree.Root, r *readlin
 }
 
 func (c *Command) completeAccounts(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
-	accounts, err := ParseAccounts(ctx, c.gcloud.cfg.ConfigDir)
+	accounts, err := c.gcloud.ParseAccounts(ctx)
 	if err != nil {
 		c.l.Debug("failed to walk files", err.Error())
 		return nil
@@ -147,7 +148,7 @@ func (c *Command) completeAccounts(ctx context.Context, r *readline.Readline) []
 	for _, acc := range accounts {
 		suggestions = append(suggestions, goprompt.Suggest{
 			Text:        acc.Environment,
-			Description: acc.Path,
+			Description: fmt.Sprintf("%q cluster with role %q", acc.Cluster, acc.Role),
 		})
 	}
 	return suggestions
@@ -180,26 +181,47 @@ func (c *Command) authConfigureDocker(ctx context.Context, r *readline.Readline)
 }
 
 func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readline.Readline) error {
-	accountName := r.Args().At(0)
+	environment := r.Args().At(0)
 	clusterName := r.Args().At(2)
 
-	if clusterName == "" {
-		// All Clusters
+	clusters := c.gcloud.cfg.ClusterNamesForEnv(environment)
+	if clusterName != "" {
+		clusters = []string{clusterName}
 	}
 
-	kubectlCluster := c.kubectl.Cluster(accountName)
-	gcloudCluster := c.gcloud.cfg.Environments[0].Clusters[0]
+	for _, cluster := range clusters {
+		serviceAccounts, err := c.gcloud.FindAccounts(ctx, environment, cluster)
+		if err != nil {
+			return err
+		}
+		var accountPath string
+		if len(serviceAccounts) >= 1 {
+			if len(serviceAccounts) > 1 {
+				c.l.Warn("multiple accounts ")
+			}
+			accountPath, _ = filepath.Abs(serviceAccounts[0].Path)
+		}
 
-	if err := shell.New(ctx, c.l, "gcloud", "container", "clusters", "get-credentials",
-		"--project", gcloudCluster.Project,
-		"--region", gcloudCluster.Region,
-		clusterName,
-	).
-		Args(r.AdditionalArgs()...).
-		Env(kubectlCluster.Env()).
-		Env("GOOGLE_APPLICATION_CREDENTIALS=" + c.fromAccountLabel(accountName)).
-		Run(); err != nil {
-		return err
+		kubectlCluster := c.kubectl.Cluster(environment + "-" + cluster)
+		gcloudCluster, ok := c.gcloud.cfg.FindCluster(environment, cluster)
+		if !ok {
+			return fmt.Errorf("could not find configuration for env %q and cluster %q", environment, cluster)
+		}
+
+		if err := shell.New(ctx, c.l, "gcloud", "container", "clusters", "get-credentials",
+			"--project", gcloudCluster.Project,
+			"--region", gcloudCluster.Region,
+			cluster,
+		).
+			Args(r.AdditionalArgs()...).
+			Env("GOOGLE_APPLICATION_CREDENTIALS=" + accountPath).
+			Env("CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=" + accountPath).
+			Env("GOOGLE_CREDENTIALS=" + accountPath).
+			Env(kubectlCluster.Env()).
+			Run(); err != nil {
+			return err
+		}
 	}
+
 	return nil
 }

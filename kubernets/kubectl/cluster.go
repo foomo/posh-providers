@@ -20,6 +20,8 @@ type Cluster struct {
 	kubectl *Kubectl
 }
 
+type Clusters []*Cluster
+
 func NewCluster(kubectl *Kubectl, name string) *Cluster {
 	return &Cluster{
 		l:       kubectl.l.Named("kubectl:" + name),
@@ -65,17 +67,26 @@ func (c *Cluster) DeleteConfig() error {
 //nolint:forcetypeassert
 func (c *Cluster) Namespaces(ctx context.Context) []string {
 	return c.kubectl.cache.Get(c.name+"-namespaces", func() any {
-		if out, err := shell.New(ctx, c.l, "kubectl",
+		sh := shell.New(ctx, c.l, "kubectl",
 			"get", "namespaces",
-			"-o", "jsonpath='{.items[*].metadata.name}'",
-		).
-			Env(c.Env()).
-			Output(); err != nil {
+			"-o", "jsonpath='{.items[*].metadata.name}'").
+			Env(c.Env())
+
+		if c.kubectl.authProvider != nil {
+			err := c.kubectl.authProvider(ctx, c.Name(), sh)
+			if err != nil {
+				c.l.Warn(err.Error())
+				return []string{}
+			}
+		}
+
+		out, err := sh.Output()
+		if err != nil {
 			c.l.Warn(err.Error())
 			return []string{}
-		} else {
-			return strings.Split(string(out), " ")
 		}
+
+		return strings.Split(string(out), " ")
 	}).([]string)
 }
 

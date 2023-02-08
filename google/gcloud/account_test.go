@@ -9,7 +9,12 @@ import (
 )
 
 func TestParseAccounts(t *testing.T) {
-	accounts, err := ParseAccounts(context.Background(), "testdata/accounts")
+	gcloud := GCloud{
+		cfg: Config{
+			ConfigDir: "testdata/accounts",
+		},
+	}
+	accounts, err := gcloud.ParseAccounts(context.Background())
 	require.NoError(t, err)
 	require.Len(t, accounts, 2)
 
