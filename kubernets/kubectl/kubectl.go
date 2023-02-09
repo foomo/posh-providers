@@ -1,25 +1,27 @@
 package kubectl
 
 import (
+	"context"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/log"
-	"github.com/foomo/posh/pkg/util/files"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
 type (
 	Kubectl struct {
-		l         log.Logger
-		cfg       Config
-		cache     cache.Namespace
-		configKey string
+		l                 log.Logger
+		cfg               Config
+		cache             cache.Namespace
+		configKey         string
+		authTokenProvider AuthTokenProvider
 	}
-	Option func(*Kubectl) error
+	Option            func(*Kubectl) error
+	AuthTokenProvider func(ctx context.Context, kubeContext string) (token string, err error)
 )
 
 // ------------------------------------------------------------------------------------------------
@@ -29,6 +31,13 @@ type (
 func CommandWithConfigKey(v string) Option {
 	return func(o *Kubectl) error {
 		o.configKey = v
+		return nil
+	}
+}
+
+func CommandWithAuthTokenProvider(provider AuthTokenProvider) Option {
+	return func(o *Kubectl) error {
+		o.authTokenProvider = provider
 		return nil
 	}
 }
@@ -53,7 +62,8 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*Kubectl, error) {
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
-	if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
+
+	if err := os.MkdirAll(inst.cfg.ConfigPath, 0o700); err != nil {
 		return nil, errors.Wrapf(err, "failed to create config path: %s", inst.cfg.ConfigPath)
 	}
 
@@ -83,7 +93,7 @@ func (k *Kubectl) Clusters() Clusters {
 		for _, entry := range entries {
 			cluster := strings.TrimSuffix(entry.Name(), ".yaml")
 			if !entry.IsDir() && path.Ext(entry.Name()) == ".yaml" {
-				if err := os.Chmod(path.Join(k.cfg.ConfigPath, entry.Name()), os.FileMode(0600)); err != nil {
+				if err := os.Chmod(path.Join(k.cfg.ConfigPath, entry.Name()), os.FileMode(0o600)); err != nil {
 					k.l.Debugf("failed to chmod file: %s", err.Error())
 				}
 				clusters = append(clusters, NewCluster(k, cluster))
