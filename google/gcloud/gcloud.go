@@ -18,21 +18,26 @@ import (
 type (
 	GCloud struct {
 		l         log.Logger
-		cfg       Config
+		cfg       *Config
 		cache     cache.Namespace
 		configKey string
 	}
-	Option func(*GCloud) error
+	Option func(*GCloud)
 )
 
 // ------------------------------------------------------------------------------------------------
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+func CommandWithConfig(v *Config) Option {
+	return func(o *GCloud) {
+		o.cfg = v
+	}
+}
+
 func CommandWithConfigKey(v string) Option {
-	return func(o *GCloud) error {
+	return func(o *GCloud) {
 		o.configKey = v
-		return nil
 	}
 }
 
@@ -48,13 +53,14 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 	}
 	for _, opt := range opts {
 		if opt != nil {
-			if err := opt(inst); err != nil {
-				return nil, err
-			}
+			opt(inst)
 		}
 	}
-	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
-		return nil, err
+
+	if inst.cfg == nil && inst.configKey != "" {
+		if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := os.MkdirAll(inst.cfg.ConfigDir, 0o700); err != nil {
