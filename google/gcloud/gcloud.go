@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/foomo/posh/pkg/shell"
 
@@ -17,10 +18,11 @@ import (
 
 type (
 	GCloud struct {
-		l         log.Logger
-		cfg       *Config
-		cache     cache.Namespace
-		configKey string
+		l                    log.Logger
+		cfg                  *Config
+		cache                cache.Namespace
+		configKey            string
+		accountFileNameRegex *regexp.Regexp
 	}
 	Option func(*GCloud)
 )
@@ -41,15 +43,22 @@ func WithConfigKey(v string) Option {
 	}
 }
 
+func WithAccountFileNameRegex(v *regexp.Regexp) Option {
+	return func(o *GCloud) {
+		o.accountFileNameRegex = v
+	}
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
 func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 	inst := &GCloud{
-		l:         l,
-		cache:     cache.Get("gcloud"),
-		configKey: "gcloud",
+		l:                    l,
+		cache:                cache.Get("gcloud"),
+		configKey:            "gcloud",
+		accountFileNameRegex: regexp.MustCompile(`(\w+)@(\w+)-(\w+)\.json`),
 	}
 	for _, opt := range opts {
 		if opt != nil {
@@ -82,7 +91,7 @@ func (gc *GCloud) ParseAccounts(ctx context.Context) ([]Account, error) {
 
 	var accounts []Account
 	for _, f := range accountFiles {
-		matchString := gcloudAccountFileNameRegex.FindAllStringSubmatch(filepath.Base(f), 1)
+		matchString := gc.accountFileNameRegex.FindAllStringSubmatch(filepath.Base(f), 1)
 		if len(matchString) == 0 {
 			continue
 		}
