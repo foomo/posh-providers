@@ -186,13 +186,11 @@ func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readli
 		if err != nil {
 			return err
 		}
-		var accountPath string
-		if len(serviceAccounts) >= 1 {
-			if len(serviceAccounts) > 1 {
-				c.l.Warn("multiple accounts ")
-			}
-			accountPath, _ = filepath.Abs(serviceAccounts[0].Path)
+
+		if len(serviceAccounts) > 1 {
+			c.l.Warnf("multiple accounts found for env %q and cluster %q", environment, cluster)
 		}
+		accountPath, _ := filepath.Abs(serviceAccounts[0].Path)
 
 		kubectlCluster := c.kubectl.Cluster(environment + "-" + cluster)
 		gcloudCluster, ok := c.gcloud.cfg.FindCluster(environment, cluster)
@@ -200,7 +198,7 @@ func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readli
 			return fmt.Errorf("could not find configuration for env %q and cluster %q", environment, cluster)
 		}
 
-		if err := shell.New(ctx, c.l, "gcloud", "container", "clusters", "get-credentials",
+		sh := shell.New(ctx, c.l, "gcloud", "container", "clusters", "get-credentials",
 			"--project", gcloudCluster.Project,
 			"--region", gcloudCluster.Region,
 			cluster,
@@ -209,11 +207,11 @@ func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readli
 			Env("GOOGLE_APPLICATION_CREDENTIALS=" + accountPath).
 			Env("CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=" + accountPath).
 			Env("GOOGLE_CREDENTIALS=" + accountPath).
-			Env(kubectlCluster.Env()).
-			Run(); err != nil {
+			Env(kubectlCluster.Env())
+
+		if err := sh.Run(); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }

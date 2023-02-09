@@ -101,6 +101,11 @@ func (gc *GCloud) FindAccounts(ctx context.Context, env, cluster string) ([]GClo
 			filtered = append(filtered, acc)
 		}
 	}
+
+	if len(filtered) == 0 {
+		return nil, fmt.Errorf("account not found for cluster %q and env %q", cluster, env)
+	}
+
 	return filtered, nil
 }
 
@@ -109,12 +114,11 @@ func (gc *GCloud) GenerateToken(ctx context.Context, env, cluster string) (strin
 	if err != nil {
 		return "", err
 	}
-
-	if len(accounts) == 0 {
-		return "", fmt.Errorf("account not found for cluster %q and env %q", cluster, env)
+	if len(accounts) > 1 {
+		gc.l.Warnf("multiple accounts found for env %q and cluster %q", env, cluster)
 	}
-
 	account := accounts[0]
+
 	out, err := shell.New(ctx, gc.l,
 		"gcloud", "auth", "application-default", "print-access-token").
 		Env("CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=" + account.Path).
