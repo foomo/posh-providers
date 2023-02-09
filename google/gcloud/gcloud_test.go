@@ -14,7 +14,7 @@ import (
 func TestGCloud_ParseAccounts(t *testing.T) {
 	l := log.NewTest(t)
 	c := &cache.MemoryCache{}
-	inst, err := gcloud.New(l, c, gcloud.CommandWithConfig(
+	inst, err := gcloud.New(l, c, gcloud.WithConfig(
 		&gcloud.Config{
 			ConfigDir:    "testdata/accounts",
 			Environments: nil,

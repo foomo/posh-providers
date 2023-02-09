@@ -29,13 +29,13 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func CommandWithConfig(v *Config) Option {
+func WithConfig(v *Config) Option {
 	return func(o *GCloud) {
 		o.cfg = v
 	}
 }
 
-func CommandWithConfigKey(v string) Option {
+func WithConfigKey(v string) Option {
 	return func(o *GCloud) {
 		o.configKey = v
 	}
@@ -69,6 +69,10 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 
 	return inst, nil
 }
+
+// ------------------------------------------------------------------------------------------------
+// ~ Public methods
+// ------------------------------------------------------------------------------------------------
 
 func (gc *GCloud) ParseAccounts(ctx context.Context) ([]Account, error) {
 	accountFiles, err := files.Find(ctx, gc.cfg.ConfigDir, "*.json")
