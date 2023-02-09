@@ -6,7 +6,7 @@ import (
 
 var gcloudAccountFileNameRegex = regexp.MustCompile(`(\w+)@(\w+)-(\w+)\.json`)
 
-type GCloudAccount struct {
+type Account struct {
 	Role        string
 	Environment string
 	Cluster     string

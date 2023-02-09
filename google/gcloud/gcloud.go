@@ -70,20 +70,20 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 	return inst, nil
 }
 
-func (gc *GCloud) ParseAccounts(ctx context.Context) ([]GCloudAccount, error) {
+func (gc *GCloud) ParseAccounts(ctx context.Context) ([]Account, error) {
 	accountFiles, err := files.Find(ctx, gc.cfg.ConfigDir, "*.json")
 	if err != nil {
 		return nil, err
 	}
 
-	var accounts []GCloudAccount
+	var accounts []Account
 	for _, f := range accountFiles {
 		matchString := gcloudAccountFileNameRegex.FindAllStringSubmatch(filepath.Base(f), 1)
 		if len(matchString) == 0 {
 			continue
 		}
 		match := matchString[0]
-		acc := GCloudAccount{
+		acc := Account{
 			Role:        match[1],
 			Environment: match[2],
 			Cluster:     match[3],
@@ -95,7 +95,7 @@ func (gc *GCloud) ParseAccounts(ctx context.Context) ([]GCloudAccount, error) {
 	return accounts, err
 }
 
-func (gc *GCloud) FindAccounts(ctx context.Context, env, cluster string) ([]GCloudAccount, error) {
+func (gc *GCloud) FindAccounts(ctx context.Context, env, cluster string) ([]Account, error) {
 	accounts, err := gc.ParseAccounts(ctx)
 	if err != nil {
 		return nil, err
