@@ -15,6 +15,7 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
+	"golang.org/x/sync/errgroup"
 )
 
 type (
@@ -56,6 +57,10 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 		Name:        inst.name,
 		Description: "run mjml",
 		Node: &tree.Node{
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+				fs.Int("parallel", 0, "number of parallel processes")
+				return nil
+			},
 			Args: tree.Args{
 				{
 					Name:     "path",
@@ -128,19 +133,21 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		dir = r.Args().At(0)
 	}
 
-	c.l.Info("Running mjml under %q", dir)
+	ctx, wg := c.wg(ctx, r)
+	c.l.Infof("Running mjml under %q", dir)
 	for _, src := range c.files(ctx, dir) {
-		c.l.Info("└  " + src)
-		out := strings.ReplaceAll(src, ".mjml", ".html")
-		out = strings.ReplaceAll(out, "/src/", "/html/")
-		if err := shell.New(ctx, c.l, "mjml", src, "-o", out).
-			Args(r.PassThroughFlags()...).
-			Args(r.AdditionalArgs()...).
-			Run(); err != nil {
-			return err
-		}
+		src := src
+		wg.Go(func() error {
+			c.l.Info("└  " + src)
+			out := strings.ReplaceAll(src, ".mjml", ".html")
+			out = strings.ReplaceAll(out, "/src/", "/html/")
+			return shell.New(ctx, c.l, "mjml", src, "-o", out).
+				Args(r.PassThroughFlags()...).
+				Args(r.AdditionalArgs()...).
+				Run()
+		})
 	}
-	return nil
+	return wg.Wait()
 }
 
 //nolint:forcetypeassert
@@ -181,4 +188,14 @@ func (c *Command) files(ctx context.Context, root string) []string {
 			return ret
 		}
 	}).([]string)
+}
+
+func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context, *errgroup.Group) {
+	wg, ctx := errgroup.WithContext(ctx)
+	if value, err := r.FlagSet().GetInt("parallel"); err == nil && value != 0 {
+		wg.SetLimit(value)
+	} else {
+		wg.SetLimit(1)
+	}
+	return ctx, wg
 }
