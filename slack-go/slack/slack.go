@@ -7,6 +7,7 @@ import (
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/util/git"
+	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	"github.com/slack-go/slack"
 	"github.com/spf13/viper"
@@ -87,12 +88,12 @@ func (s *Slack) Channel(id string) string {
 func (s *Slack) SendUserMessage(ctx context.Context, markdown, channel string, annotate bool) error {
 	ch, ok := s.cfg.Channels[channel]
 	if !ok {
-		return fmt.Errorf("channel not found: %s", channel)
+		return errors.Errorf("channel not found: %s", channel)
 	}
 
 	user, err := git.ConfigUserName(ctx, s.l)
 	if err != nil {
-		return fmt.Errorf("failed to get git user: %s", err.Error())
+		return errors.Wrap(err, "failed to get git user")
 	}
 
 	if !annotate {

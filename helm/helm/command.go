@@ -64,7 +64,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.kubectl.Clusters())
 				},
-				Description: "cluster to run agains",
+				Description: "cluster to run against",
 				Nodes: tree.Nodes{
 					{
 						Name:        "create",

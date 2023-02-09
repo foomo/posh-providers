@@ -20,6 +20,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+const All = "all"
+
 type (
 	Command struct {
 		l              log.Logger
@@ -135,7 +137,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										inst.l.Debug(err.Error())
 										return nil
 									} else {
-										return suggests.List(append(value, "all"))
+										return suggests.List(append(value, All))
 									}
 								},
 								Nodes: tree.Nodes{
@@ -384,7 +386,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	env = append(env, c.kubectl.Cluster(cluster).Env())
 
 	var squadrons []string
-	if squadron == "all" {
+	if squadron == All {
 		if value, err := c.squadron.List(); err == nil {
 			squadrons = value
 		}
@@ -445,7 +447,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 
 	switch cmd {
 	case "up":
-		if squadron == "all" {
+		if squadron == All {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🚢 Full deployment to *%s* | *%s* _(%s)_", cluster, fleet, tag))
 		} else if len(units) == 0 {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🛥 Deployment to *%s*\n\n- %s.all | *%s* _(%s)_\n", cluster, squadron, fleet, tag))
@@ -457,7 +459,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🛶 Deployment to *%s* | *%s* _(%s)_\n\n%s\n", cluster, fleet, tag, strings.Join(str, "\n")))
 		}
 	case "down":
-		if squadron == "all" {
+		if squadron == All {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🪦 Full uninstallation of *%s* | *%s*", cluster, fleet))
 		} else if len(units) == 0 {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("💀 Uninstalling from *%s*\n\n- %s.all | *%s*\n", cluster, squadron, fleet))
