@@ -3,7 +3,6 @@ package gcloud
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 
@@ -72,7 +71,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 		}
 	}
 
-	if err := os.MkdirAll(inst.cfg.ConfigDir, 0o700); err != nil {
+	if err := files.MkdirAll(inst.cfg.ConfigDir); err != nil {
 		return nil, errors.Wrapf(err, "failed to create directory %q", inst.cfg.ConfigDir)
 	}
 

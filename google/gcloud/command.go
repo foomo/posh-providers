@@ -40,8 +40,8 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl) *Command
 		},
 		Nodes: tree.Nodes{
 			{
-				Name:        "environments",
-				Description: "List of environments to access",
+				Name:        "environment",
+				Description: "Environments to access",
 				Values:      inst.completeAccounts,
 				Nodes: tree.Nodes{
 					{
