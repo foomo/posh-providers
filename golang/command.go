@@ -15,6 +15,7 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"golang.org/x/sync/errgroup"
 )
 
 type Command struct {
@@ -60,20 +61,32 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 					{
 						Name:        "tidy",
 						Description: "run go mod tidy",
-						Args:        []*tree.Arg{pathModArg},
-						Execute:     inst.modTidy,
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+							fs.Int("parallel", 0, "number of parallel processes")
+							return nil
+						},
+						Args:    []*tree.Arg{pathModArg},
+						Execute: inst.modTidy,
 					},
 					{
 						Name:        "download",
 						Description: "run go mod download",
-						Args:        []*tree.Arg{pathModArg},
-						Execute:     inst.modDownload,
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+							fs.Int("parallel", 0, "number of parallel processes")
+							return nil
+						},
+						Args:    []*tree.Arg{pathModArg},
+						Execute: inst.modDownload,
 					},
 					{
 						Name:        "outdated",
 						Description: "show go mod outdated",
-						Args:        []*tree.Arg{pathModArg},
-						Execute:     inst.modOutdated,
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+							fs.Int("parallel", 0, "number of parallel processes")
+							return nil
+						},
+						Args:    []*tree.Arg{pathModArg},
+						Execute: inst.modOutdated,
 					},
 				},
 			},
@@ -102,14 +115,32 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			{
 				Name:        "generate",
 				Description: "run go mod commands",
-				Args:        []*tree.Arg{pathGenerateArg},
-				Execute:     inst.generate,
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+					fs.Int("parallel", 0, "number of parallel processes")
+					return nil
+				},
+				Args:    []*tree.Arg{pathGenerateArg},
+				Execute: inst.generate,
 			},
 			{
 				Name:        "test",
 				Description: "run go test",
-				Args:        []*tree.Arg{pathModArg},
-				Execute:     inst.test,
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+					fs.Int("parallel", 0, "number of parallel processes")
+					return nil
+				},
+				Args:    []*tree.Arg{pathModArg},
+				Execute: inst.test,
+			},
+			{
+				Name:        "build",
+				Description: "run go build",
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+					fs.Int("parallel", 0, "number of parallel processes")
+					return nil
+				},
+				Args:    []*tree.Arg{pathModArg},
+				Execute: inst.build,
 			},
 		},
 	}
@@ -156,25 +187,56 @@ Examples:
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) test(ctx context.Context, r *readline.Readline) error {
+func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 	var paths []string
-	if r.Args().HasIndex(2) {
-		paths = []string{r.Args().At(2)}
+	if r.Args().HasIndex(1) {
+		paths = []string{r.Args().At(1)}
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+
+	ctx, wg := c.wg(ctx, r)
+	c.l.Info("Running go build ...")
 	for _, value := range paths {
-		c.l.Info("go test:", value)
-		if err := shell.New(ctx, c.l,
-			"go", "test", "./...", // TODO select test
-		).
-			Args(r.AdditionalArgs()...).
-			Dir(value).
-			Run(); err != nil {
-			return err
-		}
+		value := value
+		wg.Go(func() error {
+			c.l.Info("└ " + value)
+			return shell.New(ctx, c.l,
+				"go", "build", "-v", "./...", // TODO select test
+			).
+				Args(r.PassThroughFlags()...).
+				Args(r.AdditionalArgs()...).
+				Dir(value).
+				Run()
+		})
 	}
-	return nil
+	return wg.Wait()
+}
+
+func (c *Command) test(ctx context.Context, r *readline.Readline) error {
+	var paths []string
+	if r.Args().HasIndex(1) {
+		paths = []string{r.Args().At(1)}
+	} else {
+		paths = c.paths(ctx, "go.mod", true)
+	}
+
+	ctx, wg := c.wg(ctx, r)
+	c.l.Info("Running go test ...")
+	for _, value := range paths {
+		value := value
+		wg.Go(func() error {
+			c.l.Info("└ " + value)
+			return shell.New(ctx, c.l,
+				"go", "test", "-v", "./...", // TODO select test
+			).
+				Args(r.PassThroughFlags()...).
+				Args(r.AdditionalArgs()...).
+				Dir(value).
+				Run()
+		})
+	}
+	return wg.Wait()
 }
 
 func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
@@ -184,18 +246,21 @@ func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+	ctx, wg := c.wg(ctx, r)
+	c.l.Info("Running go mod tidy...")
 	for _, value := range paths {
-		c.l.Info("go mod tidy:", value)
-		if err := shell.New(ctx, c.l,
-			"go", "mod", "tidy",
-		).
-			Args(r.AdditionalArgs()...).
-			Dir(value).
-			Run(); err != nil {
-			return err
-		}
+		value := value
+		wg.Go(func() error {
+			c.l.Info("└ " + value)
+			return shell.New(ctx, c.l,
+				"go", "mod", "tidy",
+			).
+				Args(r.AdditionalArgs()...).
+				Dir(value).
+				Run()
+		})
 	}
-	return nil
+	return wg.Wait()
 }
 
 func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
@@ -205,18 +270,21 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+	ctx, wg := c.wg(ctx, r)
+	c.l.Info("Running go mod download...")
 	for _, value := range paths {
-		c.l.Info("go mod download:", value)
-		if err := shell.New(ctx, c.l,
-			"go", "mod", "tidy",
-		).
-			Args(r.AdditionalArgs()...).
-			Dir(value).
-			Run(); err != nil {
-			return err
-		}
+		value := value
+		wg.Go(func() error {
+			c.l.Info("└ " + value)
+			return shell.New(ctx, c.l,
+				"go", "mod", "tidy",
+			).
+				Args(r.AdditionalArgs()...).
+				Dir(value).
+				Run()
+		})
 	}
-	return nil
+	return wg.Wait()
 }
 
 func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
@@ -226,20 +294,23 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+	ctx, wg := c.wg(ctx, r)
+	c.l.Info("Running go mod outdated...")
 	for _, value := range paths {
-		c.l.Info("go mod outdated:", value)
-		if err := shell.New(ctx, c.l,
-			"go", "list",
-			"-u", "-m", "-json", "all",
-			"|", "go-mod-outdated", "-update", "-direct",
-		).
-			Args(r.AdditionalArgs()...).
-			Dir(value).
-			Run(); err != nil {
-			return err
-		}
+		value := value
+		wg.Go(func() error {
+			c.l.Info("└ " + value)
+			return shell.New(ctx, c.l,
+				"go", "list",
+				"-u", "-m", "-json", "all",
+				"|", "go-mod-outdated", "-update", "-direct",
+			).
+				Args(r.AdditionalArgs()...).
+				Dir(value).
+				Run()
+		})
 	}
-	return nil
+	return wg.Wait()
 }
 
 func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
@@ -266,15 +337,18 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 		paths = c.paths(ctx, "generate.go", false)
 	}
 
+	ctx, wg := c.wg(ctx, r)
+	c.l.Info("Running go generate...")
 	for _, value := range paths {
-		c.l.Info("go generate:", value)
-		if err := shell.New(ctx, c.l,
-			"go", "generate", value,
-		).
-			Args(r.AdditionalArgs()...).
-			Run(); err != nil {
-			return err
-		}
+		value := value
+		wg.Go(func() error {
+			c.l.Info("└ " + value)
+			return shell.New(ctx, c.l,
+				"go", "generate", value,
+			).
+				Args(r.AdditionalArgs()...).
+				Run()
+		})
 	}
 	return nil
 }
@@ -298,4 +372,14 @@ func (c *Command) paths(ctx context.Context, filename string, dir bool) []string
 			return value
 		}
 	}).([]string)
+}
+
+func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context, *errgroup.Group) {
+	wg, ctx := errgroup.WithContext(ctx)
+	if value, err := r.FlagSet().GetInt("parallel"); err == nil && value != 0 {
+		wg.SetLimit(value)
+	} else {
+		wg.SetLimit(1)
+	}
+	return ctx, wg
 }

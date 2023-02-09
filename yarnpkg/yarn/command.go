@@ -15,6 +15,7 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"golang.org/x/sync/errgroup"
 )
 
 type (
@@ -69,15 +70,27 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 				Args: tree.Args{
 					inst.pathArg(),
 					{
-						Name:     "script",
-						Repeat:   false,
-						Optional: false,
+						Name: "script",
 						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.scripts(ctx, r.Args().At(1)))
 						},
 					},
 				},
 				Execute: inst.run,
+			},
+			{
+				Name:        "run-all",
+				Description: "run script in all",
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+					fs.Int("parallel", 0, "number of parallel processes")
+					return nil
+				},
+				Args: tree.Args{
+					{
+						Name: "script",
+					},
+				},
+				Execute: inst.runAll,
 			},
 		},
 	}
@@ -114,6 +127,7 @@ Usage:
 Available Commands:
   install <path>        install dependencies
   run [path] [script]   run script
+  run-all [script]      run script in all
 `
 }
 
@@ -122,7 +136,8 @@ Available Commands:
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) run(ctx context.Context, r *readline.Readline) error {
-	dir, script := r.Args().At(0), r.Args().At(1)
+	dir, script := r.Args().At(1), r.Args().At(2)
+	c.l.Infof("Running script %q in %q", script, dir)
 	return shell.New(ctx, c.l, "yarn", "run", script).
 		Args(r.PassThroughFlags()...).
 		Args(r.AdditionalArgs()...).
@@ -130,11 +145,31 @@ func (c *Command) run(ctx context.Context, r *readline.Readline) error {
 		Run()
 }
 
+func (c *Command) runAll(ctx context.Context, r *readline.Readline) error {
+	script := r.Args().At(1)
+	ctx, wg := c.wg(ctx, r)
+	c.l.Infof("Running script %q in...", script)
+	for _, dir := range c.paths(ctx) {
+		if dir := dir; dir != "." {
+			wg.Go(func() error {
+				c.l.Info("└ " + dir)
+				return shell.New(ctx, c.l, "yarn", "run", script).
+					Args(r.PassThroughFlags()...).
+					Args(r.AdditionalArgs()...).
+					Dir(dir).
+					Run()
+			})
+		}
+	}
+	return wg.Wait()
+}
+
 func (c *Command) install(ctx context.Context, r *readline.Readline) error {
 	dir := "."
 	if r.Args().LenGt(1) {
 		dir = r.Args().At(1)
 	}
+	c.l.Infof("Running install in %q", dir)
 	return shell.New(ctx, c.l, "yarn", "install").
 		Args(r.PassThroughFlags()...).
 		Args(r.AdditionalArgs()...).
@@ -145,7 +180,7 @@ func (c *Command) install(ctx context.Context, r *readline.Readline) error {
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		if value, err := files.Find(ctx, ".", "package.json", files.FindWithIgnore("node_modules")); err != nil {
+		if value, err := files.Find(ctx, ".", "package.json", files.FindWithIgnore("node_modules", ".next", "dist")); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return []string{}
 		} else {
@@ -162,7 +197,7 @@ func (c *Command) scripts(ctx context.Context, filename string) []string {
 	return c.cache.Get("scripts-"+strings.ReplaceAll(filename, "/", "-"), func() any {
 		payload, err := os.ReadFile(path.Join(filename, "package.json"))
 		if err != nil {
-			return nil
+			return []string{}
 		}
 		ret := make([]string, 0)
 		if value, err := packagejson.Parse(payload); err != nil {
@@ -184,4 +219,14 @@ func (c *Command) pathArg() *tree.Arg {
 			return suggests.List(c.paths(ctx))
 		},
 	}
+}
+
+func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context, *errgroup.Group) {
+	wg, ctx := errgroup.WithContext(ctx)
+	if value, err := r.FlagSet().GetInt("parallel"); err == nil && value != 0 {
+		wg.SetLimit(value)
+	} else {
+		wg.SetLimit(1)
+	}
+	return ctx, wg
 }

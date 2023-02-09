@@ -8,23 +8,28 @@ import (
 
 	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
+	"github.com/foomo/posh-providers/slack-go/slack"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
+	"github.com/foomo/posh/pkg/util/git"
 	"github.com/foomo/posh/pkg/util/suggests"
+	slackgo "github.com/slack-go/slack"
 	"golang.org/x/exp/slices"
 )
 
 type (
 	Command struct {
-		l           log.Logger
-		op          *onepassword.OnePassword
-		kubectl     *kubectl.Kubectl
-		squadron    *Squadron
-		commandTree *tree.Root
-		namespaceFn NamespaceFn
+		l              log.Logger
+		op             *onepassword.OnePassword
+		slack          *slack.Slack
+		slackChannelID string
+		kubectl        *kubectl.Kubectl
+		squadron       *Squadron
+		commandTree    *tree.Root
+		namespaceFn    NamespaceFn
 	}
 	NamespaceFn   func(cluster, fleet, squadron string) string
 	CommandOption func(*Command)
@@ -40,16 +45,29 @@ func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
 	}
 }
 
+func CommandWithSlack(v *slack.Slack) CommandOption {
+	return func(o *Command) {
+		o.slack = v
+	}
+}
+
+func CommandWithSlackChannelID(v string) CommandOption {
+	return func(o *Command) {
+		o.slackChannelID = v
+	}
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
 func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *onepassword.OnePassword, opts ...CommandOption) *Command {
 	inst := &Command{
-		l:        l.Named("squadron"),
-		op:       op,
-		kubectl:  kubectl,
-		squadron: squadron,
+		l:              l.Named("squadron"),
+		op:             op,
+		kubectl:        kubectl,
+		squadron:       squadron,
+		slackChannelID: "squadron",
 		namespaceFn: func(cluster, fleet, squadron string) string {
 			if fleet == "default" {
 				return squadron
@@ -57,6 +75,11 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				return fmt.Sprintf("%s-%s", fleet, squadron)
 			}
 		},
+	}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(inst)
+		}
 	}
 
 	unitsArg := &tree.Arg{
@@ -127,6 +150,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Bool("build", false, "build image")
 											fs.String("tag", "", "image tag")
 											fs.Int64("parallel", 0, "number of parallel processes")
+											if inst.slack != nil {
+												fs.Bool("slack", false, "send slack notification")
+											}
 											return nil
 										},
 										PassThroughFlags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
@@ -151,6 +177,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Args:        tree.Args{unitsArg},
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
 											commonFlags(fs)
+											if inst.slack != nil {
+												fs.Bool("slack", false, "send slack notification")
+											}
 											return nil
 										},
 										Execute: inst.down,
@@ -207,6 +236,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
 											commonFlags(fs)
 											fs.String("revision", "", "revision number to rollback to")
+											if inst.slack != nil {
+												fs.Bool("slack", false, "send slack notification")
+											}
 											return nil
 										},
 										Execute: inst.rollback,
@@ -360,6 +392,13 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		squadrons = []string{squadron}
 	}
 
+	if c.slack != nil && r.FlagSet().GetBool("slack") {
+		flags = flags.Splice(flags.IndexOf("--slack"), 1)
+		if err := c.notify(ctx, cmd, cluster, fleet, squadron, r.FlagSet().GetString("tag"), units); err != nil {
+			return err
+		}
+	}
+
 	for _, s := range squadrons {
 		env := append(env, fmt.Sprintf("SQUADRON=%s", s))
 		flags := flags
@@ -383,4 +422,78 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		}
 	}
 	return nil
+}
+
+func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag string, units []string) error {
+	if tag == "" {
+		tag = "latest"
+	}
+
+	user, err := git.ConfigUserName(ctx, c.l)
+	if err != nil {
+		c.l.Debug("failed to get git user:", err.Error())
+		user = "unknown"
+	}
+
+	ref, err := git.Ref(ctx, c.l)
+	if err != nil {
+		c.l.Debug("failed to get git ref:", err.Error())
+		ref = "unknown"
+	}
+
+	var msg *slackgo.SectionBlock
+
+	switch cmd {
+	case "up":
+		if squadron == "all" {
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🚢 Full deployment to *%s* | *%s* _(%s)_", cluster, fleet, tag))
+		} else if len(units) == 0 {
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🛥 Deployment to *%s*\n\n- %s.all | *%s* _(%s)_\n", cluster, squadron, fleet, tag))
+		} else {
+			str := make([]string, 0, len(units))
+			for _, unit := range units {
+				str = append(str, "- "+squadron+"."+unit)
+			}
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🛶 Deployment to *%s* | *%s* _(%s)_\n\n%s\n", cluster, fleet, tag, strings.Join(str, "\n")))
+		}
+	case "down":
+		if squadron == "all" {
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🪦 Full uninstallation of *%s* | *%s*", cluster, fleet))
+		} else if len(units) == 0 {
+			msg = c.slack.MarkdownSection(fmt.Sprintf("💀 Uninstalling from *%s*\n\n- %s.all | *%s*\n", cluster, squadron, fleet))
+		} else {
+			str := make([]string, 0, len(units))
+			for _, unit := range units {
+				str = append(str, "- "+squadron+"."+unit)
+			}
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🗑 Uninstalling from *%s* | *%s*\n\n%s\n", cluster, fleet, strings.Join(str, "\n")))
+		}
+	case "rollback":
+		if squadron == "all" {
+			msg = c.slack.MarkdownSection(fmt.Sprintf("⏬ Full roll back of *%s* | *%s*", cluster, fleet))
+		} else if len(units) == 0 {
+			msg = c.slack.MarkdownSection(fmt.Sprintf("⏪ Rollback in *%s*\n\n- %s.all | *%s*\n", cluster, squadron, fleet))
+		} else {
+			str := make([]string, 0, len(units))
+			for _, unit := range units {
+				str = append(str, "- "+squadron+"."+unit)
+			}
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🔙 Rollback in *%s* | *%s*\n\n%s\n", cluster, fleet, strings.Join(str, "\n")))
+		}
+	default:
+		c.l.Debug("skipping notification for cmd:", cmd)
+	}
+
+	blockOpt := slackgo.MsgOptionBlocks(
+		msg,
+		slackgo.NewContextBlock("", slackgo.NewTextBlockObject("mrkdwn", ref+" by "+user, false, false)),
+		c.slack.DividerSection(),
+	)
+	fallbackOpt := slackgo.MsgOptionText(fmt.Sprintf("Deployment to %s | %s", cluster, fleet), false)
+
+	return c.slack.Send(
+		ctx,
+		c.slack.Channel(c.slackChannelID),
+		slackgo.MsgOptionCompose(fallbackOpt, blockOpt),
+	)
 }
