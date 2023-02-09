@@ -3,12 +3,12 @@ package etcd
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/shell"
+	"github.com/foomo/posh/pkg/util/files"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -54,7 +54,7 @@ func New(l log.Logger, kubectl *kubectl.Kubectl, opts ...Option) (*ETCD, error) 
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
-	if err := os.MkdirAll(inst.cfg.ConfigPath, 0o700); err != nil {
+	if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
 		return nil, errors.Wrapf(err, "failed to create config path: %s", inst.cfg.ConfigPath)
 	}
 
