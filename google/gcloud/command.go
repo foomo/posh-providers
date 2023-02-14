@@ -9,7 +9,7 @@ import (
 	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/command/tree"
-	env2 "github.com/foomo/posh/pkg/env"
+	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
@@ -174,7 +174,7 @@ func (c *Command) authLogin(ctx context.Context, r *readline.Readline) error {
 
 	// resolve or retrieve service account access token
 	keyFilename := path.Join(
-		os.Getenv(env2.ProjectRoot),
+		os.Getenv(env.ProjectRoot),
 		c.gcloud.ServiceAccountKeysPath(),
 		fmt.Sprintf("%s.json", accountName),
 	)
