@@ -67,10 +67,10 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 		kubectl: kubectl,
 		clusterNameFn: func(environment Environment, cluster Cluster) string {
 			ret := environment.Name
-			if cluster.Name != DefaultCluster {
+			if cluster.Name != ClusterNameDefault {
 				ret = ret + "-" + cluster.Name
 			}
-			if cluster.DefaultRole() != DefaultRole {
+			if cluster.DefaultRole() != ClusterRoleDefault {
 				ret = cluster.DefaultRole() + "@" + ret
 			}
 			return ret
@@ -88,16 +88,6 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 			Execute: inst.execute,
 		},
 		Nodes: tree.Nodes{
-			{
-				Name:        "login",
-				Description: "Login to gcloud",
-				Execute:     inst.authLogin,
-			},
-			{
-				Name:        "docker",
-				Description: "Configure docker access",
-				Execute:     inst.authConfigureDocker,
-			},
 			{
 				Name:        "kubeconfig",
 				Description: "Retrieve kube config",
@@ -126,6 +116,21 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 				},
 			},
 		},
+	}
+
+	if inst.gcloud.cfg.Login {
+		inst.commandTree.Nodes = append(inst.commandTree.Nodes,
+			&tree.Node{
+				Name:        "login",
+				Description: "Login to gcloud",
+				Execute:     inst.authLogin,
+			},
+			&tree.Node{
+				Name:        "docker",
+				Description: "Configure docker access",
+				Execute:     inst.authConfigureDocker,
+			},
+		)
 	}
 
 	return inst

@@ -71,14 +71,15 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 		}
 	}
 
-	// ensure config path
-	if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
-		return nil, errors.Wrapf(err, "failed to create directory %q", inst.cfg.ConfigPath)
-	}
-
 	// set config path to encapsuplte any mishaps global gcloud usage!
-	if err := os.Setenv("CLOUDSDK_CONFIG", path.Join(os.Getenv(env.ProjectRoot), inst.cfg.ConfigPath)); err != nil {
-		return nil, err
+	if inst.cfg.Login {
+		// ensure config path
+		if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
+			return nil, errors.Wrapf(err, "failed to create directory %q", inst.cfg.ConfigPath)
+		}
+		if err := os.Setenv("CLOUDSDK_CONFIG", path.Join(os.Getenv(env.ProjectRoot), inst.cfg.ConfigPath)); err != nil {
+			return nil, err
+		}
 	}
 
 	return inst, nil

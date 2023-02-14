@@ -5,6 +5,7 @@ import (
 )
 
 type Config struct {
+	Login           bool          `json:"login" yaml:"login"`
 	ConfigPath      string        `json:"configPath" yaml:"configPath"`
 	AccessTokenPath string        `json:"accessTokenPath" yaml:"accessTokenPath"`
 	Environments    []Environment `json:"environments" yaml:"environments"`

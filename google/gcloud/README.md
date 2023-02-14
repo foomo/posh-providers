@@ -4,7 +4,9 @@
 
 ```yaml
 gcloud:
+  login: true
   configPath: .posh/config/gcloud
+  accessTokenPath: .posh/config/gcloud/access_tokens
   environments:
     - name: prod
       project: myproject-123456
@@ -14,12 +16,13 @@ gcloud:
           region: europe-west6
 ```
 
-Using service account access tokens retrieved by OnePassword:
+Using only service account access tokens:
 
 ```yaml
 gcloud:
-  configPath: .posh/config/gcloud
-  accessTokenPath: .posh/config/gcloud/access_tokens
+  login: false
+  configPath: ""
+  accessTokenPath: ..posh/config/gcloud
   environments:
     - name: prod
       project: myproject-123456
@@ -33,6 +36,8 @@ gcloud:
             vault: 1234564dxtuty3vaaxezex4c7ey
             account: foomo
 ```
+
+*NOTE: Servce access tokens can optionally be retrieved by OnePassword.*
 
 ## Usage
 

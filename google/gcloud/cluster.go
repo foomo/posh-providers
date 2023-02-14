@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	DefaultRole    string = "default"
-	DefaultCluster string = "default"
+	ClusterNameDefault string = "default"
+	ClusterRoleDefault string = "default"
 )
 
 type Cluster struct {
@@ -28,5 +28,5 @@ func (c Cluster) DefaultRole() string {
 	if c.Role != "" {
 		return c.Role
 	}
-	return DefaultRole
+	return ClusterRoleDefault
 }
