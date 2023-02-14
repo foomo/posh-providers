@@ -1,7 +1,6 @@
 package gcloud
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"regexp"
@@ -71,15 +70,13 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 		}
 	}
 
-	// set config path to encapsuplte any mishaps global gcloud usage!
-	if inst.cfg.Login {
-		// ensure config path
-		if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
-			return nil, errors.Wrapf(err, "failed to create directory %q", inst.cfg.ConfigPath)
-		}
-		if err := os.Setenv("CLOUDSDK_CONFIG", path.Join(os.Getenv(env.ProjectRoot), inst.cfg.ConfigPath)); err != nil {
-			return nil, err
-		}
+	// ensure config path
+	if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
+		return nil, errors.Wrapf(err, "failed to create directory %q", inst.cfg.ConfigPath)
+	}
+
+	if err := os.Setenv("CLOUDSDK_CONFIG", path.Join(os.Getenv(env.ProjectRoot), inst.cfg.ConfigPath)); err != nil {
+		return nil, err
 	}
 
 	return inst, nil
@@ -89,10 +86,6 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
-func (p *GCloud) EnvWithAccessToken(env []string, accessTokenFilename string) []string {
-	return append(env,
-		fmt.Sprintf("GOOGLE_CREDENTIALS=%s", accessTokenFilename),
-		fmt.Sprintf("GOOGLE_APPLICATION_CREDENTIALS=%s", accessTokenFilename),
-		fmt.Sprintf("CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=%s", accessTokenFilename),
-	)
+func (p GCloud) ServiceAccountKeysPath() string {
+	return path.Join(p.cfg.ConfigPath, "service_account_keys")
 }

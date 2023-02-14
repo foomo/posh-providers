@@ -4,53 +4,50 @@
 
 ```yaml
 gcloud:
-  login: true
   configPath: .posh/config/gcloud
-  accessTokenPath: .posh/config/gcloud/access_tokens
-  environments:
-    - name: prod
+  clusters:
+    prod:
+      name: default
       project: myproject-123456
-      clusters:
-        - name: default
-          role: admin
-          region: europe-west6
+      region: europe-west6
 ```
 
-Using only service account access tokens:
+Using service account access tokens:
 
 ```yaml
 gcloud:
-  login: false
-  configPath: ""
-  accessTokenPath: ..posh/config/gcloud
-  environments:
-    - name: prod
+  configPath: .posh/config/gcloud
+  accounts:
+    prod:
+      name: user@account.iam.gserviceaccount.com
+    admin@prod:
+      name: admin@account.iam.gserviceaccount.com
+  clusters:
+    prod:
+      name: default
       project: myproject-123456
-      clusters:
-        - name: default
-          roles: [admin]
-          region: europe-west6
+      region: europe-west6
+      account: prod
+    admin@prod:
+      name: default
+      project: myproject-123456
+      region: europe-west6
+      account: admin@prod
 ```
 
-*NOTE: Servce access tokens can optionally be retrieved by OnePassword.*
+*NOTE: Servce account keys can optionally be retrieved by OnePassword.*
 
 ```yaml
 gcloud:
-  login: false
-  configPath: ""
-  accessTokenPath: ..posh/config/gcloud
-  environments:
-    - name: prod
-      project: myproject-123456
-      clusters:
-        - name: default
-          roles: [admin]
-          region: europe-west6
-          accessToken:
-            field: 1234564dxtuty3vaaxezex4c7ey
-            item: 1234564dxtuty3vaaxezex4c7ey
-            vault: 1234564dxtuty3vaaxezex4c7ey
-            account: foomo
+  configPath: .posh/config/gcloud
+  accounts:
+    prod:
+      name: user@account.iam.gserviceaccount.com
+      key:
+        field: 1234564dxtuty3vaaxezex4c7ey
+        item: 1234564dxtuty3vaaxezex4c7ey
+        vault: 1234564dxtuty3vaaxezex4c7ey
+        account: foomo
 ```
 
 ## Usage
@@ -69,7 +66,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
   // add command
   inst.commands.Add(
-    gcloud.NewCommand(l, provider, inst.kubectl, gcloud.CommandWithOnePassword(inst.op)),
+    gcloud.NewCommand(l, provider, inst.kubectl),
 	)
 
 	// ...

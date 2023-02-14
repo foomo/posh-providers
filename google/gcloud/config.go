@@ -2,36 +2,35 @@ package gcloud
 
 import (
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 )
 
 type Config struct {
-	Login           bool          `json:"login" yaml:"login"`
-	ConfigPath      string        `json:"configPath" yaml:"configPath"`
-	AccessTokenPath string        `json:"accessTokenPath" yaml:"accessTokenPath"`
-	Environments    []Environment `json:"environments" yaml:"environments"`
+	ConfigPath string             `json:"configPath" yaml:"configPath"`
+	Accounts   map[string]Account `json:"accounts" yaml:"accounts"`
+	Clusters   map[string]Cluster `json:"clusters" yaml:"clusters"`
 }
 
-func (c Config) Environment(name string) (Environment, error) {
-	for _, environment := range c.Environments {
-		if environment.Name == name {
-			return environment, nil
-		}
+func (c Config) Cluster(name string) (Cluster, error) {
+	if value, ok := c.Clusters[name]; !ok {
+		return Cluster{}, errors.Errorf("given cluster not found: %s", name)
+	} else {
+		return value, nil
 	}
-	return Environment{}, errors.Errorf("given environment not found: %s", name)
 }
 
-func (c Config) EnvironmentNames() []string {
-	ret := make([]string, len(c.Environments))
-	for i, environment := range c.Environments {
-		ret[i] = environment.Name
-	}
-	return ret
+func (c Config) ClusterNames() []string {
+	return lo.Keys(c.Clusters)
 }
 
-func (c Config) AllEnvironmentsClusterNames() []string {
-	var ret []string
-	for _, environment := range c.Environments {
-		ret = append(ret, environment.ClusterNames()...)
+func (c Config) Account(name string) (Account, error) {
+	if value, ok := c.Accounts[name]; !ok {
+		return Account{}, errors.Errorf("given account not found: %s", name)
+	} else {
+		return value, nil
 	}
-	return ret
+}
+
+func (c Config) AccountNames() []string {
+	return lo.Keys(c.Accounts)
 }

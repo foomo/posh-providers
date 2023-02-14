@@ -29,7 +29,7 @@ type (
 		commandTree   *tree.Root
 		clusterNameFn ClusterNameFn
 	}
-	ClusterNameFn func(environment Environment, cluster Cluster, role string) string
+	ClusterNameFn func(name string, cluster Cluster) string
 	CommandOption func(command *Command)
 )
 
@@ -65,15 +65,8 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 		name:    "gcloud",
 		gcloud:  gcloud,
 		kubectl: kubectl,
-		clusterNameFn: func(environment Environment, cluster Cluster, role string) string {
-			ret := environment.Name
-			if cluster.Name != ClusterNameDefault {
-				ret = ret + "-" + cluster.Name
-			}
-			if role != ClusterRoleDefault {
-				ret = role + "@" + ret
-			}
-			return ret
+		clusterNameFn: func(name string, cluster Cluster) string {
+			return name
 		},
 	}
 	for _, opt := range opts {
@@ -89,59 +82,38 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 		},
 		Nodes: tree.Nodes{
 			{
-				Name:        "kubeconfig",
-				Description: "Retrieve kube config",
+				Name:        "login",
+				Description: "Login to gcloud",
 				Args: tree.Args{
 					{
-						Name: "environment",
+						Name:     "account",
+						Optional: true,
 						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
-							return suggests.List(inst.gcloud.cfg.EnvironmentNames())
+							return suggests.List(inst.gcloud.cfg.AccountNames())
 						},
 					},
+				},
+				Execute: inst.authLogin,
+			},
+			{
+				Name:        "docker",
+				Description: "Configure docker access",
+				Execute:     inst.authConfigureDocker,
+			},
+			{
+				Name:        "kubeconfig",
+				Description: "Retrieve kube config for the given cluster",
+				Args: tree.Args{
 					{
 						Name: "cluster",
 						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
-							environment, err := inst.gcloud.cfg.Environment(r.Args().At(1))
-							if err != nil {
-								return nil
-							}
-							return suggests.List(environment.ClusterNames())
-						},
-					},
-					{
-						Name:     "role",
-						Optional: true,
-						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
-							environment, err := inst.gcloud.cfg.Environment(r.Args().At(1))
-							if err != nil {
-								return nil
-							}
-							cluster, err := environment.Cluster(r.Args().At(2))
-							if err != nil {
-								return nil
-							}
-							return suggests.List(cluster.DefaultRoles())
+							return suggests.List(inst.gcloud.cfg.ClusterNames())
 						},
 					},
 				},
 				Execute: inst.containerClustersGetCredentials,
 			},
 		},
-	}
-
-	if inst.gcloud.cfg.Login {
-		inst.commandTree.Nodes = append(inst.commandTree.Nodes,
-			&tree.Node{
-				Name:        "login",
-				Description: "Login to gcloud",
-				Execute:     inst.authLogin,
-			},
-			&tree.Node{
-				Name:        "docker",
-				Description: "Configure docker access",
-				Execute:     inst.authConfigureDocker,
-			},
-		)
 	}
 
 	return inst
@@ -174,9 +146,9 @@ Usage:
   gcloud [cmd]
 
 Available commands:
-	login                        				Login into your google cloud account
-  docker                       				Configure docker access
-  kubeconfig [env] <cluster> <role>   Retrieve kube config for the given cluster
+	login <account>        Login into your google cloud account (optional service account)
+  docker                 Configure docker access
+  kubeconfig [cluster]   Retrieve kube config for the given cluster
 `
 }
 
@@ -194,74 +166,84 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) authLogin(ctx context.Context, r *readline.Readline) error {
-	if err := shell.New(ctx, c.l, "gcloud", "auth", "login").
-		Args(r.AdditionalArgs()...).
-		Run(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *Command) authConfigureDocker(ctx context.Context, r *readline.Readline) error {
-	if err := shell.New(ctx, c.l, "gcloud", "auth", "configure-docker").
-		Args(r.AdditionalArgs()...).
-		Run(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readline.Readline) error {
-	var env []string
-	environment, err := c.gcloud.cfg.Environment(r.Args().At(1))
+	accountName := r.Args().At(1)
+	account, err := c.gcloud.cfg.Account(accountName)
 	if err != nil {
-		return errors.Errorf("failed to retrieve environment for: %s", r.Args().At(1))
-	}
-
-	cluster, err := environment.Cluster(r.Args().At(2))
-	if err != nil {
-		return errors.Errorf("failed to retrieve cluster for: %s", r.Args().At(2))
-	}
-
-	role := ClusterRoleDefault
-	if r.Args().HasIndex(3) {
-		role = r.Args().At(3)
+		return err
 	}
 
 	// resolve or retrieve service account access token
-	accessTokenFilename := path.Join(
+	keyFilename := path.Join(
 		os.Getenv(env2.ProjectRoot),
-		c.gcloud.cfg.AccessTokenPath,
-		fmt.Sprintf("%s@%s-%s.json", role, environment.Name, cluster.Name),
+		c.gcloud.ServiceAccountKeysPath(),
+		fmt.Sprintf("%s.json", accountName),
 	)
-	if stat, err := os.Stat(accessTokenFilename); err == nil && !stat.IsDir() {
-		c.l.Debug("using existing access token file:", accessTokenFilename)
-		env = c.gcloud.EnvWithAccessToken(env, accessTokenFilename)
-	} else if cluster.AccessToken != nil {
-		if c.op == nil {
-			return errors.New("missing OnePassword provider to retrieve configured access token")
+	if err := files.Exists(keyFilename); err == nil {
+		c.l.Debug("using existing access token file:", keyFilename)
+		return c.authLoginServiceAccount(ctx, r, keyFilename)
+	} else if account.Key != nil && c.op != nil { // retrieve token and write to file
+		if value, err := c.op.GetDocument(ctx, *account.Key); err != nil {
+			return errors.Wrap(err, "failed to retrieve service account key")
+		} else if err := files.MkdirAll(c.gcloud.ServiceAccountKeysPath()); err != nil {
+			return errors.Wrap(err, "failed to create service account key path")
+		} else if err := os.WriteFile(keyFilename, []byte(value), 0600); err != nil {
+			return errors.Wrap(err, "failed to write service account key")
 		}
-		// retrieve token and write to file
-		if value, err := c.op.GetDocument(ctx, *cluster.AccessToken); err != nil {
-			return errors.Wrap(err, "failed to retrieve access token")
-		} else if err := files.MkdirAll(c.gcloud.cfg.AccessTokenPath); err != nil {
-			return errors.Wrap(err, "failed to create access token path")
-		} else if err := os.WriteFile(accessTokenFilename, []byte(value), 0600); err != nil {
-			return errors.Wrap(err, "failed to write access token")
-		}
-		c.l.Debug("retrieved and store access token file:", accessTokenFilename)
-		env = c.gcloud.EnvWithAccessToken(env, accessTokenFilename)
+		c.l.Debug("retrieved and store service account key file:", keyFilename)
+		return c.authLoginServiceAccount(ctx, r, keyFilename)
+	} else {
+		c.l.Debug("using default login")
+		return c.authLoginDefault(ctx, r)
 	}
+}
 
-	kubectlCluster := c.kubectl.Cluster(c.clusterNameFn(environment, cluster, role))
+func (c *Command) authLoginDefault(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "gcloud", "auth", "login").
+		Args(r.AdditionalArgs()...).
+		Run()
+}
 
-	return shell.New(ctx, c.l, "gcloud", "container", "clusters", "get-credentials",
-		"--project", environment.Project,
-		"--region", cluster.Region,
-		cluster.DefaultFullName(),
+func (c *Command) authLoginServiceAccount(ctx context.Context, r *readline.Readline, keyFilename string) error {
+	return shell.New(ctx, c.l, "gcloud",
+		"auth", "activate-service-account",
+		"--key-file", keyFilename,
 	).
 		Args(r.AdditionalArgs()...).
+		Run()
+}
+
+func (c *Command) authConfigureDocker(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "gcloud", "auth", "configure-docker").
+		Args(r.AdditionalArgs()...).
+		Run()
+}
+
+func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readline.Readline) error {
+	var args []string
+	clusterName := r.Args().At(1)
+	cluster, err := c.gcloud.cfg.Cluster(clusterName)
+	if err != nil {
+		return errors.Errorf("failed to retrieve cluster for: %q", clusterName)
+	}
+	kubectlCluster := c.kubectl.Cluster(c.clusterNameFn(clusterName, cluster))
+	if kubectlCluster == nil {
+		return errors.Errorf("failed to retrieve kubectl cluster for: %q", cluster.Name)
+	}
+
+	if cluster.Account != "" {
+		if account, err := c.gcloud.cfg.Account(cluster.Account); err != nil {
+			return errors.Errorf("failed to retrieve account for: %q", cluster.Account)
+		} else {
+			args = append(args, "--account", account.Name)
+		}
+	}
+
+	return shell.New(ctx, c.l, "gcloud", "container", "clusters", "get-credentials", cluster.Name,
+		"--project", cluster.Project,
+		"--region", cluster.Region,
+	).
+		Args(args...).
+		Args(r.AdditionalArgs()...).
 		Env(kubectlCluster.Env()).
-		Env(env...).
 		Run()
 }
