@@ -11,7 +11,7 @@ require (
 	github.com/foomo/posh v0.2.3-0.20230209085129-caf0d5a0f920
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
-	github.com/pterm/pterm v0.12.53
+	github.com/pterm/pterm v0.12.54
 	github.com/samber/lo v1.37.0
 	github.com/slack-go/slack v0.12.1
 	github.com/spf13/viper v1.15.0
@@ -23,13 +23,13 @@ require (
 
 require (
 	atomicgo.dev/cursor v0.1.1 // indirect
-	atomicgo.dev/keyboard v0.2.8 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20221026131551-cf6655e29de4 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
+	atomicgo.dev/keyboard v0.2.9 // indirect
 	github.com/alecthomas/chroma v0.10.0 // indirect
 	github.com/charlievieth/fastwalk v1.0.1 // indirect
 	github.com/cloudflare/circl v1.1.0 // indirect
