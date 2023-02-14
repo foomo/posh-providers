@@ -29,7 +29,7 @@ type (
 		commandTree   *tree.Root
 		clusterNameFn ClusterNameFn
 	}
-	ClusterNameFn func(environment Environment, cluster Cluster) string
+	ClusterNameFn func(environment Environment, cluster Cluster, role string) string
 	CommandOption func(command *Command)
 )
 
@@ -65,13 +65,13 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 		name:    "gcloud",
 		gcloud:  gcloud,
 		kubectl: kubectl,
-		clusterNameFn: func(environment Environment, cluster Cluster) string {
+		clusterNameFn: func(environment Environment, cluster Cluster, role string) string {
 			ret := environment.Name
 			if cluster.Name != ClusterNameDefault {
 				ret = ret + "-" + cluster.Name
 			}
-			if cluster.DefaultRole() != ClusterRoleDefault {
-				ret = cluster.DefaultRole() + "@" + ret
+			if role != ClusterRoleDefault {
+				ret = role + "@" + ret
 			}
 			return ret
 		},
@@ -91,29 +91,40 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 			{
 				Name:        "kubeconfig",
 				Description: "Retrieve kube config",
-				Nodes: tree.Nodes{
+				Args: tree.Args{
 					{
-						Name:        "environment",
-						Description: "Name of the environment",
-						Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
+						Name: "environment",
+						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.gcloud.cfg.EnvironmentNames())
 						},
-						Nodes: tree.Nodes{
-							{
-								Name:        "cluster",
-								Description: "Name of the cluster",
-								Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
-									account, err := inst.gcloud.cfg.Environment(r.Args().At(1))
-									if err != nil {
-										return nil
-									}
-									return suggests.List(account.ClusterNames())
-								},
-								Execute: inst.containerClustersGetCredentials,
-							},
+					},
+					{
+						Name: "cluster",
+						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+							environment, err := inst.gcloud.cfg.Environment(r.Args().At(1))
+							if err != nil {
+								return nil
+							}
+							return suggests.List(environment.ClusterNames())
+						},
+					},
+					{
+						Name:     "role",
+						Optional: true,
+						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+							environment, err := inst.gcloud.cfg.Environment(r.Args().At(1))
+							if err != nil {
+								return nil
+							}
+							cluster, err := environment.Cluster(r.Args().At(2))
+							if err != nil {
+								return nil
+							}
+							return suggests.List(cluster.DefaultRoles())
 						},
 					},
 				},
+				Execute: inst.containerClustersGetCredentials,
 			},
 		},
 	}
@@ -163,9 +174,9 @@ Usage:
   gcloud [cmd]
 
 Available commands:
-	login                        Login into your google cloud account
-  docker                       Configure docker access
-  kubeconfig [env] [cluster]   Retrieve kube config for the given cluster
+	login                        				Login into your google cloud account
+  docker                       				Configure docker access
+  kubeconfig [env] <cluster> <role>   Retrieve kube config for the given cluster
 `
 }
 
@@ -212,11 +223,16 @@ func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readli
 		return errors.Errorf("failed to retrieve cluster for: %s", r.Args().At(2))
 	}
 
+	role := ClusterRoleDefault
+	if r.Args().HasIndex(3) {
+		role = r.Args().At(3)
+	}
+
 	// resolve or retrieve service account access token
 	accessTokenFilename := path.Join(
 		os.Getenv(env2.ProjectRoot),
 		c.gcloud.cfg.AccessTokenPath,
-		fmt.Sprintf("%s@%s-%s.json", cluster.DefaultRole(), environment.Name, cluster.Name),
+		fmt.Sprintf("%s@%s-%s.json", role, environment.Name, cluster.Name),
 	)
 	if stat, err := os.Stat(accessTokenFilename); err == nil && !stat.IsDir() {
 		c.l.Debug("using existing access token file:", accessTokenFilename)
@@ -237,7 +253,7 @@ func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readli
 		env = c.gcloud.EnvWithAccessToken(env, accessTokenFilename)
 	}
 
-	kubectlCluster := c.kubectl.Cluster(c.clusterNameFn(environment, cluster))
+	kubectlCluster := c.kubectl.Cluster(c.clusterNameFn(environment, cluster, role))
 
 	return shell.New(ctx, c.l, "gcloud", "container", "clusters", "get-credentials",
 		"--project", environment.Project,

@@ -28,7 +28,23 @@ gcloud:
       project: myproject-123456
       clusters:
         - name: default
-          role: admin
+          roles: [admin]
+          region: europe-west6
+```
+
+*NOTE: Servce access tokens can optionally be retrieved by OnePassword.*
+
+```yaml
+gcloud:
+  login: false
+  configPath: ""
+  accessTokenPath: ..posh/config/gcloud
+  environments:
+    - name: prod
+      project: myproject-123456
+      clusters:
+        - name: default
+          roles: [admin]
           region: europe-west6
           accessToken:
             field: 1234564dxtuty3vaaxezex4c7ey
@@ -36,8 +52,6 @@ gcloud:
             vault: 1234564dxtuty3vaaxezex4c7ey
             account: foomo
 ```
-
-*NOTE: Servce access tokens can optionally be retrieved by OnePassword.*
 
 ## Usage
 

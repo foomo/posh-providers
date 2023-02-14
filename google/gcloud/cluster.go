@@ -13,7 +13,7 @@ type Cluster struct {
 	Name        string              `json:"name" yaml:"name"`
 	FullName    string              `json:"fullName" yaml:"fullName"`
 	Region      string              `json:"region" yaml:"region"`
-	Role        string              `json:"role" yaml:"role"`
+	Roles       []string            `json:"roles" yaml:"roles"`
 	AccessToken *onepassword.Secret `json:"accessToken" yaml:"accessToken"`
 }
 
@@ -24,9 +24,9 @@ func (c Cluster) DefaultFullName() string {
 	return c.Name
 }
 
-func (c Cluster) DefaultRole() string {
-	if c.Role != "" {
-		return c.Role
+func (c Cluster) DefaultRoles() []string {
+	if len(c.Roles) != 0 {
+		return c.Roles
 	}
-	return ClusterRoleDefault
+	return []string{ClusterRoleDefault}
 }
