@@ -11,7 +11,7 @@ require (
 	github.com/foomo/posh v0.2.3-0.20230209081542-bea8bceadef0
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
-	github.com/pterm/pterm v0.12.53
+	github.com/pterm/pterm v0.12.54
 	github.com/samber/lo v1.37.0
 	github.com/slack-go/slack v0.12.1
 	github.com/spf13/viper v1.15.0
@@ -23,7 +23,7 @@ require (
 
 require (
 	atomicgo.dev/cursor v0.1.1 // indirect
-	atomicgo.dev/keyboard v0.2.8 // indirect
+	atomicgo.dev/keyboard v0.2.9 // indirect
 	github.com/alecthomas/chroma v0.10.0 // indirect
 	github.com/charlievieth/fastwalk v1.0.1 // indirect
 	github.com/containerd/console v1.0.3 // indirect
