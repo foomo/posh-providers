@@ -1,44 +1,36 @@
 package gcloud
 
+import (
+	"github.com/pkg/errors"
+)
+
 type Config struct {
-	ConfigDir    string        `json:"configDir" yaml:"configDir"`
-	Environments []Environment `json:"environments" yaml:"environments"`
+	ConfigPath      string        `json:"configPath" yaml:"configPath"`
+	AccessTokenPath string        `json:"accessTokenPath" yaml:"accessTokenPath"`
+	Environments    []Environment `json:"environments" yaml:"environments"`
 }
 
-func (c Config) FindCluster(envName, clusterName string) (Cluster, bool) {
-	for _, env := range c.Environments {
-		if env.Name != envName {
-			continue
-		}
-
-		for _, cluster := range env.Clusters {
-			if cluster.Name == clusterName {
-				return cluster, true
-			}
+func (c Config) Environment(name string) (Environment, error) {
+	for _, environment := range c.Environments {
+		if environment.Name == name {
+			return environment, nil
 		}
 	}
-	return Cluster{}, false
+	return Environment{}, errors.Errorf("given environment not found: %s", name)
 }
 
-func (c Config) ClusterNames() []string {
-	var ret []string
-	for _, account := range c.Environments {
-		for _, cluster := range account.Clusters {
-			ret = append(ret, cluster.Name)
-		}
+func (c Config) EnvironmentNames() []string {
+	ret := make([]string, len(c.Environments))
+	for i, environment := range c.Environments {
+		ret[i] = environment.Name
 	}
 	return ret
 }
 
-func (c Config) ClusterNamesForEnv(envName string) []string {
-	for _, env := range c.Environments {
-		if env.Name == envName {
-			names := make([]string, len(env.Clusters))
-			for idx, cluster := range env.Clusters {
-				names[idx] = cluster.Name
-			}
-			return names
-		}
+func (c Config) AllEnvironmentsClusterNames() []string {
+	var ret []string
+	for _, environment := range c.Environments {
+		ret = append(ret, environment.ClusterNames()...)
 	}
-	return nil
+	return ret
 }
