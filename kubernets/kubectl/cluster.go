@@ -98,7 +98,6 @@ func (c *Cluster) Pods(ctx context.Context, namespace string) []string {
 		} else {
 			return strings.Split(string(out), " ")
 		}
-
 	}).([]string)
 }
 
