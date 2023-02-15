@@ -57,6 +57,9 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 	inst.commandTree = &tree.Root{
 		Name:        inst.name,
 		Description: "run yarn commands",
+		Node: &tree.Node{
+			Execute: inst.execute,
+		},
 		Nodes: tree.Nodes{
 			{
 				Name:        "install",
@@ -134,6 +137,15 @@ Available Commands:
 // ------------------------------------------------------------------------------------------------
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
+
+func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "yarn").
+		Args(r.Args()...).
+		Args(r.Flags()...).
+		Args(r.PassThroughFlags()...).
+		Args(r.AdditionalArgs()...).
+		Run()
+}
 
 func (c *Command) run(ctx context.Context, r *readline.Readline) error {
 	dir, script := r.Args().At(1), r.Args().At(2)
