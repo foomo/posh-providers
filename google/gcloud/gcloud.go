@@ -1,11 +1,14 @@
 package gcloud
 
 import (
+	"context"
+	"encoding/json"
 	"os"
 	"path"
 	"regexp"
 
 	"github.com/foomo/posh/pkg/env"
+	"github.com/foomo/posh/pkg/shell"
 	"github.com/pkg/errors"
 
 	"github.com/foomo/posh/pkg/cache"
@@ -86,6 +89,30 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
-func (p GCloud) ServiceAccountKeysPath() string {
+func (p *GCloud) ServiceAccountKeysPath() string {
 	return path.Join(p.cfg.ConfigPath, "service_account_keys")
+}
+
+// ActiveAccount returns the active account email
+func (p *GCloud) ActiveAccount(ctx context.Context, l log.Logger) (string, error) {
+	out, err := shell.New(ctx, l, "gcloud", "auth", "list", "--format", "json").Quiet().Output()
+	if err != nil {
+		return "", err
+	}
+
+	var list []struct {
+		Account string `json:"account"`
+		Status  string `json:"status"`
+	}
+	if err := json.Unmarshal(out, &list); err != nil {
+		return "", err
+	}
+
+	for _, item := range list {
+		if item.Status == "ACTIVE" {
+			return item.Account, nil
+		}
+	}
+
+	return "", errors.New("no active account")
 }
