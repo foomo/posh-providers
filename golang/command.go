@@ -350,7 +350,8 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 				Run()
 		})
 	}
-	return nil
+
+	return wg.Wait()
 }
 
 func (c *Command) completePaths(ctx context.Context, filename string, dir bool) []goprompt.Suggest {
