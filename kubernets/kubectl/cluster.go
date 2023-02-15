@@ -67,54 +67,52 @@ func (c *Cluster) DeleteConfig() error {
 //nolint:forcetypeassert
 func (c *Cluster) Namespaces(ctx context.Context) []string {
 	return c.kubectl.cache.Get(c.name+"-namespaces", func() any {
-		sh := shell.New(ctx, c.l, "kubectl",
+		if sh, err := c.shell(ctx,
 			"get", "namespaces",
-			"-o", "jsonpath='{.items[*].metadata.name}'").
-			Env(c.Env())
-
-		if c.kubectl.authTokenProvider != nil {
-			token, err := c.kubectl.authTokenProvider(ctx, c.Name())
-			if err != nil {
-				c.l.Warn(err.Error())
-				return []string{}
-			}
-			sh.Args("--token", token)
-		}
-
-		out, err := sh.Output()
-		if err != nil {
-			c.l.Warn(err.Error())
+			"-o", "jsonpath='{.items[*].metadata.name}'",
+		); err != nil {
+			c.l.Debug(err.Error())
 			return []string{}
+		} else if out, err := sh.Output(); err != nil {
+			c.l.Debug(err.Error())
+			return []string{}
+		} else {
+			return strings.Split(string(out), " ")
 		}
-
-		return strings.Split(string(out), " ")
 	}).([]string)
 }
 
 //nolint:forcetypeassert
 func (c *Cluster) Pods(ctx context.Context, namespace string) []string {
 	return c.kubectl.cache.Get(c.name+"-"+namespace+"-pods", func() any {
-		sh := shell.New(ctx, c.l, "kubectl",
+		if sh, err := c.shell(ctx,
 			"get", "pods",
 			"-n", namespace,
-			"-o", "jsonpath='{.items[*].metadata.name}'").
-			Env(c.Env())
-
-		if c.kubectl.authTokenProvider != nil {
-			token, err := c.kubectl.authTokenProvider(ctx, c.Name())
-			if err != nil {
-				c.l.Warn(err.Error())
-				return []string{}
-			}
-			sh.Args("--token", token)
-		}
-
-		out, err := sh.Output()
-		if err != nil {
+			"-o", "jsonpath='{.items[*].metadata.name}'",
+		); err != nil {
+			c.l.Debug(err.Error())
+			return []string{}
+		} else if out, err := sh.Output(); err != nil {
 			c.l.Warn(err.Error())
 			return []string{}
+		} else {
+			return strings.Split(string(out), " ")
 		}
-
-		return strings.Split(string(out), " ")
 	}).([]string)
+}
+
+// ------------------------------------------------------------------------------------------------
+// ~ Private methods
+// ------------------------------------------------------------------------------------------------
+
+func (c *Cluster) shell(ctx context.Context, args ...string) (*shell.Shell, error) {
+	sh := shell.New(ctx, c.l, "kubectl").Args(args...)
+	if c.kubectl.authTokenProvider != nil {
+		if token, err := c.kubectl.authTokenProvider(ctx, c.Name()); err != nil {
+			return nil, err
+		} else {
+			sh.Args("--token", token)
+		}
+	}
+	return sh.Env(c.Env()), nil
 }

@@ -1,55 +1,36 @@
 package gcloud
 
+import (
+	"github.com/pkg/errors"
+	"github.com/samber/lo"
+)
+
 type Config struct {
-	ConfigDir    string        `json:"configDir" yaml:"configDir"`
-	Environments []Environment `json:"environments" yaml:"environments"`
+	ConfigPath string             `json:"configPath" yaml:"configPath"`
+	Accounts   map[string]Account `json:"accounts" yaml:"accounts"`
+	Clusters   map[string]Cluster `json:"clusters" yaml:"clusters"`
 }
 
-func (c Config) FindCluster(envName, clusterName string) (Cluster, bool) {
-	for _, env := range c.Environments {
-		if env.Name != envName {
-			continue
-		}
-
-		for _, cluster := range env.Clusters {
-			if cluster.Name == clusterName {
-				return cluster, true
-			}
-		}
+func (c Config) Cluster(name string) (Cluster, error) {
+	value, ok := c.Clusters[name]
+	if !ok {
+		return Cluster{}, errors.Errorf("given cluster not found: %s", name)
 	}
-	return Cluster{}, false
-}
-
-type Environment struct {
-	Name     string    `json:"name" yaml:"name"`
-	Clusters []Cluster `json:"clusters" yaml:"clusters"`
+	return value, nil
 }
 
 func (c Config) ClusterNames() []string {
-	var ret []string
-	for _, account := range c.Environments {
-		for _, cluster := range account.Clusters {
-			ret = append(ret, cluster.Name)
-		}
-	}
-	return ret
+	return lo.Keys(c.Clusters)
 }
 
-func (c Config) ClusterNamesForEnv(envName string) []string {
-	for _, env := range c.Environments {
-		if env.Name == envName {
-			names := make([]string, len(env.Clusters))
-			for idx, cluster := range env.Clusters {
-				names[idx] = cluster.Name
-			}
-			return names
-		}
+func (c Config) Account(name string) (Account, error) {
+	value, ok := c.Accounts[name]
+	if !ok {
+		return Account{}, errors.Errorf("given account not found: %s", name)
 	}
-	return nil
+	return value, nil
 }
 
-type Cluster struct {
-	Project string `json:"project" yaml:"project"`
-	Region  string `json:"region" yaml:"region"`
-	Name    string `json:"name" yaml:"name"`
+func (c Config) AccountNames() []string {
+	return lo.Keys(c.Accounts)
 }

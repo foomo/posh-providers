@@ -197,6 +197,24 @@ func (op *OnePassword) Get(ctx context.Context, secret Secret) (string, error) {
 	}
 }
 
+func (op *OnePassword) GetDocument(ctx context.Context, secret Secret) (string, error) {
+	if op.connect != nil {
+		if value := op.connectGetFileContent(secret.Field, secret.Vault, secret.Item); len(value) == 0 {
+			return "", fmt.Errorf("could not find document: '%s' '%s' '%s'", secret.Field, secret.Vault, secret.Item)
+		} else {
+			return value, nil
+		}
+	} else {
+		if ok, _ := op.Session(); !ok {
+			return "", ErrNotSignedIn
+		} else if value := op.clientGetDoument(ctx, secret.Vault, secret.Item); len(value) == 0 {
+			return "", fmt.Errorf("could not find document '%s' '%s'", secret.Vault, secret.Item)
+		} else {
+			return value, nil
+		}
+	}
+}
+
 func (op *OnePassword) GetOnetimePassword(ctx context.Context, account, uuid string) (string, error) {
 	if ok, _ := op.Session(); !ok {
 		return "", ErrNotSignedIn
@@ -292,7 +310,7 @@ func (op *OnePassword) RenderFileTo(ctx context.Context, source, target string) 
 
 //nolint:forcetypeassert
 func (op *OnePassword) clientGet(ctx context.Context, vaultUUID string, itemUUID string) map[string]string {
-	return op.cache.Get(strings.Join([]string{vaultUUID, itemUUID}, "#"), func() any {
+	return op.cache.Get(fmt.Sprintf("item:%s@%s", itemUUID, vaultUUID), func() any {
 		ret := map[string]string{}
 		var v struct {
 			Vault struct {
@@ -306,7 +324,9 @@ func (op *OnePassword) clientGet(ctx context.Context, vaultUUID string, itemUUID
 			} `json:"fields"`
 		}
 		if res, err := exec.CommandContext(ctx,
-			"op", "item", "get", itemUUID, "--format", "json",
+			"op", "item", "get", itemUUID,
+			"--vault", vaultUUID,
+			"--format", "json",
 		).CombinedOutput(); err != nil {
 			op.l.Error("failed to retrieve item", err.Error())
 			return ret
@@ -334,6 +354,23 @@ func (op *OnePassword) clientGet(ctx context.Context, vaultUUID string, itemUUID
 }
 
 //nolint:forcetypeassert
+func (op *OnePassword) clientGetDoument(ctx context.Context, vaultQuery, itemQuery string) string {
+	return op.cache.Get(fmt.Sprintf("document:%s@%s", itemQuery, vaultQuery), func() any {
+		var ret string
+		if res, err := exec.CommandContext(ctx,
+			"op", "document", "get", itemQuery,
+			"--vault", vaultQuery,
+		).CombinedOutput(); err != nil {
+			op.l.Error("failed to retrieve document", err.Error())
+			return ""
+		} else {
+			ret = string(res)
+		}
+		return ret
+	}).(string)
+}
+
+//nolint:forcetypeassert
 func (op *OnePassword) connectGet(vaultUUID, itemUUID string) map[string]string {
 	return op.cache.Get(strings.Join([]string{vaultUUID, itemUUID}, "#"), func() any {
 		ret := map[string]string{}
@@ -358,6 +395,22 @@ func (op *OnePassword) connectGet(vaultUUID, itemUUID string) map[string]string 
 		}
 		return ret
 	}).(map[string]string)
+}
+
+//nolint:forcetypeassert
+func (op *OnePassword) connectGetFileContent(vaultQuery, itemQuery, fileUUID string) string {
+	return op.cache.Get(strings.Join([]string{vaultQuery, itemQuery}, "#"), func() any {
+		var ret string
+		if v, err := op.connect.GetFile(fileUUID, itemQuery, vaultQuery); err != nil {
+			op.l.Error("failed to retrieve file:", err.Error())
+			return ret
+		} else if c, err := op.connect.GetFileContent(v); err != nil {
+			op.l.Error("failed to retrieve file content:", err.Error())
+		} else {
+			ret = string(c)
+		}
+		return ret
+	}).(string)
 }
 
 func (op *OnePassword) watch() {

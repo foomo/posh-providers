@@ -1,14 +1,11 @@
 package gcloud
 
 import (
-	"regexp"
+	"github.com/foomo/posh-providers/onepassword"
 )
 
-var gcloudAccountFileNameRegex = regexp.MustCompile(`(\w+)@(\w+)-(\w+)\.json`)
-
-type GCloudAccount struct {
-	Role        string
-	Environment string
-	Cluster     string
-	Path        string
+type Account struct {
+	Name  string              `json:"name" yaml:"name"`
+	Email string              `json:"email" yaml:"email"`
+	Key   *onepassword.Secret `json:"key" yaml:"key"`
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/log"
+	"github.com/foomo/posh/pkg/util/files"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -63,7 +64,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*Kubectl, error) {
 		return nil, err
 	}
 
-	if err := os.MkdirAll(inst.cfg.ConfigPath, 0o700); err != nil {
+	if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
 		return nil, errors.Wrapf(err, "failed to create config path: %s", inst.cfg.ConfigPath)
 	}
 
