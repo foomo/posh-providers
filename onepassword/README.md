@@ -1,5 +1,21 @@
 # POSH 1Password provider
 
+Integrates 1Password into your shell and adds helpers for your commands.
+
+## Help
+
+```
+1Password session helper.
+
+Usage:
+  op [command]
+
+Available commands:
+  get [id]          Retrieve an entry from your account
+  signin            Sign into your 1Password account for the session
+  register [email]  Add your 1Password account
+```
+
 ## Configuration
 
 Add this to your '.posh.yml' file:
