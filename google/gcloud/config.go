@@ -12,11 +12,11 @@ type Config struct {
 }
 
 func (c Config) Cluster(name string) (Cluster, error) {
-	if value, ok := c.Clusters[name]; !ok {
+	value, ok := c.Clusters[name]
+	if !ok {
 		return Cluster{}, errors.Errorf("given cluster not found: %s", name)
-	} else {
-		return value, nil
 	}
+	return value, nil
 }
 
 func (c Config) ClusterNames() []string {
@@ -24,11 +24,11 @@ func (c Config) ClusterNames() []string {
 }
 
 func (c Config) Account(name string) (Account, error) {
-	if value, ok := c.Accounts[name]; !ok {
+	value, ok := c.Accounts[name]
+	if !ok {
 		return Account{}, errors.Errorf("given account not found: %s", name)
-	} else {
-		return value, nil
 	}
+	return value, nil
 }
 
 func (c Config) AccountNames() []string {
