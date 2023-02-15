@@ -331,8 +331,8 @@ func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 	var paths []string
-	if r.Args().HasIndex(2) {
-		paths = append(paths, r.Args().At(2))
+	if r.Args().HasIndex(1) {
+		paths = append(paths, r.Args().At(1))
 	} else {
 		paths = c.paths(ctx, "generate.go", false)
 	}
