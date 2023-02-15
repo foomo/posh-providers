@@ -46,6 +46,9 @@ func CommandWithGo() CommandOption {
 			Args:        tree.Args{o.pathArg("go.mod")},
 			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
 				fs.Bool("fix", false, "run quick fix")
+				fs.String("timeout", "1m", "max excution timeout")
+				fs.String("out-format", "github-actions", "output format")
+				fs.Int("concurrency", 1, "num of concurrent processes")
 				return nil
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
