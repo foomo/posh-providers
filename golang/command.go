@@ -167,19 +167,22 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
-func (c *Command) Help() string {
+func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return `Looks for go.mod files and runs the given command.
 
 Usage:
-  gomod [command] <path>
+  go [command]
 
 Available commands:
-  tidy       run go mod tidy on specific or all paths
-  download   run go mod download on specific or all paths
-  outdated   list outdated packages on specific or all paths
+  mod [command]     run go mod
+  generate <path>   run go generate
+  test <path>       run go test
+  build <path>      run go build
 
-Examples:
-  gomod tidy ./path
+SubCommands mod:
+  tidy <path>
+  download <path>
+  outdated <path>
 `
 }
 

@@ -297,7 +297,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
-func (c *Command) Help() string {
+func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return `Manage your squadron.
 
 Usage:
