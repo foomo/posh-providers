@@ -192,7 +192,7 @@ func (c *Command) install(ctx context.Context, r *readline.Readline) error {
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		if value, err := files.Find(ctx, ".", "package.json", files.FindWithIgnore("node_modules", ".next", "dist")); err != nil {
+		if value, err := files.Find(ctx, ".", "package.json", files.FindWithIgnore(`^\.`, "dist", "node_modules")); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return []string{}
 		} else {

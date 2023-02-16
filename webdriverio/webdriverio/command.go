@@ -257,7 +257,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		values, err := files.Find(ctx, ".", "wdio.conf.ts", files.FindWithIgnore("node_modules"))
+		values, err := files.Find(ctx, ".", "wdio.conf.ts", files.FindWithIgnore(`^\.`, "node_modules"))
 		if err != nil {
 			return []string{}
 		}

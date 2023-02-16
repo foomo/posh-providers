@@ -364,7 +364,7 @@ Examples:
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context, filename string) []string {
 	return c.cache.Get("paths-"+strings.ToLower(filename), func() any {
-		if value, err := files.Find(ctx, ".", filename); err != nil {
+		if value, err := files.Find(ctx, ".", filename, files.FindWithIgnore(`^\.`, "dist", "node_modules")); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return nil
 		} else {
