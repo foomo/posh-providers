@@ -86,8 +86,8 @@ github.com/envoyproxy/go-control-plane v0.9.7/go.mod h1:cwu0lG7PUMfa9snN8LXBig5y
 github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.mod h1:cXg6YxExXjJnVBQHBLXeUAgxn2UodCpnH306RInaBQk=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
-github.com/foomo/posh v0.3.1-0.20230216154613-5d4991ad2a3e h1:C17A2/JFMeTPVJv7iW8QY3gbj7XMcrEHIYvi7gPxBsg=
-github.com/foomo/posh v0.3.1-0.20230216154613-5d4991ad2a3e/go.mod h1:/vQBAKq672FEktZN3KbWc7Ofnhxz4r+I9oU+9/t14pI=
+github.com/foomo/posh v0.3.1-0.20230220152511-db05bf278428 h1:uIpD2sUh6FDnmuo1CI+737irVZiCKK80wNNb5AItEac=
+github.com/foomo/posh v0.3.1-0.20230220152511-db05bf278428/go.mod h1:/vQBAKq672FEktZN3KbWc7Ofnhxz4r+I9oU+9/t14pI=
 github.com/frankban/quicktest v1.14.3 h1:FJKSZTDHjyhriyC81FLQ0LY93eSai0ZyR/ZIkd3ZUKE=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5/go.mod h1:+syUfnvYJUO5A+6QMQYXAyzkxHMNlj9dH2LIeQfBSjc=
