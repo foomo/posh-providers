@@ -137,16 +137,18 @@ func CommandWithESLint() CommandOption {
 			Args:        tree.Args{o.pathArg("package.json")},
 			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
 				fs.Bool("fix", false, "run quick fix")
+				fs.Bool("cache", false, "use cache")
 				return nil
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
 				o.l.Info("Running eslint ...")
 				for _, dir := range o.dirs(ctx, r, "package.json", 1) {
 					o.l.Info("└  " + dir)
-					if out, err := shell.New(ctx, o.l, "eslint", "--ext=js,jsx,ts,tsx,json", dir).
+					if out, err := shell.New(ctx, o.l, "eslint", "--quiet").
 						Args(r.Flags()...).
 						Args(r.PassThroughFlags()...).
 						Args(r.AdditionalArgs()...).
+						Dir(dir).
 						Output(); err != nil {
 						return errors.Wrap(err, string(out))
 					}
