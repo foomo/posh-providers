@@ -144,7 +144,7 @@ func CommandWithESLint() CommandOption {
 				o.l.Info("Running eslint ...")
 				for _, dir := range o.dirs(ctx, r, "package.json", 1) {
 					o.l.Info("└  " + dir)
-					if out, err := shell.New(ctx, o.l, "eslint", "--quiet").
+					if out, err := shell.New(ctx, o.l, "eslint", "--quiet", ".").
 						Args(r.Flags()...).
 						Args(r.PassThroughFlags()...).
 						Args(r.AdditionalArgs()...).
