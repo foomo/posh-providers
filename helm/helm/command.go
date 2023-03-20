@@ -18,7 +18,7 @@ type (
 		l           log.Logger
 		name        string
 		kubectl     *kubectl.Kubectl
-		commandTree *tree.Root
+		commandTree tree.Root
 	}
 	CommandOption func(*Command)
 )
@@ -43,33 +43,33 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 		name:    "helm",
 		kubectl: kubectl,
 	}
-	allFlags := func(fs *readline.FlagSet) {
-		fs.Bool("help", false, "help for helm")
-		fs.Bool("debug", false, "enable verbose output")
-		fs.String("namespace", "", "namespace scope for this request")
-		fs.Bool("all-namespaces", false, "all namespace scope for this request")
-		fs.Bool("create-namespace", false, "create the release namespace if not present")
-		fs.Bool("dependency-update", false, "update dependencies")
-		fs.Bool("dry-run", false, "assume aws profile")
-		fs.Bool("atomic", false, "delete installation on failure")
-		fs.Bool("wait", false, "wait until all resources a ready")
+	allFlags := func(fs *readline.FlagSets) {
+		fs.Default().Bool("help", false, "help for helm")
+		fs.Default().Bool("debug", false, "enable verbose output")
+		fs.Default().String("namespace", "", "namespace scope for this request")
+		fs.Default().Bool("all-namespaces", false, "all namespace scope for this request")
+		fs.Default().Bool("create-namespace", false, "create the release namespace if not present")
+		fs.Default().Bool("dependency-update", false, "update dependencies")
+		fs.Default().Bool("dry-run", false, "assume aws profile")
+		fs.Default().Bool("atomic", false, "delete installation on failure")
+		fs.Default().Bool("wait", false, "wait until all resources a ready")
 	}
 
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "run helm commands",
+		Description: "Run helm commands",
 		Nodes: tree.Nodes{
 			{
 				Name: "cluster",
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.kubectl.Clusters())
 				},
-				Description: "cluster to run against",
+				Description: "Cluster to run against",
 				Nodes: tree.Nodes{
 					{
 						Name:        "create",
-						Description: "create a new chart with the given name",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Create a new chart with the given name",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -77,8 +77,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "dependency",
-						Description: "manage a chart's dependencies",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Manage a chart's dependencies",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -86,8 +86,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "diff",
-						Description: "preview helm upgrade changes as a diff",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Preview helm upgrade changes as a diff",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -95,8 +95,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "env",
-						Description: "helm client environment information",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Helm client environment information",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -104,10 +104,10 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "get",
-						Description: "download extended information of a named release",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Download extended information of a named release",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
-							fs.String("revision", "", "get the named release with revision")
+							fs.Default().String("revision", "", "get the named release with revision")
 							return nil
 						},
 						Args: tree.Args{
@@ -115,13 +115,13 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 								Name:     "value",
 								Repeat:   false,
 								Optional: false,
-								Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return []goprompt.Suggest{
-										{Text: "all", Description: "download all information for a named release"},
-										{Text: "hooks", Description: "download all hooks for a named release"},
-										{Text: "manifest", Description: "download the manifest for a named release"},
-										{Text: "notes", Description: "download the notes for a named release"},
-										{Text: "values", Description: "download the values file for a named release"},
+										{Text: "all", Description: "Download all information for a named release"},
+										{Text: "hooks", Description: "Download all hooks for a named release"},
+										{Text: "manifest", Description: "Download the manifest for a named release"},
+										{Text: "notes", Description: "Download the notes for a named release"},
+										{Text: "values", Description: "Download the values file for a named release"},
 									}
 								},
 							},
@@ -131,7 +131,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					{
 						Name:        "help",
 						Description: "Help about any command",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -139,8 +139,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "history",
-						Description: "fetch release history",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Fetch release history",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -148,8 +148,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "install",
-						Description: "install a chart",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Install a chart",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -157,8 +157,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "lint",
-						Description: "examine a chart for possible issues",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Examine a chart for possible issues",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -166,8 +166,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "list",
-						Description: "list releases",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "List releases",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -175,8 +175,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "package",
-						Description: "package a chart directory into a chart archive",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Package a chart directory into a chart archive",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -184,8 +184,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "plugin",
-						Description: "install, list, or uninstall Helm plugins",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Install, list, or uninstall Helm plugins",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -193,8 +193,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "pull",
-						Description: "download a chart from a repository and (optionally) unpack it in local directory",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Download a chart from a repository and (optionally) unpack it in local directory",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -202,8 +202,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "repo",
-						Description: "add, list, remove, update, and index chart repositories",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Add, list, remove, update, and index chart repositories",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -211,8 +211,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "rollback",
-						Description: "roll back a release to a previous revision",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Roll back a release to a previous revision",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -220,8 +220,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "search",
-						Description: "search for a keyword in charts",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Search for a keyword in charts",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -229,8 +229,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "show",
-						Description: "show information of a chart",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Show information of a chart",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -238,18 +238,18 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "status",
-						Description: "display the status of the named release",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Display the status of the named release",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
-							fs.Bool("show-desc", false, "show description")
+							fs.Default().Bool("show-desc", false, "show description")
 							return nil
 						},
 						Execute: inst.execute,
 					},
 					{
 						Name:        "template",
-						Description: "locally render templates",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Locally render templates",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -257,8 +257,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "test",
-						Description: "run tests for a release",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Run tests for a release",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -266,8 +266,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "uninstall",
-						Description: "uninstall a release",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Uninstall a release",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -275,8 +275,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "upgrade",
-						Description: "upgrade a release",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Upgrade a release",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -284,8 +284,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "verify",
-						Description: "verify that a chart at the given path has been signed and is valid",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Verify that a chart at the given path has been signed and is valid",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -293,8 +293,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					},
 					{
 						Name:        "version",
-						Description: "print the client version information",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+						Description: "Print the client version information",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							allFlags(fs)
 							return nil
 						},
@@ -303,7 +303,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 				},
 			},
 		},
-	}
+	})
 
 	return inst
 }
@@ -313,11 +313,11 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -342,18 +342,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Generate helm files.
-
-Usage:
-  helm <path> <options>
-
-Available options:
-  debug
-  skiphelm
-
-Examples:
-  helm ./path/helm.yml
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -366,7 +355,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "helm").
 		Args(args...).
 		Args(r.Flags()...).
-		Args(r.PassThroughFlags()...).
 		Args(r.AdditionalArgs()...).
 		Env(cluster.Env()).
 		Run()

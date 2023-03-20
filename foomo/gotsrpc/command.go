@@ -19,7 +19,7 @@ import (
 type Command struct {
 	l           log.Logger
 	cache       cache.Namespace
-	commandTree *tree.Root
+	commandTree tree.Root
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -31,23 +31,21 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 		l:     l.Named("gotsrpc"),
 		cache: cache.Get("gotsrpc"),
 	}
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        "gotsrpc",
-		Description: "run gotsrpc",
-		Node: &tree.Node{
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-				fs.Bool("debug", false, "show debug output")
-				return nil
-			},
-			Args: tree.Args{
-				{
-					Name:    "path",
-					Suggest: inst.completePaths,
-				},
-			},
-			Execute: inst.execute,
+		Description: "Run gotsrpc",
+		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+			fs.Default().Bool("debug", false, "show debug output")
+			return nil
 		},
-	}
+		Args: tree.Args{
+			{
+				Name:    "path",
+				Suggest: inst.completePaths,
+			},
+		},
+		Execute: inst.execute,
+	})
 
 	return inst
 }
@@ -57,11 +55,11 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -88,18 +86,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Generate gotsrpc files.
-
-Usage:
-  gotsrpc <path> <options>
-
-Available options:
-  debug
-  skipgotsrpc
-
-Examples:
-  gotsrpc ./path/gotsrpc.yml
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -131,7 +118,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
-func (c *Command) completePaths(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+func (c *Command) completePaths(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 	return suggests.List(c.paths(ctx))
 }
 

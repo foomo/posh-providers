@@ -23,7 +23,7 @@ type (
 		l           log.Logger
 		name        string
 		cache       cache.Namespace
-		commandTree *tree.Root
+		commandTree tree.Root
 	}
 	CommandOption func(command *Command)
 )
@@ -40,15 +40,15 @@ func CommandWithName(v string) CommandOption {
 
 func CommandWithGo() CommandOption {
 	return func(o *Command) {
-		o.commandTree.Nodes = append(o.commandTree.Nodes, &tree.Node{
+		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
 			Name:        "go",
-			Description: "run golangci-lint",
+			Description: "Run golangci-lint",
 			Args:        tree.Args{o.pathArg("go.mod")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-				fs.Bool("fix", false, "run quick fix")
-				fs.String("timeout", "1m", "max excution timeout")
-				fs.String("out-format", "github-actions", "output format")
-				fs.Int("concurrency", 1, "num of concurrent processes")
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				fs.Default().Bool("fix", false, "run quick fix")
+				fs.Default().String("timeout", "1m", "max excution timeout")
+				fs.Default().String("out-format", "github-actions", "output format")
+				fs.Default().Int("concurrency", 1, "num of concurrent processes")
 				return nil
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -58,7 +58,6 @@ func CommandWithGo() CommandOption {
 					if out, err := shell.New(ctx, o.l, "golangci-lint", "run").
 						Args("--path-prefix", dir).
 						Args(r.Flags()...).
-						Args(r.PassThroughFlags()...).
 						Args(r.AdditionalArgs()...).
 						Dir(dir).
 						Output(); err != nil {
@@ -73,12 +72,12 @@ func CommandWithGo() CommandOption {
 
 func CommandWithTSC() CommandOption {
 	return func(o *Command) {
-		o.commandTree.Nodes = append(o.commandTree.Nodes, &tree.Node{
+		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
 			Name:        "tsc",
-			Description: "run tsc",
+			Description: "Run tsc",
 			Args:        tree.Args{o.pathArg("tsconfig.json")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-				fs.Bool("fix", false, "run quick fix")
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				fs.Default().Bool("fix", false, "run quick fix")
 				return nil
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -88,7 +87,6 @@ func CommandWithTSC() CommandOption {
 
 					if out, err := shell.New(ctx, o.l, "tsc", "--noEmit").
 						Args(r.Flags()...).
-						Args(r.PassThroughFlags()...).
 						Args(r.AdditionalArgs()...).
 						Dir(dir).
 						Output(); err != nil {
@@ -103,12 +101,12 @@ func CommandWithTSC() CommandOption {
 
 func CommandWithHelm() CommandOption {
 	return func(o *Command) {
-		o.commandTree.Nodes = append(o.commandTree.Nodes, &tree.Node{
+		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
 			Name:        "helm",
-			Description: "run helm lint",
+			Description: "Run helm lint",
 			Args:        tree.Args{o.pathArg("Chart.yaml")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-				fs.Bool("fix", false, "run quick fix")
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				fs.Default().Bool("fix", false, "run quick fix")
 				return nil
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -117,7 +115,6 @@ func CommandWithHelm() CommandOption {
 					o.l.Info("└  " + dir)
 					if out, err := shell.New(ctx, o.l, "helm", "lint", dir).
 						Args(r.Flags()...).
-						Args(r.PassThroughFlags()...).
 						Args(r.AdditionalArgs()...).
 						Output(); err != nil {
 						return errors.Wrap(err, string(out))
@@ -131,13 +128,13 @@ func CommandWithHelm() CommandOption {
 
 func CommandWithESLint() CommandOption {
 	return func(o *Command) {
-		o.commandTree.Nodes = append(o.commandTree.Nodes, &tree.Node{
+		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
 			Name:        "eslint",
-			Description: "run eslint",
+			Description: "Run eslint",
 			Args:        tree.Args{o.pathArg("package.json")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-				fs.Bool("fix", false, "run quick fix")
-				fs.Bool("cache", false, "use cache")
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				fs.Default().Bool("fix", false, "run quick fix")
+				fs.Default().Bool("cache", false, "use cache")
 				return nil
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -146,7 +143,6 @@ func CommandWithESLint() CommandOption {
 					o.l.Info("└  " + dir)
 					if out, err := shell.New(ctx, o.l, "eslint", "--quiet", ".").
 						Args(r.Flags()...).
-						Args(r.PassThroughFlags()...).
 						Args(r.AdditionalArgs()...).
 						Dir(dir).
 						Output(); err != nil {
@@ -161,13 +157,12 @@ func CommandWithESLint() CommandOption {
 
 func CommandWithGherkin() CommandOption {
 	return func(o *Command) {
-		o.commandTree.Nodes = append(o.commandTree.Nodes, &tree.Node{
+		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
 			Name:        "gherkin",
-			Description: "run gherkin lint",
+			Description: "Run gherkin lint",
 			Args:        tree.Args{o.pathArg("wdio.conf.ts")},
-
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-				fs.Bool("fix", false, "run quick fix")
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				fs.Default().Bool("fix", false, "run quick fix")
 				return nil
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -177,7 +172,6 @@ func CommandWithGherkin() CommandOption {
 
 					if out, err := shell.New(ctx, o.l, "gherkin-lint", dir).
 						Args(r.Flags()...).
-						Args(r.PassThroughFlags()...).
 						Args(r.AdditionalArgs()...).
 						Output(); err != nil {
 						return errors.Wrap(err, string(out))
@@ -191,12 +185,12 @@ func CommandWithGherkin() CommandOption {
 
 func CommandWithTerraform() CommandOption {
 	return func(o *Command) {
-		o.commandTree.Nodes = append(o.commandTree.Nodes, &tree.Node{
+		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
 			Name:        "terraform",
-			Description: "run tflint lint",
+			Description: "Run tflint lint",
 			Args:        tree.Args{o.pathArg("main.tf")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-				fs.Bool("fix", false, "run quick fix")
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				fs.Default().Bool("fix", false, "run quick fix")
 				return nil
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -207,7 +201,6 @@ func CommandWithTerraform() CommandOption {
 					if out, err := shell.New(ctx, o.l, "tflint").
 						Dir(dir).
 						Args(r.Flags()...).
-						Args(r.PassThroughFlags()...).
 						Args(r.AdditionalArgs()...).
 						Output(); err != nil {
 						return errors.Wrap(err, string(out))
@@ -221,16 +214,16 @@ func CommandWithTerraform() CommandOption {
 
 func CommandWithTerrascan() CommandOption {
 	return func(o *Command) {
-		o.commandTree.Nodes = append(o.commandTree.Nodes, &tree.Node{
+		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
 			Name:        "terrascan",
-			Description: "run terrascan",
+			Description: "Run terrascan",
 			Nodes: tree.Nodes{
 				{
 					Name:        "helm",
-					Description: "run terrascan helm",
+					Description: "Run terrascan helm",
 					Args:        tree.Args{o.pathArg("Chart.yaml")},
-					Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-						fs.Bool("fix", false, "run quick fix")
+					Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+						fs.Default().Bool("fix", false, "run quick fix")
 						return nil
 					},
 					Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -241,7 +234,6 @@ func CommandWithTerrascan() CommandOption {
 								Args("--iac-dir", dir).
 								Args("--iac-type", "docker").
 								Args(r.Flags()...).
-								Args(r.PassThroughFlags()...).
 								Args(r.AdditionalArgs()...).
 								Output(); err != nil {
 								return errors.Wrap(err, string(out))
@@ -252,10 +244,10 @@ func CommandWithTerrascan() CommandOption {
 				},
 				{
 					Name:        "terraform",
-					Description: "run terrascan terraform",
+					Description: "Run terrascan terraform",
 					Args:        tree.Args{o.pathArg("main.tf")},
-					Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-						fs.Bool("fix", false, "run quick fix")
+					Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+						fs.Default().Bool("fix", false, "run quick fix")
 						return nil
 					},
 					Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -266,7 +258,6 @@ func CommandWithTerrascan() CommandOption {
 								Args("--iac-dir", dir).
 								Args("--iac-type", "docker").
 								Args(r.Flags()...).
-								Args(r.PassThroughFlags()...).
 								Args(r.AdditionalArgs()...).
 								Output(); err != nil {
 								return errors.Wrap(err, string(out))
@@ -277,10 +268,10 @@ func CommandWithTerrascan() CommandOption {
 				},
 				{
 					Name:        "docker",
-					Description: "run terrascan docker",
+					Description: "Run terrascan docker",
 					Args:        tree.Args{o.pathArg("Dockerfile")},
-					Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-						fs.Bool("fix", false, "run quick fix")
+					Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+						fs.Default().Bool("fix", false, "run quick fix")
 						return nil
 					},
 					Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -291,7 +282,6 @@ func CommandWithTerrascan() CommandOption {
 								Args("--iac-dir", dir).
 								Args("--iac-type", "docker").
 								Args(r.Flags()...).
-								Args(r.PassThroughFlags()...).
 								Args(r.AdditionalArgs()...).
 								Output(); err != nil {
 								return errors.Wrap(err, string(out))
@@ -314,16 +304,16 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 		l:     l.Named("lint"),
 		name:  "lint",
 		cache: c.Get("lint"),
-		commandTree: &tree.Root{
-			Description: "lint your code",
-		},
+		commandTree: tree.New(&tree.Node{
+			Description: "Lint your code",
+		}),
 	}
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
-	inst.commandTree.Name = inst.name
+	inst.commandTree.Node().Name = inst.name
 
 	return inst
 }
@@ -333,11 +323,11 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -349,14 +339,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Lint your code.
-
-Usage:
-  lint [linter] <path>
-
-Examples:
-  lint go
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -382,7 +365,7 @@ func (c *Command) pathArg(filename string) *tree.Arg {
 	return &tree.Arg{
 		Name:     "path",
 		Optional: true,
-		Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 			return suggests.List(c.paths(ctx, filename))
 		},
 	}

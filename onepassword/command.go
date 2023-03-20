@@ -14,7 +14,7 @@ type (
 	Command struct {
 		l           log.Logger
 		op          *OnePassword
-		commandTree *tree.Root
+		commandTree tree.Root
 	}
 	CommandOption func(*Command) error
 )
@@ -39,37 +39,40 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 			}
 		}
 	}
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        "op",
-		Description: "execute 1Password commands",
+		Description: "Execute 1Password commands",
+		Execute:     inst.signin,
 		Nodes: tree.Nodes{
 			{
+				Name:        "signin",
+				Description: "Sign into your account",
+				Execute:     inst.signin,
+			},
+			{
 				Name:        "get",
-				Description: "retrieve item",
+				Description: "Retrieve an item",
 				Args: tree.Args{
 					{
-						Name: "id",
+						Name:        "id",
+						Description: "Item name or uuid",
 					},
 				},
 				Execute: inst.get,
 			},
 			{
-				Name:        "signin",
-				Description: "sign into your account",
-				Execute:     inst.signin,
-			},
-			{
 				Name:        "register",
-				Description: "register an account",
+				Description: "Register an account",
 				Args: tree.Args{
 					{
-						Name: "email",
+						Name:        "email",
+						Description: "User email address",
 					},
 				},
 				Execute: inst.register,
 			},
 		},
-	}
+	})
 	return inst, nil
 }
 
@@ -78,11 +81,11 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -94,16 +97,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `1Password session helper.
-
-Usage:
-  op [command]
-
-Available commands:
-  get [id]          Retrieve an entry from your account
-  signin            Sign into your 1Password account for the session
-  register [email]  Add your 1Password account
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------

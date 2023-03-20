@@ -25,7 +25,7 @@ type (
 		op          *onepassword.OnePassword
 		name        string
 		cache       cache.Namespace
-		commandTree *tree.Root
+		commandTree tree.Root
 	}
 	CommandOption func(*Command)
 )
@@ -56,26 +56,24 @@ func NewCommand(l log.Logger, cache cache.Cache, op *onepassword.OnePassword, op
 			opt(inst)
 		}
 	}
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "run gocontentful",
-		Node: &tree.Node{
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-				fs.Bool("debug", false, "show debug output")
-				return nil
-			},
-			Args: tree.Args{
-				{
-					Name:     "path",
-					Optional: true,
-					Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
-						return suggests.List(inst.paths(ctx))
-					},
+		Description: "Run gocontentful",
+		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+			fs.Default().Bool("debug", false, "show debug output")
+			return nil
+		},
+		Args: tree.Args{
+			{
+				Name:     "path",
+				Optional: true,
+				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+					return suggests.List(inst.paths(ctx))
 				},
 			},
-			Execute: inst.execute,
 		},
-	}
+		Execute: inst.execute,
+	})
 
 	return inst
 }
@@ -85,11 +83,11 @@ func NewCommand(l log.Logger, cache cache.Cache, op *onepassword.OnePassword, op
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -116,14 +114,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Generate gocontentful files.
-
-Usage:
-  gocontentful <path>
-
-Examples:
-  gocontentful ./path/gocontentful.yml
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -157,7 +148,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		if err := shell.New(ctx, c.l, "gocontentful",
 			"-spaceid", cfg.SpaceID, "-cmakey", cfg.CMAKey,
 			"-contenttypes", strings.Join(cfg.ContentTypes, ","), dir).
-			Args(r.PassThroughFlags()...).
 			Args(r.AdditionalArgs()...).
 			Run(); err != nil {
 			return err

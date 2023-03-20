@@ -24,7 +24,7 @@ type (
 		name        string
 		cache       cache.Namespace
 		configKey   string
-		commandTree *tree.Root
+		commandTree tree.Root
 	}
 	CommandOption func(*Command)
 )
@@ -80,16 +80,14 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 		Execute:     inst.execute,
 	}
 
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "run license finder",
-		Node: &tree.Node{
-			Execute: inst.execute,
-		},
+		Description: "Run license finder",
+		Execute:     inst.execute,
 		Nodes: tree.Nodes{
 			{
 				Name:        "restricted_licenses",
-				Description: "manage restricted licenses",
+				Description: "Manage restricted licenses",
 				Nodes: tree.Nodes{
 					&addNode,
 					&listNode,
@@ -98,7 +96,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 			},
 			{
 				Name:        "ignored_dependencies",
-				Description: "manage ignored dependencies",
+				Description: "Manage ignored dependencies",
 				Nodes: tree.Nodes{
 					&addNode,
 					&listNode,
@@ -107,7 +105,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 			},
 			{
 				Name:        "permitted_licenses",
-				Description: "manage permitted licenses",
+				Description: "Manage permitted licenses",
 				Nodes: tree.Nodes{
 					&addNode,
 					&listNode,
@@ -116,7 +114,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 			},
 			{
 				Name:        "approvals",
-				Description: "manage approvals",
+				Description: "Manage approvals",
 				Nodes: tree.Nodes{
 					&addNode,
 					&removeNode,
@@ -124,14 +122,14 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 			},
 			{
 				Name:        "licenses",
-				Description: "manage licenses",
+				Description: "Manage licenses",
 				Nodes: tree.Nodes{
 					&addNode,
 					&removeNode,
 				},
 			},
 		},
-	}
+	})
 
 	return inst
 }
@@ -141,11 +139,11 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -183,11 +181,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Check project licenses.
-
-Usage:
-  licensefinder
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -209,7 +203,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		Args(args...).
 		Args(r.Args()...).
 		Args(r.Flags()...).
-		Args(r.PassThroughFlags()...).
 		Args(r.AdditionalArgs()...).
 		Run()
 }

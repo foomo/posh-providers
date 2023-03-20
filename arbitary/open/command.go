@@ -21,7 +21,7 @@ type (
 		cfg         Config
 		name        string
 		configKey   string
-		commandTree *tree.Root
+		commandTree tree.Root
 	}
 	CommandOption func(*Command)
 )
@@ -62,37 +62,35 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 		return nil, err
 	}
 
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
 		Description: "Open an external url",
-		Node: &tree.Node{
-			Args: tree.Args{
-				{
-					Name: "router",
-					Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
-						var ret []goprompt.Suggest
-						for s, router := range inst.cfg {
-							ret = append(ret, goprompt.Suggest{Text: s, Description: router.Description})
-						}
-						return ret
-					},
-				},
-				{
-					Name: "route",
-					Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
-						var ret []goprompt.Suggest
-						if value, ok := inst.cfg[r.Args().At(0)]; ok {
-							for s, route := range value.Routes {
-								ret = append(ret, goprompt.Suggest{Text: s, Description: route.Description})
-							}
-						}
-						return ret
-					},
+		Args: tree.Args{
+			{
+				Name: "router",
+				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+					var ret []goprompt.Suggest
+					for s, router := range inst.cfg {
+						ret = append(ret, goprompt.Suggest{Text: s, Description: router.Description})
+					}
+					return ret
 				},
 			},
-			Execute: inst.execute,
+			{
+				Name: "route",
+				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+					var ret []goprompt.Suggest
+					if value, ok := inst.cfg[r.Args().At(0)]; ok {
+						for s, route := range value.Routes {
+							ret = append(ret, goprompt.Suggest{Text: s, Description: route.Description})
+						}
+					}
+					return ret
+				},
+			},
 		},
-	}
+		Execute: inst.execute,
+	})
 
 	return inst, nil
 }
@@ -102,11 +100,11 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -135,14 +133,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Connect to a open.
-
-Usage:
-  open [router] [route]
-
-Examples:
-  open grafana home
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------

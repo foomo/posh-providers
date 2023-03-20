@@ -21,7 +21,7 @@ import (
 type Command struct {
 	l           log.Logger
 	cache       cache.Namespace
-	commandTree *tree.Root
+	commandTree tree.Root
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 	pathModArg := &tree.Arg{
 		Name:     "path",
 		Optional: true,
-		Suggest: func(ctx context.Context, p *tree.Root, r *readline.Readline) []prompt2.Suggest {
+		Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 			return inst.completePaths(ctx, "go.mod", true)
 		},
 	}
@@ -45,24 +45,24 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 	pathGenerateArg := &tree.Arg{
 		Name:     "path",
 		Optional: true,
-		Suggest: func(ctx context.Context, p *tree.Root, r *readline.Readline) []prompt2.Suggest {
+		Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 			return inst.completePaths(ctx, "generate.go", false)
 		},
 	}
 
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        "go",
-		Description: "go related tasks",
+		Description: "Go related tasks",
 		Nodes: tree.Nodes{
 			{
 				Name:        "mod",
-				Description: "run go mod commands",
+				Description: "Run go mod commands",
 				Nodes: tree.Nodes{
 					{
 						Name:        "tidy",
-						Description: "run go mod tidy",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-							fs.Int("parallel", 0, "number of parallel processes")
+						Description: "Run go mod tidy",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Internal().Int("parallel", 0, "number of parallel processes")
 							return nil
 						},
 						Args:    []*tree.Arg{pathModArg},
@@ -70,9 +70,9 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 					},
 					{
 						Name:        "download",
-						Description: "run go mod download",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-							fs.Int("parallel", 0, "number of parallel processes")
+						Description: "Run go mod download",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Internal().Int("parallel", 0, "number of parallel processes")
 							return nil
 						},
 						Args:    []*tree.Arg{pathModArg},
@@ -80,9 +80,9 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 					},
 					{
 						Name:        "outdated",
-						Description: "show go mod outdated",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-							fs.Int("parallel", 0, "number of parallel processes")
+						Description: "Show go mod outdated",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Internal().Int("parallel", 0, "number of parallel processes")
 							return nil
 						},
 						Args:    []*tree.Arg{pathModArg},
@@ -92,16 +92,16 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			},
 			{
 				Name:        "work",
-				Description: "manage go.work file",
+				Description: "Manage go.work file",
 				Nodes: tree.Nodes{
 					{
 						Name:        "init",
-						Description: "generate go.work file",
+						Description: "Generate go.work file",
 						Execute:     inst.workInit,
 					},
 					{
 						Name:        "use",
-						Description: "add go.work entry",
+						Description: "Add go.work entry",
 						Args: []*tree.Arg{
 							{
 								Name:    "path",
@@ -114,9 +114,9 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			},
 			{
 				Name:        "generate",
-				Description: "run go mod commands",
-				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-					fs.Int("parallel", 0, "number of parallel processes")
+				Description: "Run go mod commands",
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					fs.Internal().Int("parallel", 0, "number of parallel processes")
 					return nil
 				},
 				Args:    []*tree.Arg{pathGenerateArg},
@@ -124,9 +124,9 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			},
 			{
 				Name:        "test",
-				Description: "run go test",
-				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-					fs.Int("parallel", 0, "number of parallel processes")
+				Description: "Run go test",
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					fs.Internal().Int("parallel", 0, "number of parallel processes")
 					return nil
 				},
 				Args:    []*tree.Arg{pathModArg},
@@ -134,16 +134,16 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			},
 			{
 				Name:        "build",
-				Description: "run go build",
-				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-					fs.Int("parallel", 0, "number of parallel processes")
+				Description: "Run go build",
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					fs.Internal().Int("parallel", 0, "number of parallel processes")
 					return nil
 				},
 				Args:    []*tree.Arg{pathModArg},
 				Execute: inst.build,
 			},
 		},
-	}
+	})
 	return inst
 }
 
@@ -152,11 +152,11 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -168,22 +168,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Looks for go.mod files and runs the given command.
-
-Usage:
-  go [command]
-
-Available commands:
-  mod [command]     run go mod
-  generate <path>   run go generate
-  test <path>       run go test
-  build <path>      run go build
-
-SubCommands mod:
-  tidy <path>
-  download <path>
-  outdated <path>
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -207,7 +192,6 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 			return shell.New(ctx, c.l,
 				"go", "build", "-v", "./...", // TODO select test
 			).
-				Args(r.PassThroughFlags()...).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
@@ -233,7 +217,6 @@ func (c *Command) test(ctx context.Context, r *readline.Readline) error {
 			return shell.New(ctx, c.l,
 				"go", "test", "-v", "./...", // TODO select test
 			).
-				Args(r.PassThroughFlags()...).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
@@ -380,7 +363,7 @@ func (c *Command) paths(ctx context.Context, filename string, dir bool) []string
 
 func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context, *errgroup.Group) {
 	wg, ctx := errgroup.WithContext(ctx)
-	if value, err := r.FlagSet().GetInt("parallel"); err == nil && value != 0 {
+	if value, _ := r.FlagSets().Internal().GetInt("parallel"); value != 0 {
 		wg.SetLimit(value)
 	} else {
 		wg.SetLimit(1)

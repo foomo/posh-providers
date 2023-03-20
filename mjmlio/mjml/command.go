@@ -23,7 +23,7 @@ type (
 		l           log.Logger
 		name        string
 		cache       cache.Namespace
-		commandTree *tree.Root
+		commandTree tree.Root
 	}
 	CommandOption func(*Command)
 )
@@ -53,26 +53,24 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 			opt(inst)
 		}
 	}
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "run mjml",
-		Node: &tree.Node{
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-				fs.Int("parallel", 0, "number of parallel processes")
-				return nil
-			},
-			Args: tree.Args{
-				{
-					Name:     "path",
-					Optional: true,
-					Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
-						return suggests.List(inst.paths(ctx))
-					},
+		Description: "Run mjml",
+		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+			fs.Internal().Int("parallel", 0, "number of parallel processes")
+			return nil
+		},
+		Args: tree.Args{
+			{
+				Name:     "path",
+				Optional: true,
+				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+					return suggests.List(inst.paths(ctx))
 				},
 			},
-			Execute: inst.execute,
 		},
-	}
+		Execute: inst.execute,
+	})
 
 	return inst
 }
@@ -82,11 +80,11 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -113,14 +111,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Generate mjml files.
-
-Usage:
-  mjml <path>
-
-Examples:
-  mjml ./path/mjml.yml
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -142,7 +133,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 			out := strings.ReplaceAll(src, ".mjml", ".html")
 			out = strings.ReplaceAll(out, "/src/", "/html/")
 			return shell.New(ctx, c.l, "mjml", src, "-o", out).
-				Args(r.PassThroughFlags()...).
 				Args(r.AdditionalArgs()...).
 				Run()
 		})
@@ -192,7 +182,7 @@ func (c *Command) files(ctx context.Context, root string) []string {
 
 func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context, *errgroup.Group) {
 	wg, ctx := errgroup.WithContext(ctx)
-	if value, err := r.FlagSet().GetInt("parallel"); err == nil && value != 0 {
+	if value, _ := r.FlagSets().Internal().GetInt("parallel"); value != 0 {
 		wg.SetLimit(value)
 	} else {
 		wg.SetLimit(1)

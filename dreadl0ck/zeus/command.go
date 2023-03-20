@@ -77,14 +77,12 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 		c.l.Info("bootstrapping a new zeus:", dir)
 		return shell.New(ctx, c.l, "zeus", "bootstrap").
 			Args(args...).
-			Args(r.PassThroughFlags()...).
 			Args(r.AdditionalArgs()...).
 			Dir(path.Join(dir, "..")).
 			Run()
 	} else {
 		return shell.New(ctx, c.l, "zeus", "-C", path.Dir(dir)).
 			Args(args...).
-			Args(r.PassThroughFlags()...).
 			Args(r.AdditionalArgs()...).
 			Run()
 	}

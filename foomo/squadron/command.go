@@ -30,7 +30,7 @@ type (
 		slackChannelID string
 		kubectl        *kubectl.Kubectl
 		squadron       *Squadron
-		commandTree    *tree.Root
+		commandTree    tree.Root
 		namespaceFn    NamespaceFn
 	}
 	NamespaceFn   func(cluster, fleet, squadron string) string
@@ -88,7 +88,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 		Name:     "unit",
 		Repeat:   true,
 		Optional: true,
-		Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 			if value, err := inst.squadron.ListUnits(ctx, r.Args().At(2), r.Args().At(0), r.Args().At(1), true); err != nil {
 				return nil
 			} else {
@@ -96,10 +96,15 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 			}
 		},
 	}
-	commonFlags := func(fs *readline.FlagSet) {
-		fs.Bool("no-override", false, "ignore override files")
-		fs.Bool("verbose", inst.l.IsLevel(log.LevelDebug), "set verbose level")
-		fs.Bool("debug", inst.l.IsLevel(log.LevelTrace), "set debug level")
+	slackFlag := func(fs *readline.FlagSets) {
+		if inst.slack != nil {
+			fs.Internal().Bool("slack", false, "send slack notification")
+		}
+	}
+	commonFlags := func(fs *readline.FlagSets) {
+		fs.Internal().Bool("no-override", false, "ignore override files")
+		fs.Default().Bool("verbose", inst.l.IsLevel(log.LevelDebug), "set verbose level")
+		fs.Default().Bool("debug", inst.l.IsLevel(log.LevelTrace), "set debug level")
 	}
 
 	clusterValues := func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -112,9 +117,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 		return suggests.List(ret)
 	}
 
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        "squadron",
-		Description: "manage your squadron",
+		Description: "Manage your squadron",
 		Nodes: tree.Nodes{
 			{
 				Name:   "cluster",
@@ -143,78 +148,73 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 								Nodes: tree.Nodes{
 									{
 										Name:        "up",
-										Description: "installs a squadron chart",
+										Description: "Installs a squadron chart",
 										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+											slackFlag(fs)
 											commonFlags(fs)
-											fs.Bool("diff", false, "show diff")
-											fs.Bool("push", false, "push image")
-											fs.Bool("build", false, "build image")
-											fs.String("tag", "", "image tag")
-											fs.Int64("parallel", 0, "number of parallel processes")
-											if inst.slack != nil {
-												fs.Bool("slack", false, "send slack notification")
-											}
-											return nil
-										},
-										PassThroughFlags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-											fs.Bool("create-namespace", false, "create namespace if not exist")
+											fs.Default().Bool("diff", false, "show diff")
+											fs.Default().Bool("push", false, "push image")
+											fs.Default().Bool("build", false, "build image")
+											fs.Internal().Int64("parallel", 0, "number of parallel processes")
+											fs.Internal().String("tag", "", "image tag")
+											fs.Internal().Bool("create-namespace", false, "create namespace if not exist")
 											return nil
 										},
 										Execute: inst.up,
 									},
 									{
 										Name:        "list",
-										Description: "list squadron units",
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+										Description: "List squadron units",
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
-											fs.Bool("prefix-squadron", false, "prefix unit names with squadron")
+											fs.Default().Bool("prefix-squadron", false, "prefix unit names with squadron")
 											return nil
 										},
 										Execute: inst.list,
 									},
 									{
 										Name:        "down",
-										Description: "uninstalls the squadron chart",
+										Description: "Uninstalls the squadron chart",
 										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
-											if inst.slack != nil {
-												fs.Bool("slack", false, "send slack notification")
-											}
+											slackFlag(fs)
 											return nil
 										},
 										Execute: inst.down,
 									},
 									{
 										Name:        "push",
-										Description: "push squadron units",
+										Description: "Push squadron units",
 										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
-											fs.Bool("build", false, "build image")
+											fs.Default().Bool("build", false, "build image")
+											fs.Internal().String("tag", "", "image tag")
+											fs.Internal().Int64("parallel", 0, "number of parallel processes")
 											return nil
 										},
 										Execute: inst.push,
 									},
 									{
 										Name:        "build",
-										Description: "build or rebuild squadron units",
+										Description: "Build or rebuild squadron units",
 										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
-											fs.Bool("push", false, "push image")
-											fs.String("tag", "", "image tag")
-											fs.Int64("parallel", 0, "number of parallel processes")
+											fs.Default().Bool("push", false, "push image")
+											fs.Internal().String("tag", "", "image tag")
+											fs.Internal().Int64("parallel", 0, "number of parallel processes")
 											return nil
 										},
 										Execute: inst.build,
 									},
 									{
 										Name:        "status",
-										Description: "display the status of the units",
+										Description: "Display the status of the units",
 										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
 											return nil
 										},
@@ -222,34 +222,32 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 									},
 									{
 										Name:        "config",
-										Description: "view generated squadron config",
+										Description: "View generated squadron config",
 										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
-											fs.Bool("no-render", false, "push image")
+											fs.Default().Bool("no-render", false, "push image")
 											return nil
 										},
 										Execute: inst.config,
 									},
 									{
 										Name:        "rollback",
-										Description: "roll back the squadron chart",
+										Description: "Roll back the squadron chart",
 										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
-											fs.String("revision", "", "revision number to rollback to")
-											if inst.slack != nil {
-												fs.Bool("slack", false, "send slack notification")
-											}
+											fs.Default().String("revision", "", "revision number to rollback to")
+											slackFlag(fs)
 											return nil
 										},
 										Execute: inst.rollback,
 									},
 									{
 										Name:        "generate",
-										Description: "generate and view the squadron chart",
+										Description: "Generate and view the squadron chart",
 										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
 											return nil
 										},
@@ -257,10 +255,11 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 									},
 									{
 										Name:        "template",
-										Description: "render chart templates locally and display the output",
+										Description: "Render chart templates locally and display the output",
 										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
+											fs.Internal().String("tag", "", "image tag")
 											return nil
 										},
 										Execute: inst.template,
@@ -272,7 +271,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				},
 			},
 		},
-	}
+	})
 
 	return inst
 }
@@ -282,11 +281,11 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -298,18 +297,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Manage your squadron.
-
-Usage:
-  squadron [cluster] [fleet] [squadron] [cmd]
-
-Available Commands:
-  up <fleet...>
-  down <fleet...>
-
-Examples:
-  k9s example-cluster my-namespace
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -357,54 +345,68 @@ func (c *Command) template(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
-	flags := r.Flags()
+	var env []string
+	var squadrons []string
+	ifs := r.FlagSets().Internal()
+	passFlags := []string{"--"}
 	cluster, fleet, squadron, cmd, units := r.Args()[0], r.Args()[1], r.Args()[2], r.Args()[3], r.Args()[4:]
 
-	if c.op != nil {
-		if ok, _ := c.op.Session(); !ok {
-			c.l.Info("missing 1password session, please login")
-			if err := c.op.SignIn(ctx); err != nil {
+	// retrieve flags
+	tag, _ := ifs.GetString("tag")
+	noOverride := log.MustGet(ifs.GetBool("no-override"))(c.l)
+
+	{ // handle 1password
+		if c.op != nil {
+			if ok, _ := c.op.Session(); !ok {
+				c.l.Info("missing 1password session, please login")
+				if err := c.op.SignIn(ctx); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	{ // handle pass through flags
+		if slices.Contains([]string{"up", "template"}, cmd) {
+			passFlags = append(passFlags, "--set", fmt.Sprintf("fleet=%v", fleet))
+		}
+		if slices.Contains([]string{"up"}, cmd) {
+			if log.MustGet(ifs.GetBool("create-namespace"))(c.l) {
+				passFlags = append(passFlags, "--create-namespace")
+			}
+		}
+	}
+
+	{ // handle env
+		env = append(env, fmt.Sprintf("FLEET=%s", fleet))
+		if tag != "" {
+			env = append(env, fmt.Sprintf("TAG=%q", tag))
+		}
+		env = append(env, c.kubectl.Cluster(cluster).Env())
+	}
+
+	{ // handle squadrons
+		if squadron == All {
+			if value, err := c.squadron.List(); err == nil {
+				squadrons = value
+			}
+		} else {
+			squadrons = []string{squadron}
+		}
+	}
+
+	{ // handle slack
+		if ok, _ := ifs.GetBool("slack"); ok {
+			if err := c.notify(ctx, cmd, cluster, fleet, squadron, tag, units); err != nil {
 				return err
 			}
 		}
 	}
 
-	passFlags := r.PassThroughFlags()
-	if slices.Contains([]string{"up", "template"}, cmd) {
-		if len(passFlags) == 0 {
-			passFlags = append(passFlags, "--")
-		}
-		passFlags = append(passFlags, "--set", fmt.Sprintf("fleet=%v", fleet))
-	}
-
-	var env []string
-	env = append(env, fmt.Sprintf("FLEET=%s", fleet))
-	if value := r.FlagSet().GetString("tag"); value != "" {
-		env = append(env, fmt.Sprintf("TAG=%q", value))
-		flags = flags.Splice(flags.IndexOf("--tag"), 2)
-	}
-	env = append(env, c.kubectl.Cluster(cluster).Env())
-
-	var squadrons []string
-	if squadron == All {
-		if value, err := c.squadron.List(); err == nil {
-			squadrons = value
-		}
-	} else {
-		squadrons = []string{squadron}
-	}
-
-	if c.slack != nil && r.FlagSet().GetBool("slack") {
-		flags = flags.Splice(flags.IndexOf("--slack"), 1)
-		if err := c.notify(ctx, cmd, cluster, fleet, squadron, r.FlagSet().GetString("tag"), units); err != nil {
-			return err
-		}
-	}
-
 	for _, s := range squadrons {
 		env := append(env, fmt.Sprintf("SQUADRON=%s", s))
-		flags := flags
-		files := strings.Join(c.squadron.GetFiles(s, cluster, fleet, !r.FlagSet().GetBool("no-override")), ",")
+		flags := r.FlagSets().Default().Args()
+		files := strings.Join(c.squadron.GetFiles(s, cluster, fleet, !noOverride), ",")
 		if slices.Contains([]string{"up", "down", "rollback", "status", "template"}, cmd) {
 			flags = append(flags, "--namespace", c.namespaceFn(cluster, fleet, s))
 		}

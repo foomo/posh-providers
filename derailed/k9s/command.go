@@ -19,7 +19,7 @@ type (
 		l           log.Logger
 		kubectl     *kubectl.Kubectl
 		squadron    *squadron.Squadron
-		commandTree *tree.Root
+		commandTree tree.Root
 		namespaceFn NamespaceFn
 	}
 	NamespaceFn   func(cluster, fleet, squadron string) string
@@ -58,28 +58,25 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron *squadron.Squad
 			opt(inst)
 		}
 	}
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        "k9s",
-		Description: "open the k9s dashboard",
-		Node: &tree.Node{
-			Args: tree.Args{
-				{
-					Name:    "cluster",
-					Suggest: inst.completeClusters,
-				},
-				{
-					Name:    "fleet",
-					Suggest: inst.completeFleets,
-				},
-				{
-					Name:    "squadron",
-					Suggest: inst.completeSquadrons,
-				},
+		Description: "Open the k9s dashboard",
+		Args: tree.Args{
+			{
+				Name:    "cluster",
+				Suggest: inst.completeClusters,
 			},
-			Execute: inst.execute,
+			{
+				Name:    "fleet",
+				Suggest: inst.completeFleets,
+			},
+			{
+				Name:    "squadron",
+				Suggest: inst.completeSquadrons,
+			},
 		},
-	}
-
+		Execute: inst.execute,
+	})
 	return inst
 }
 
@@ -88,11 +85,11 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron *squadron.Squad
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -104,14 +101,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Open the k9s dashboard.
-
-Usage:
-  k9s [cluster] [namespace]
-
-Examples:
-  k9s example-cluster my-namespace
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -126,18 +116,18 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		Run()
 }
 
-func (c *Command) completeClusters(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+func (c *Command) completeClusters(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 	return suggests.List(c.kubectl.Clusters())
 }
 
-func (c *Command) completeFleets(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+func (c *Command) completeFleets(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 	if cluster, ok := c.squadron.Cluster(r.Args().At(0)); ok {
 		return suggests.List(cluster.Fleets)
 	}
 	return nil
 }
 
-func (c *Command) completeSquadrons(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+func (c *Command) completeSquadrons(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 	if value, err := c.squadron.List(); err != nil {
 		c.l.Debug(err.Error())
 		return nil

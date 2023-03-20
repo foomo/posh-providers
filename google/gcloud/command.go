@@ -26,7 +26,7 @@ type (
 		op            *onepassword.OnePassword
 		gcloud        *GCloud
 		kubectl       *kubectl.Kubectl
-		commandTree   *tree.Root
+		commandTree   tree.Root
 		clusterNameFn ClusterNameFn
 	}
 	ClusterNameFn func(name string, cluster Cluster) string
@@ -74,12 +74,10 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 			opt(inst)
 		}
 	}
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
 		Description: "Run google cloud sdk commands",
-		Node: &tree.Node{
-			Execute: inst.execute,
-		},
+		Execute:     inst.execute,
 		Nodes: tree.Nodes{
 			{
 				Name:        "login",
@@ -88,7 +86,7 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 					{
 						Name:     "account",
 						Optional: true,
-						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.gcloud.cfg.AccountNames())
 						},
 					},
@@ -106,7 +104,7 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 				Args: tree.Args{
 					{
 						Name: "cluster",
-						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.gcloud.cfg.ClusterNames())
 						},
 					},
@@ -114,7 +112,7 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 				Execute: inst.containerClustersGetCredentials,
 			},
 		},
-	}
+	})
 
 	return inst
 }
@@ -124,11 +122,11 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -140,16 +138,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Execute google-cloud-sdk commands.
-
-Usage:
-  gcloud [cmd]
-
-Available commands:
-	login <account>        Login into your google cloud account (optional service account)
-  docker                 Configure docker access
-  kubeconfig [cluster]   Retrieve kube config for the given cluster
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -160,7 +149,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "gcloud").
 		Args(r.Args()...).
 		Args(r.Flags()...).
-		Args(r.PassThroughFlags()...).
 		Args(r.AdditionalArgs()...).
 		Run()
 }
