@@ -156,7 +156,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Default().Bool("diff", false, "show diff")
 											fs.Default().Bool("push", false, "push image")
 											fs.Default().Bool("build", false, "build image")
-											fs.Internal().Int64("parallel", 0, "number of parallel processes")
+											fs.Default().Int64("parallel", 0, "number of parallel processes")
 											fs.Internal().String("tag", "", "image tag")
 											fs.Internal().Bool("create-namespace", false, "create namespace if not exist")
 											return nil
@@ -191,8 +191,8 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
 											fs.Default().Bool("build", false, "build image")
+											fs.Default().Int64("parallel", 0, "number of parallel processes")
 											fs.Internal().String("tag", "", "image tag")
-											fs.Internal().Int64("parallel", 0, "number of parallel processes")
 											return nil
 										},
 										Execute: inst.execute,
@@ -204,8 +204,8 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
 											fs.Default().Bool("push", false, "push image")
+											fs.Default().Int64("parallel", 0, "number of parallel processes")
 											fs.Internal().String("tag", "", "image tag")
-											fs.Internal().Int64("parallel", 0, "number of parallel processes")
 											return nil
 										},
 										Execute: inst.execute,
