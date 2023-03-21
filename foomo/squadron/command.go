@@ -161,7 +161,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Internal().Bool("create-namespace", false, "create namespace if not exist")
 											return nil
 										},
-										Execute: inst.up,
+										Execute: inst.execute,
 									},
 									{
 										Name:        "list",
@@ -171,7 +171,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Default().Bool("prefix-squadron", false, "prefix unit names with squadron")
 											return nil
 										},
-										Execute: inst.list,
+										Execute: inst.execute,
 									},
 									{
 										Name:        "down",
@@ -182,7 +182,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											slackFlag(fs)
 											return nil
 										},
-										Execute: inst.down,
+										Execute: inst.execute,
 									},
 									{
 										Name:        "push",
@@ -195,7 +195,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Internal().Int64("parallel", 0, "number of parallel processes")
 											return nil
 										},
-										Execute: inst.push,
+										Execute: inst.execute,
 									},
 									{
 										Name:        "build",
@@ -208,7 +208,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Internal().Int64("parallel", 0, "number of parallel processes")
 											return nil
 										},
-										Execute: inst.build,
+										Execute: inst.execute,
 									},
 									{
 										Name:        "status",
@@ -218,7 +218,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											return nil
 										},
-										Execute: inst.status,
+										Execute: inst.execute,
 									},
 									{
 										Name:        "config",
@@ -229,7 +229,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Default().Bool("no-render", false, "push image")
 											return nil
 										},
-										Execute: inst.config,
+										Execute: inst.execute,
 									},
 									{
 										Name:        "rollback",
@@ -241,7 +241,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											slackFlag(fs)
 											return nil
 										},
-										Execute: inst.rollback,
+										Execute: inst.execute,
 									},
 									{
 										Name:        "generate",
@@ -251,7 +251,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											return nil
 										},
-										Execute: inst.generate,
+										Execute: inst.execute,
 									},
 									{
 										Name:        "template",
@@ -262,7 +262,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Internal().String("tag", "", "image tag")
 											return nil
 										},
-										Execute: inst.template,
+										Execute: inst.execute,
 									},
 								},
 							},
@@ -304,49 +304,10 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) up(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r)
-}
-
-func (c *Command) list(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r)
-}
-
-func (c *Command) down(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r)
-}
-
-func (c *Command) push(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r)
-}
-
-func (c *Command) build(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r)
-}
-
-func (c *Command) status(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r)
-}
-
-func (c *Command) config(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r)
-}
-
-func (c *Command) rollback(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r)
-}
-
-func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r)
-}
-
-func (c *Command) template(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r)
-}
-
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	var env []string
 	var squadrons []string
+	fs := r.FlagSets().Default()
 	ifs := r.FlagSets().Internal()
 	passFlags := []string{"--"}
 	cluster, fleet, squadron, cmd, units := r.Args()[0], r.Args()[1], r.Args()[2], r.Args()[3], r.Args()[4:]
@@ -419,6 +380,8 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 			Dir(path.Join(c.squadron.cfg.Path, s)).
 			Args(units...).
 			Args(flags...).
+			Args(fs.Visited().Args()...).
+			Args(r.AdditionalFlags()...).
 			Args(passFlags...).
 			Args(r.AdditionalArgs()...).
 			Run(); err != nil {
