@@ -104,7 +104,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	if err := shell.New(ctx, c.l,
 		"docker", "build",
 		"--build-arg", fmt.Sprintf("TAG=%s", c.cfg.NodeTag),
-		"--build-arg", "SOURCE=.posh/docs",
+		"--build-arg", fmt.Sprintf("SOURCE=%s", c.cfg.SourcePath),
 		"-t", fmt.Sprintf("%s:%s", c.cfg.ImageName, c.cfg.ImageTag),
 		"-f", "-",
 		".",
