@@ -12,7 +12,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.54
-	github.com/samber/lo v1.37.0
+	github.com/samber/lo v1.38.1
 	github.com/slack-go/slack v0.12.1
 	github.com/spf13/viper v1.15.0
 	golang.org/x/exp v0.0.0-20230126173853-a67bb567ff2e
