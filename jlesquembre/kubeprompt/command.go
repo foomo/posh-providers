@@ -15,7 +15,7 @@ import (
 type Command struct {
 	l           log.Logger
 	kubectl     *kubectl.Kubectl
-	commandTree *tree.Root
+	commandTree tree.Root
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -27,19 +27,17 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 		l:       l.Named("kubeprompt"),
 		kubectl: kubectl,
 	}
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        "kubeprompt",
-		Description: "open the kubectl prompt",
-		Node: &tree.Node{
-			Args: tree.Args{
-				{
-					Name:    "cluster",
-					Suggest: inst.completeClusters,
-				},
+		Description: "Open the kubectl prompt",
+		Args: tree.Args{
+			{
+				Name:    "cluster",
+				Suggest: inst.completeClusters,
 			},
-			Execute: inst.execute,
 		},
-	}
+		Execute: inst.execute,
+	})
 
 	return inst
 }
@@ -49,11 +47,11 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -65,14 +63,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Open interactive kubectl prompt.
-
-Usage:
-  kubeprompt [cluster]
-
-Examples:
-  kubeprompt example-cluster
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -86,6 +77,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		Run()
 }
 
-func (c *Command) completeClusters(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+func (c *Command) completeClusters(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 	return suggests.List(c.kubectl.Clusters())
 }

@@ -21,7 +21,7 @@ import (
 type Command struct {
 	l           log.Logger
 	etcd        *ETCD
-	commandTree *tree.Root
+	commandTree tree.Root
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ func NewCommand(l log.Logger, etcd *ETCD, opts ...Option) *Command {
 
 	pathArg := &tree.Arg{
 		Name: "path",
-		Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []prompt2.Suggest {
+		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []prompt2.Suggest {
 			if value, ok := inst.etcd.cfg.Cluster(r.Args().At(0)); ok {
 				return suggests.List(value.Paths)
 			}
@@ -44,9 +44,9 @@ func NewCommand(l log.Logger, etcd *ETCD, opts ...Option) *Command {
 		},
 	}
 
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        "etcd",
-		Description: "read and write to etcd",
+		Description: "Read and write to etcd",
 		Nodes: tree.Nodes{
 			{
 				Name: "cluster",
@@ -73,7 +73,7 @@ func NewCommand(l log.Logger, etcd *ETCD, opts ...Option) *Command {
 				},
 			},
 		},
-	}
+	})
 
 	return inst
 }
@@ -83,11 +83,11 @@ func NewCommand(l log.Logger, etcd *ETCD, opts ...Option) *Command {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -99,19 +99,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Read and write to etcd.
-
-Usage:
-  etcd [cluster] [cmd]
-
-Available commands:
-  get [path]   Prints the value
-  edit [path]  Edit the given value
-
-Examples:
-  etcd example-cluster get config.yaml
-  etcd example-cluster edit config.yaml
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------

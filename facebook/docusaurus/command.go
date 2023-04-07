@@ -1,28 +1,31 @@
-package k9s
+package docusaurus
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"os"
+	"strings"
 
-	"github.com/foomo/posh-providers/foomo/squadron"
-	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
-	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/spf13/viper"
 )
+
+//go:embed Dockerfile
+var dockerfile string
 
 type (
 	Command struct {
 		l           log.Logger
-		kubectl     *kubectl.Kubectl
-		squadron    *squadron.Squadron
+		cfg         Config
+		name        string
+		configKey   string
 		commandTree tree.Root
-		namespaceFn NamespaceFn
 	}
-	NamespaceFn   func(cluster, fleet, squadron string) string
 	CommandOption func(*Command)
 )
 
@@ -30,9 +33,15 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
+func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
-		o.namespaceFn = v
+		o.name = v
+	}
+}
+
+func CommandWithConfigKey(v string) CommandOption {
+	return func(o *Command) {
+		o.configKey = v
 	}
 }
 
@@ -40,44 +49,27 @@ func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron *squadron.Squadron, opts ...CommandOption) *Command {
+func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
-		l:        l.Named("k9s"),
-		kubectl:  kubectl,
-		squadron: squadron,
-		namespaceFn: func(cluster, fleet, squadron string) string {
-			if fleet == "default" {
-				return squadron
-			} else {
-				return fmt.Sprintf("%s-%s", fleet, squadron)
-			}
-		},
+		l:         l.Named("docusaurus"),
+		name:      "docusaurus",
+		configKey: "docusaurus",
 	}
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
+		return nil, err
+	}
+
 	inst.commandTree = tree.New(&tree.Node{
-		Name:        "k9s",
-		Description: "Open the k9s dashboard",
-		Args: tree.Args{
-			{
-				Name:    "cluster",
-				Suggest: inst.completeClusters,
-			},
-			{
-				Name:    "fleet",
-				Suggest: inst.completeFleets,
-			},
-			{
-				Name:    "squadron",
-				Suggest: inst.completeSquadrons,
-			},
-		},
-		Execute: inst.execute,
+		Name:        inst.name,
+		Description: "Run docusaurus",
+		Execute:     inst.execute,
 	})
-	return inst
+	return inst, nil
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -109,29 +101,23 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
-	cluster, fleet, squad := r.Args().At(0), r.Args().At(1), r.Args().At(2)
-	return shell.New(ctx, c.l, "k9s", "-n", c.namespaceFn(cluster, fleet, squad), "--logoless").
-		Args(r.AdditionalArgs()...).
-		Env(c.kubectl.Cluster(cluster).Env()).
-		Run()
-}
-
-func (c *Command) completeClusters(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-	return suggests.List(c.kubectl.Clusters())
-}
-
-func (c *Command) completeFleets(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-	if cluster, ok := c.squadron.Cluster(r.Args().At(0)); ok {
-		return suggests.List(cluster.Fleets)
+	if err := shell.New(ctx, c.l,
+		"docker", "build",
+		"--build-arg", fmt.Sprintf("TAG=%s", c.cfg.NodeTag),
+		"--build-arg", fmt.Sprintf("SOURCE=%s", c.cfg.SourcePath),
+		"-t", fmt.Sprintf("%s:%s", c.cfg.ImageName, c.cfg.ImageTag),
+		"-f", "-",
+		".",
+	).Stdin(strings.NewReader(dockerfile)).Run(); err != nil {
+		return err
 	}
-	return nil
-}
-
-func (c *Command) completeSquadrons(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-	if value, err := c.squadron.List(); err != nil {
-		c.l.Debug(err.Error())
-		return nil
-	} else {
-		return suggests.List(value)
+	cmd := shell.New(ctx, c.l,
+		"docker", "run", "-it", "--rm",
+		"-p", fmt.Sprintf("%s:%s", c.cfg.LocalPort, "3000"),
+	)
+	for _, volume := range c.cfg.Volumes {
+		cmd.Args("-v", os.ExpandEnv(volume))
 	}
+	cmd.Args(fmt.Sprintf("%s:%s", c.cfg.ImageName, c.cfg.ImageTag))
+	return cmd.Run()
 }

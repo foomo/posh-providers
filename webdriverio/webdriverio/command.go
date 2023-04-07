@@ -28,7 +28,7 @@ type (
 		name        string
 		cache       cache.Namespace
 		configKey   string
-		commandTree *tree.Root
+		commandTree tree.Root
 	}
 	CommandOption func(*Command)
 )
@@ -70,54 +70,59 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 		return nil, err
 	}
 
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "run wdio commands",
+		Description: "Run wdio commands",
 		Nodes: tree.Nodes{
 			{
 				Name:        "mode",
-				Description: "run mode",
+				Description: "Run mode",
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.cfg.Modes.Keys())
 				},
 				Nodes: tree.Nodes{
 					{
 						Name:        "site",
-						Description: "configured site",
+						Description: "Configured site",
 						Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.cfg.Sites.Keys())
 						},
 						Nodes: tree.Nodes{
 							{
 								Name:        "env",
-								Description: "configured env",
+								Description: "Configured env",
 								Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 									if value, ok := inst.cfg.Sites[r.Args().At(1)]; ok {
 										return suggests.List(value.Keys())
 									}
 									return nil
 								},
-								Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-									fs.String("tag", "", "run suite on specific tag")
-									fs.String("spec", "", "run suite on specific specs")
-									fs.String("suite", "", "run suite on test suite")
-									fs.String("scenario", "", "run suite on specific specs")
-									fs.String("log-level", "info", "set the log level")
-									fs.Bool("headless", false, "run suite in headless mode")
-									fs.Bool("debug", false, "run in debug mode and leave browser open after test failure")
-									fs.Bool("bail", false, "stop test runner after specific amount of tests have failed")
+								Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+									fs.Default().String("spec", "", "Run suite on specific specs")
+									fs.Default().String("suite", "", "Run suite on test suite")
+									fs.Internal().String("tag", "", "Run suite on specific tag")
+									fs.Internal().String("scenario", "", "Run suite on specific specs")
+									fs.Internal().String("log-level", "info", "Set the log level")
+									fs.Internal().Bool("ci", false, "Run suite on CI")
+									fs.Internal().Bool("headless", false, "Run suite in headless mode")
+									fs.Internal().Bool("debug", false, "Run in debug mode and leave browser open after test failure")
+									fs.Internal().Bool("bail", false, "Stop test runner after specific amount of tests have failed")
 									if r.Args().LenGte(4) {
-										if err := fs.SetValues("spec", inst.specs(ctx, r.Args().At(3))...); err != nil {
+										if err := fs.Default().SetValues("spec", inst.specs(ctx, r.Args().At(3))...); err != nil {
 											return err
 										}
-										if err := fs.SetValues("tag", inst.tags(ctx, r.Args().At(3), fs.GetString("spec"))...); err != nil {
+										spec, err := fs.Default().GetString("spec")
+										if err != nil {
 											return err
 										}
-										if err := fs.SetValues("scenario", inst.scenarios(ctx, r.Args().At(3), fs.GetString("spec"))...); err != nil {
+										if err := fs.Internal().SetValues("tag", inst.tags(ctx, r.Args().At(3), spec)...); err != nil {
+											return err
+										}
+										if err := fs.Internal().SetValues("scenario", inst.scenarios(ctx, r.Args().At(3), spec)...); err != nil {
 											return err
 										}
 									}
-									if err := fs.SetValues("log-level", "info", "warn", "debug"); err != nil {
+									if err := fs.Internal().SetValues("log-level", "info", "warn", "debug"); err != nil {
 										return err
 									}
 									return nil
@@ -127,7 +132,7 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 										Name:     "path",
 										Repeat:   false,
 										Optional: true,
-										Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+										Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 											return suggests.List(inst.paths(ctx))
 										},
 									},
@@ -139,7 +144,7 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 				},
 			},
 		},
-	}
+	})
 
 	return inst, nil
 }
@@ -149,11 +154,11 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -165,11 +170,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Run wdio commands.
-
-Usage:
-  wdio [mode] [site] [env] [path]
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -177,39 +178,38 @@ Usage:
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
+	fs := r.FlagSets().Default()
+	ifs := r.FlagSets().Internal()
 	mode, site, env := r.Args().At(0), r.Args().At(1), r.Args().At(2)
 	siteConfig := c.cfg.Sites[site][env]
 	modeConfig := c.cfg.Modes[mode]
 
+	logLevel := log.MustGet(ifs.GetString("log-level"))(c.l)
+
 	envs := []string{
-		"LOG_LEVEL=" + r.FlagSet().GetString("log-level"),
+		"LOG_LEVEL=" + logLevel,
 		"NODE_TLS_REJECT_UNAUTHORIZED=0", // allow TLS errors when in local mode with self-signed certificates
 	}
 	var args []string
 
-	if r.FlagSet().GetBool("debug") {
+	if log.MustGet(ifs.GetBool("debug"))(c.l) {
 		envs = append(envs, fmt.Sprintf("debug=%s", "true"))
 	}
-	if r.FlagSet().GetBool("headless") {
+	if log.MustGet(ifs.GetBool("headless"))(c.l) {
 		envs = append(envs, fmt.Sprintf("HEADLESS=%s", "true"))
 	}
-	if r.FlagSet().GetBool("ci") {
+	if log.MustGet(ifs.GetBool("ci"))(c.l) {
 		envs = append(envs, fmt.Sprintf("E2E_ENV=%s", "ci"))
 	} else {
 		envs = append(envs, fmt.Sprintf("E2E_ENV=%s", "chromium"))
 	}
-	if value := r.FlagSet().GetString("scenario"); value != "" {
+	if value := log.MustGet(ifs.GetString("scenario"))(c.l); value != "" {
 		envs = append(envs, fmt.Sprintf("SCENARIOS=%s", strings.Trim(value, "\"")))
 	}
-	if value := r.FlagSet().GetString("tag"); value != "" {
+	if value := log.MustGet(ifs.GetString("tag"))(c.l); value != "" {
 		args = append(args, "--cucumberOpts.tagExpression", "'"+strings.Trim(value, "\"")+"'")
 	}
-	if value := r.FlagSet().GetString("spec"); value != "" {
-		args = append(args, "--spec", value)
-	}
-	if value := r.FlagSet().GetString("suite"); value != "" {
-		args = append(args, "--suite", value)
-	}
+
 	// base url
 	baseURL := siteConfig.Domain
 	if modeConfig.HostPrefix != "" {
@@ -242,7 +242,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		c.l.Info("└  " + dir)
 		if err := shell.New(ctx, c.l, "wdio", "run", "e2e/wdio.conf.ts").
 			Args(args...).
-			Args(r.PassThroughFlags()...).
+			Args(fs.Visited().Args()...).
 			Args(r.AdditionalArgs()...).
 			Dir(dir).
 			Env(envs...).

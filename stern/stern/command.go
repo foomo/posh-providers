@@ -19,7 +19,7 @@ type (
 		l           log.Logger
 		kubectl     *kubectl.Kubectl
 		squadron    *squadron.Squadron
-		commandTree *tree.Root
+		commandTree tree.Root
 		namespaceFn NamespaceFn
 	}
 	NamespaceFn   func(cluster, fleet, squadron string) string
@@ -58,41 +58,39 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron *squadron.Squad
 			opt(inst)
 		}
 	}
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        "stern",
-		Description: "tail your logs with stern",
-		Node: &tree.Node{
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-				fs.String("container", "", "Container name when multiple containers in pod (default \".*\")")
-				fs.String("exclude", "", "Regex of log lines to exclude")
-				fs.String("exclude-container", "", "Exclude a Container name")
-				fs.String("include", "", "Regex of log lines to include")
-				fs.String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query.")
-				fs.String("since", "", "Return logs newer than a relative duration like 5s, 2m, or 3h. Defaults to 48h")
-				fs.String("tail", "", "The number of lines from the end of the logs to show. Defaults to -1, showing all logs. (default -1)")
-				return nil
-			},
-			Args: tree.Args{
-				{
-					Name:    "cluster",
-					Suggest: inst.completeClusters,
-				},
-				{
-					Name:    "fleet",
-					Suggest: inst.completeFleets,
-				},
-				{
-					Name:    "squadron",
-					Suggest: inst.completeSquadrons,
-				},
-				{
-					Name:    "unit",
-					Suggest: inst.completeSquadronUnits,
-				},
-			},
-			Execute: inst.execute,
+		Description: "Tail your logs with stern",
+		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+			fs.Default().String("container", "", "Container name when multiple containers in pod (default \".*\")")
+			fs.Default().String("exclude", "", "Regex of log lines to exclude")
+			fs.Default().String("exclude-container", "", "Exclude a Container name")
+			fs.Default().String("include", "", "Regex of log lines to include")
+			fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query.")
+			fs.Default().String("since", "", "Return logs newer than a relative duration like 5s, 2m, or 3h. Defaults to 48h")
+			fs.Default().String("tail", "", "The number of lines from the end of the logs to show. Defaults to -1, showing all logs. (default -1)")
+			return nil
 		},
-	}
+		Args: tree.Args{
+			{
+				Name:    "cluster",
+				Suggest: inst.completeClusters,
+			},
+			{
+				Name:    "fleet",
+				Suggest: inst.completeFleets,
+			},
+			{
+				Name:    "squadron",
+				Suggest: inst.completeSquadrons,
+			},
+			{
+				Name:    "unit",
+				Suggest: inst.completeSquadronUnits,
+			},
+		},
+		Execute: inst.execute,
+	})
 
 	return inst
 }
@@ -102,11 +100,11 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron *squadron.Squad
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -118,14 +116,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Tail your logs with stern.
-
-Usage:
-  stern [cluster] [fleet] [squadron] [unit]
-
-Examples:
-  stern example-cluster my-namespace my-deployment
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -138,23 +129,22 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		Env(c.kubectl.Cluster(cluster).Env()).
 		Args("--namespace", c.namespaceFn(cluster, fleet, squad)).
 		Args("--selector", "\"app.kubernetes.io/name="+squad+"-"+unit+"\"").
-		Args(r.PassThroughFlags()...).
 		Args(r.AdditionalArgs()...).
 		Run()
 }
 
-func (c *Command) completeClusters(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+func (c *Command) completeClusters(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 	return suggests.List(c.kubectl.Clusters())
 }
 
-func (c *Command) completeFleets(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+func (c *Command) completeFleets(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 	if cluster, ok := c.squadron.Cluster(r.Args().At(0)); ok {
 		return suggests.List(cluster.Fleets)
 	}
 	return nil
 }
 
-func (c *Command) completeSquadrons(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+func (c *Command) completeSquadrons(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 	if value, err := c.squadron.List(); err != nil {
 		c.l.Debug(err.Error())
 		return nil
@@ -162,7 +152,7 @@ func (c *Command) completeSquadrons(ctx context.Context, t *tree.Root, r *readli
 		return suggests.List(value)
 	}
 }
-func (c *Command) completeSquadronUnits(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+func (c *Command) completeSquadronUnits(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 	cluster, fleet, squad := r.Args().At(0), r.Args().At(1), r.Args().At(2)
 	if value, err := c.squadron.ListUnits(ctx, squad, cluster, fleet, true); err != nil {
 		c.l.Debug(err.Error())

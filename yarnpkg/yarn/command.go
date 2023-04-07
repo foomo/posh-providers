@@ -23,7 +23,7 @@ type (
 		l           log.Logger
 		name        string
 		cache       cache.Namespace
-		commandTree *tree.Root
+		commandTree tree.Root
 	}
 	CommandOption func(*Command)
 )
@@ -54,27 +54,25 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 		}
 	}
 
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "run yarn commands",
-		Node: &tree.Node{
-			Execute: inst.execute,
-		},
+		Description: "Run yarn commands",
+		Execute:     inst.execute,
 		Nodes: tree.Nodes{
 			{
 				Name:        "install",
-				Description: "install dependencies",
+				Description: "Install dependencies",
 				Args:        tree.Args{inst.pathArg()},
 				Execute:     inst.install,
 			},
 			{
 				Name:        "run",
-				Description: "run script",
+				Description: "Run script",
 				Args: tree.Args{
 					inst.pathArg(),
 					{
 						Name: "script",
-						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.scripts(ctx, r.Args().At(1)))
 						},
 					},
@@ -83,9 +81,9 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 			},
 			{
 				Name:        "run-all",
-				Description: "run script in all",
-				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-					fs.Int("parallel", 0, "number of parallel processes")
+				Description: "Run script in all",
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					fs.Default().Int("parallel", 0, "number of parallel processes")
 					return nil
 				},
 				Args: tree.Args{
@@ -96,7 +94,7 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 				Execute: inst.runAll,
 			},
 		},
-	}
+	})
 
 	return inst
 }
@@ -106,11 +104,11 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -122,16 +120,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Run yarn commands.
-
-Usage:
-  yarn [cmd]
-
-Available Commands:
-  install <path>        install dependencies
-  run [path] [script]   run script
-  run-all [script]      run script in all
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -142,7 +131,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "yarn").
 		Args(r.Args()...).
 		Args(r.Flags()...).
-		Args(r.PassThroughFlags()...).
 		Args(r.AdditionalArgs()...).
 		Run()
 }
@@ -151,7 +139,6 @@ func (c *Command) run(ctx context.Context, r *readline.Readline) error {
 	dir, script := r.Args().At(1), r.Args().At(2)
 	c.l.Infof("Running script %q in %q", script, dir)
 	return shell.New(ctx, c.l, "yarn", "run", script).
-		Args(r.PassThroughFlags()...).
 		Args(r.AdditionalArgs()...).
 		Dir(dir).
 		Run()
@@ -166,7 +153,6 @@ func (c *Command) runAll(ctx context.Context, r *readline.Readline) error {
 			wg.Go(func() error {
 				c.l.Info("└ " + dir)
 				return shell.New(ctx, c.l, "yarn", "run", script).
-					Args(r.PassThroughFlags()...).
 					Args(r.AdditionalArgs()...).
 					Dir(dir).
 					Run()
@@ -183,7 +169,6 @@ func (c *Command) install(ctx context.Context, r *readline.Readline) error {
 	}
 	c.l.Infof("Running install in %q", dir)
 	return shell.New(ctx, c.l, "yarn", "install").
-		Args(r.PassThroughFlags()...).
 		Args(r.AdditionalArgs()...).
 		Dir(dir).
 		Run()
@@ -227,7 +212,7 @@ func (c *Command) pathArg() *tree.Arg {
 	return &tree.Arg{
 		Name:     "path",
 		Optional: true,
-		Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 			return suggests.List(c.paths(ctx))
 		},
 	}
@@ -235,7 +220,7 @@ func (c *Command) pathArg() *tree.Arg {
 
 func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context, *errgroup.Group) {
 	wg, ctx := errgroup.WithContext(ctx)
-	if value, err := r.FlagSet().GetInt("parallel"); err == nil && value != 0 {
+	if value, err := r.FlagSets().Default().GetInt("parallel"); err == nil && value != 0 {
 		wg.SetLimit(value)
 	} else {
 		wg.SetLimit(1)

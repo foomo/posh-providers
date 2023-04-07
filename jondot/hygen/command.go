@@ -23,7 +23,7 @@ type (
 		name        string
 		cache       cache.Namespace
 		templateDir string
-		commandTree *tree.Root
+		commandTree tree.Root
 	}
 	CommandOption func(*Command)
 )
@@ -60,34 +60,32 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 			opt(inst)
 		}
 	}
-	inst.commandTree = &tree.Root{
+	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "run hygen",
-		Node: &tree.Node{
-			Args: tree.Args{
-				{
-					Name: "path",
-					Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
-						return suggests.List(inst.paths(ctx))
-					},
+		Description: "Run hygen",
+		Args: tree.Args{
+			{
+				Name: "path",
+				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+					return suggests.List(inst.paths(ctx))
 				},
 			},
 		},
 		Nodes: tree.Nodes{
 			{
 				Name:        "template",
-				Description: "render template",
+				Description: "Render template",
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.paths(ctx))
 				},
-				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSet) error {
-					fs.Bool("dry", false, "Perform a dry run. Files will be generated but not saved")
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					fs.Default().Bool("dry", false, "Perform a dry run. Files will be generated but not saved")
 					return nil
 				},
 				Args: tree.Args{
 					{
 						Name: "path",
-						Suggest: func(ctx context.Context, t *tree.Root, r *readline.Readline) []goprompt.Suggest {
+						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return nil
 						},
 					},
@@ -95,7 +93,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 				Execute: inst.execute,
 			},
 		},
-	}
+	})
 
 	return inst
 }
@@ -105,11 +103,11 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) Name() string {
-	return c.commandTree.Name
+	return c.commandTree.Node().Name
 }
 
 func (c *Command) Description() string {
-	return c.commandTree.Description
+	return c.commandTree.Node().Description
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -138,14 +136,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
-	return `Generate hygen files.
-
-Usage:
-  hygen [template] [path]
-
-Examples:
-  hygen example ./target/path
-`
+	return c.commandTree.Help(ctx, r)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -156,7 +147,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "hygen", "scaffold").
 		Args(r.Args()...).
 		Args(r.Flags()...).
-		Args(r.PassThroughFlags()...).
 		Args(r.AdditionalArgs()...).
 		Env(fmt.Sprintf("HYGEN_TMPLS=%s", path.Dir(c.templateDir))).
 		Run()
