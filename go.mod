@@ -13,7 +13,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.57
 	github.com/samber/lo v1.38.1
-	github.com/slack-go/slack v0.12.1
+	github.com/slack-go/slack v0.12.2
 	github.com/spf13/viper v1.15.0
 	golang.org/x/exp v0.0.0-20230126173853-a67bb567ff2e
 	golang.org/x/sync v0.1.0
