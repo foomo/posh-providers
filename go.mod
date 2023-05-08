@@ -16,7 +16,7 @@ require (
 	github.com/slack-go/slack v0.12.1
 	github.com/spf13/viper v1.15.0
 	golang.org/x/exp v0.0.0-20230126173853-a67bb567ff2e
-	golang.org/x/sync v0.1.0
+	golang.org/x/sync v0.2.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
