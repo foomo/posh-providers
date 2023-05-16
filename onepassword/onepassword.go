@@ -11,6 +11,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
@@ -25,14 +26,15 @@ import (
 
 type (
 	OnePassword struct {
-		l         log.Logger
-		cfg       Config
-		cache     cache.Namespace
-		connect   connect.Client
-		uuidRegex *regexp.Regexp
-		watching  map[string]bool
-		configKey string
-		last      time.Time
+		l              log.Logger
+		cfg            Config
+		cache          cache.Namespace
+		connect        connect.Client
+		uuidRegex      *regexp.Regexp
+		watching       map[string]bool
+		configKey      string
+		isSignedInLock sync.Mutex
+		isSignedInTime time.Time
 	}
 	Option func(*OnePassword) error
 )
@@ -86,6 +88,8 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) 
 func (op *OnePassword) Session() (bool, error) {
 	var sessChanged bool
 	sess := os.Getenv("OP_SESSION_" + op.cfg.Account)
+	op.isSignedInLock.Lock()
+	defer op.isSignedInLock.Unlock()
 
 	if op.cfg.TokenFilename != "" {
 		if err := godotenv.Overload(op.cfg.TokenFilename); err != nil {
@@ -99,7 +103,7 @@ func (op *OnePassword) Session() (bool, error) {
 		}
 	}
 
-	if sessChanged || op.last.IsZero() || time.Since(op.last) > time.Minute*10 {
+	if sessChanged || op.isSignedInTime.IsZero() || time.Since(op.isSignedInTime) > time.Minute*10 {
 		out, err := exec.Command("op", "account", "--account", op.cfg.Account, "get", "--format", "json").Output()
 		if err != nil {
 			return false, fmt.Errorf("%w: %s", err, string(out))
@@ -114,7 +118,7 @@ func (op *OnePassword) Session() (bool, error) {
 		}
 
 		if data.Name == op.cfg.Account {
-			op.last = time.Now()
+			op.isSignedInTime = time.Now()
 			op.watch()
 			return true, nil
 		}
