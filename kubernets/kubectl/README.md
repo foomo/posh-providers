@@ -10,12 +10,12 @@ import (
   "github.com/foomo/posh/pkg/command"
   "github.com/foomo/posh/pkg/log"
   "github.com/foomo/posh/pkg/plugin"
-  "github.com/geschenkidee/opari/cmds/posh/pkg/command/kubectl"
   "github.com/spf13/viper"
 )
 
 type Plugin struct {
   l        log.Logger
+  cache    cache.Cache
   kubectl  *kubectl.Kubectl
   commands command.Commands
 }
@@ -23,12 +23,17 @@ type Plugin struct {
 func New(l log.Logger) (plugin.Plugin, error) {
   inst := &Plugin{
     l:        l,
+    cache:    &cache.MemoryCache{},
     commands: command.Commands{},
   }
 
   // ...
 
-  inst.commands.Add(gotsrpc.NewCommand(l))
+  if value, err := kubectl.New(l, inst.cache); err != nil {
+    return nil, err
+  } else {
+    inst.kubectl = value
+  }
 
   // ...
 
