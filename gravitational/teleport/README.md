@@ -52,19 +52,15 @@ func New(l log.Logger) (plugin.Plugin, error) {
 }
 ```
 
-## Environment:
-
-Add this to your environment:
-
-```yaml
-env:
-  - name: KUBECONFIG
-    value: "${PROJECT_ROOT}/.posh/config/kubeconfig.yaml"
-```
-
 ## Configuration:
 
 ```yaml
-kubectl:
-  path: devops/config/kubectl
+## Teleport
+teleport:
+  path: ".posh/config/teleport"
+  hostname: teleport.foo.bar:443
+  labels:
+    project: "foo"
+  database:
+    user: developers
 ```
