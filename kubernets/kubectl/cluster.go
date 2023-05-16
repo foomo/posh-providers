@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/foomo/posh/pkg/env"
@@ -47,7 +46,7 @@ func (c *Cluster) Env() string {
 }
 
 func (c *Cluster) Config() string {
-	return path.Join(os.Getenv(env.ProjectRoot), c.kubectl.cfg.ConfigPath, c.Name()+".yaml")
+	return env.Path(c.kubectl.cfg.ConfigPath, c.Name()+".yaml")
 }
 
 func (c *Cluster) ConfigExists() bool {

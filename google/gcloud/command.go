@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path"
 
 	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
@@ -161,8 +160,7 @@ func (c *Command) authLogin(ctx context.Context, r *readline.Readline) error {
 	}
 
 	// resolve or retrieve service account access token
-	keyFilename := path.Join(
-		os.Getenv(env.ProjectRoot),
+	keyFilename := env.Path(
 		c.gcloud.ServiceAccountKeysPath(),
 		fmt.Sprintf("%s.json", accountName),
 	)
