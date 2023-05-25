@@ -5,7 +5,7 @@
 .PHONY: tidy
 ## Run go mod tidy
 tidy:
-	go mod tidy
+	@go mod tidy
 
 .PHONY: lint
 ## Run linter
