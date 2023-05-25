@@ -93,6 +93,9 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			return suggests.List(inst.stacks(ctx))
 		},
 	}
+	skipSynthFlag := func(fs *readline.FlagSets) {
+		fs.Internal().Bool("skip-synth", false, "Skip synth trough env var")
+	}
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
@@ -101,25 +104,41 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			{
 				Name:        "list",
 				Description: "List stacks in app",
-				Execute:     inst.list,
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					skipSynthFlag(fs)
+					return nil
+				},
+				Execute: inst.list,
 			},
 			{
 				Name:        "diff",
 				Description: "Perform a diff (terraform plan) for the given stack",
 				Args:        tree.Args{stacksArg},
-				Execute:     inst.diff,
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					skipSynthFlag(fs)
+					return nil
+				},
+				Execute: inst.diff,
 			},
 			{
 				Name:        "deploy",
 				Description: "Deploy the given stacks",
 				Args:        tree.Args{stacksArg},
-				Execute:     inst.deploy,
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					skipSynthFlag(fs)
+					return nil
+				},
+				Execute: inst.deploy,
 			},
 			{
 				Name:        "destroy",
 				Description: "Destroy the given stacks",
 				Args:        tree.Args{stacksArg},
-				Execute:     inst.destroy,
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					skipSynthFlag(fs)
+					return nil
+				},
+				Execute: inst.destroy,
 			},
 			{
 				Name:        "unlock",
@@ -188,7 +207,15 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) list(ctx context.Context, r *readline.Readline) error {
+	var envs []string
+	ifs := r.FlagSets().Internal()
+	if value, err := ifs.GetBool("skip-synth"); err != nil {
+		return err
+	} else if value {
+		envs = append(envs, "SKIP_SYNTH=true")
+	}
 	return shell.New(ctx, c.l, "cdktf", "list").
+		Env(envs...).
 		Dir(c.cfg.Path).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
@@ -197,7 +224,15 @@ func (c *Command) list(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) diff(ctx context.Context, r *readline.Readline) error {
+	var envs []string
+	ifs := r.FlagSets().Internal()
+	if value, err := ifs.GetBool("skip-synth"); err != nil {
+		return err
+	} else if value {
+		envs = append(envs, "SKIP_SYNTH=true")
+	}
 	return shell.New(ctx, c.l, "cdktf", "diff").
+		Env(envs...).
 		Dir(c.cfg.Path).
 		Args(r.Args().From(1)...).
 		Args(r.Flags()...).
@@ -207,7 +242,15 @@ func (c *Command) diff(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) deploy(ctx context.Context, r *readline.Readline) error {
+	var envs []string
+	ifs := r.FlagSets().Internal()
+	if value, err := ifs.GetBool("skip-synth"); err != nil {
+		return err
+	} else if value {
+		envs = append(envs, "SKIP_SYNTH=true")
+	}
 	return shell.New(ctx, c.l, "cdktf", "deploy").
+		Env(envs...).
 		Dir(c.cfg.Path).
 		Args(r.Args().From(1)...).
 		Args(r.Args().From(1)...).
@@ -218,7 +261,15 @@ func (c *Command) deploy(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) destroy(ctx context.Context, r *readline.Readline) error {
+	var envs []string
+	ifs := r.FlagSets().Internal()
+	if value, err := ifs.GetBool("skip-synth"); err != nil {
+		return err
+	} else if value {
+		envs = append(envs, "SKIP_SYNTH=true")
+	}
 	return shell.New(ctx, c.l, "cdktf", "destroy").
+		Env(envs...).
 		Dir(c.cfg.Path).
 		Args(r.Args().From(1)...).
 		Args(r.Flags()...).
