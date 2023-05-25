@@ -52,7 +52,7 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:         l.Named("harbor"),
 		name:      "harbor",
-		configKey: "open",
+		configKey: "harbor",
 	}
 	for _, opt := range opts {
 		if opt != nil {
