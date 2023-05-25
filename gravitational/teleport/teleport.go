@@ -106,8 +106,7 @@ func (t *Teleport) Clusters(ctx context.Context) []string {
 		value, err := shell.New(ctx, t.l, "tsh", "kube", "ls",
 			fmt.Sprintf("--query='%s'", t.cfg.Query()),
 			"--format", "json",
-		).
-			Output()
+		).Output()
 		if err != nil {
 			pterm.Error.Println(err.Error())
 			return ret
@@ -120,7 +119,7 @@ func (t *Teleport) Clusters(ctx context.Context) []string {
 		}
 
 		for _, s := range clusters {
-			ret = append(ret, s.KubeClusterName)
+			ret = append(ret, t.cfg.Kubernetes.Alias(s.KubeClusterName))
 		}
 		return ret
 	}).([]string)

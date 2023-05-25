@@ -158,7 +158,7 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 
 	// generate & filter new config
 	return shell.New(ctx, c.l, "tsh", "kube", "login",
-		cluster.Name(),
+		c.teleport.cfg.Kubernetes.Name(cluster.Name()),
 	).
 		Env(cluster.Env(profile)).
 		Args(r.Flags()...).

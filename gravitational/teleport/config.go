@@ -8,10 +8,14 @@ import (
 
 type (
 	Config struct {
-		Path     string            `json:"path" yaml:"path"`
-		Labels   map[string]string `json:"labels" yaml:"labels"`
-		Hostname string            `json:"hostname" yaml:"hostname"`
-		Database Database          `json:"database" yaml:"database"`
+		Path       string            `json:"path" yaml:"path"`
+		Labels     map[string]string `json:"labels" yaml:"labels"`
+		Hostname   string            `json:"hostname" yaml:"hostname"`
+		Kubernetes Kubernetes        `json:"kubernetes" yaml:"kubernetes"`
+		Database   Database          `json:"database" yaml:"database"`
+	}
+	Kubernetes struct {
+		Aliases map[string]string `json:"aliases" yaml:"aliases"`
 	}
 	Database struct {
 		User string `json:"user" yaml:"user"`
@@ -34,4 +38,23 @@ func (c Database) EnvUser() string {
 		return value
 	}
 	return c.User
+}
+
+func (c Kubernetes) Alias(name string) string {
+	if c.Aliases == nil {
+		return name
+	}
+	if value, ok := c.Aliases[name]; ok {
+		return value
+	}
+	return name
+}
+
+func (c Kubernetes) Name(alias string) string {
+	for name, value := range c.Aliases {
+		if value == alias {
+			return name
+		}
+	}
+	return alias
 }
