@@ -65,13 +65,13 @@ func New(l log.Logger, kubectl *kubectl.Kubectl, opts ...Option) (*ETCD, error) 
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *ETCD) GetPath(ctx context.Context, cluster Cluster, path string) (string, error) {
+func (c *ETCD) GetPath(ctx context.Context, cluster Cluster, profile, path string) (string, error) {
 	if out, err := shell.New(ctx, c.l, "kubectl", "exec",
 		"-it", cluster.PodName,
 		"--namespace", cluster.Namespace,
 		"--", "/bin/sh", "-c", "'etcdctl get "+path+" --print-value-only'",
 	).
-		Env(c.kubectl.Cluster(cluster.Name).Env()).
+		Env(c.kubectl.Cluster(cluster.Name).Env(profile)).
 		Output(); err != nil {
 		return "", err
 	} else {
@@ -79,13 +79,13 @@ func (c *ETCD) GetPath(ctx context.Context, cluster Cluster, path string) (strin
 	}
 }
 
-func (c *ETCD) SetPath(ctx context.Context, cluster Cluster, path, value string) (string, error) {
+func (c *ETCD) SetPath(ctx context.Context, cluster Cluster, profile, path, value string) (string, error) {
 	if out, err := shell.New(ctx, c.l, "kubectl", "exec",
 		"-it", cluster.PodName,
 		"--namespace", cluster.Namespace,
 		"--", "/bin/sh", "-c", fmt.Sprintf("'echo \"%s\" | etcdctl put "+path+"'", strings.ReplaceAll(value, "\n", "\\n")),
 	).
-		Env(c.kubectl.Cluster(cluster.Name).Env()).
+		Env(c.kubectl.Cluster(cluster.Name).Env(profile)).
 		Output(); err != nil {
 		return "", err
 	} else {

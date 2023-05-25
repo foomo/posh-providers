@@ -40,8 +40,9 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 		},
 		Args: tree.Args{
 			{
-				Name:    "path",
-				Suggest: inst.completePaths,
+				Name:     "path",
+				Optional: true,
+				Suggest:  inst.completePaths,
 			},
 		},
 		Execute: inst.execute,

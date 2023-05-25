@@ -41,32 +41,54 @@ func (c *Cluster) String() string {
 	return c.name
 }
 
-func (c *Cluster) Env() string {
-	return fmt.Sprintf("KUBECONFIG=%s", c.Config())
+func (c *Cluster) Env(profile string) string {
+	return fmt.Sprintf("KUBECONFIG=%s", c.Config(profile))
 }
 
-func (c *Cluster) Config() string {
+func (c *Cluster) Config(profile string) string {
+	if profile != "" {
+		return env.Path(c.kubectl.cfg.ConfigPath, profile, c.Name()+".yaml")
+	}
 	return env.Path(c.kubectl.cfg.ConfigPath, c.Name()+".yaml")
 }
 
-func (c *Cluster) ConfigExists() bool {
-	if _, err := os.Stat(c.Config()); err == nil {
+func (c *Cluster) ConfigExists(profile string) bool {
+	if _, err := os.Stat(c.Config(profile)); err == nil {
 		return true
 	}
 	return false
 }
 
-func (c *Cluster) DeleteConfig() error {
-	if !c.ConfigExists() {
+func (c *Cluster) DeleteConfig(profile string) error {
+	if !c.ConfigExists(profile) {
 		return nil
 	}
-	return os.Remove(c.Config())
+	return os.Remove(c.Config(profile))
 }
 
 //nolint:forcetypeassert
-func (c *Cluster) Namespaces(ctx context.Context) []string {
-	return c.kubectl.cache.Get(c.name+"-namespaces", func() any {
-		if sh, err := c.shell(ctx,
+func (c *Cluster) Profiles(ctx context.Context) []string {
+	return c.kubectl.cache.Get("profiles", func() any {
+		files, err := os.ReadDir(c.kubectl.cfg.ConfigPath)
+		if err != nil {
+			c.l.Debug(err.Error())
+			return []string{}
+		}
+
+		ret := []string{}
+		for _, f := range files {
+			if f.IsDir() && !strings.HasPrefix(f.Name(), ".") {
+				ret = append(ret, f.Name())
+			}
+		}
+		return ret
+	}).([]string)
+}
+
+//nolint:forcetypeassert
+func (c *Cluster) Namespaces(ctx context.Context, profile string) []string {
+	return c.kubectl.cache.Get(profile+"-"+c.name+"-namespaces", func() any {
+		if sh, err := c.shell(ctx, profile,
 			"get", "namespaces",
 			"-o", "jsonpath='{.items[*].metadata.name}'",
 		); err != nil {
@@ -82,9 +104,9 @@ func (c *Cluster) Namespaces(ctx context.Context) []string {
 }
 
 //nolint:forcetypeassert
-func (c *Cluster) Pods(ctx context.Context, namespace string) []string {
-	return c.kubectl.cache.Get(c.name+"-"+namespace+"-pods", func() any {
-		if sh, err := c.shell(ctx,
+func (c *Cluster) Pods(ctx context.Context, profile, namespace string) []string {
+	return c.kubectl.cache.Get(profile+"-"+c.name+"-"+namespace+"-pods", func() any {
+		if sh, err := c.shell(ctx, profile,
 			"get", "pods",
 			"-n", namespace,
 			"-o", "jsonpath='{.items[*].metadata.name}'",
@@ -104,7 +126,7 @@ func (c *Cluster) Pods(ctx context.Context, namespace string) []string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Cluster) shell(ctx context.Context, args ...string) (*shell.Shell, error) {
+func (c *Cluster) shell(ctx context.Context, profile string, args ...string) (*shell.Shell, error) {
 	sh := shell.New(ctx, c.l, "kubectl").Args(args...)
 	if c.kubectl.authTokenProvider != nil {
 		if token, err := c.kubectl.authTokenProvider(ctx, c.Name()); err != nil {
@@ -113,5 +135,6 @@ func (c *Cluster) shell(ctx context.Context, args ...string) (*shell.Shell, erro
 			sh.Args("--token", token)
 		}
 	}
-	return sh.Env(c.Env()), nil
+
+	return sh.Env(c.Env(profile)), nil
 }

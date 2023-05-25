@@ -2,6 +2,7 @@ package helm
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
@@ -43,7 +44,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 		name:    "helm",
 		kubectl: kubectl,
 	}
-	allFlags := func(fs *readline.FlagSets) {
+
+	allFlags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 		fs.Default().Bool("help", false, "help for helm")
 		fs.Default().Bool("debug", false, "enable verbose output")
 		fs.Default().String("namespace", "", "namespace scope for this request")
@@ -53,6 +55,13 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 		fs.Default().Bool("dry-run", false, "assume aws profile")
 		fs.Default().Bool("atomic", false, "delete installation on failure")
 		fs.Default().Bool("wait", false, "wait until all resources a ready")
+		fs.Internal().String("profile", "", "Profile to use.")
+		if r.Args().HasIndex(0) {
+			if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
@@ -69,46 +78,33 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					{
 						Name:        "create",
 						Description: "Create a new chart with the given name",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "dependency",
 						Description: "Manage a chart's dependencies",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "diff",
 						Description: "Preview helm upgrade changes as a diff",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "env",
 						Description: "Helm client environment information",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "get",
 						Description: "Download extended information of a named release",
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
 							fs.Default().String("revision", "", "get the named release with revision")
-							return nil
+							return allFlags(ctx, r, fs)
 						},
 						Args: tree.Args{
 							{
@@ -131,174 +127,119 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 					{
 						Name:        "help",
 						Description: "Help about any command",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "history",
 						Description: "Fetch release history",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "install",
 						Description: "Install a chart",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "lint",
 						Description: "Examine a chart for possible issues",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "list",
 						Description: "List releases",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "package",
 						Description: "Package a chart directory into a chart archive",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "plugin",
 						Description: "Install, list, or uninstall Helm plugins",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "pull",
 						Description: "Download a chart from a repository and (optionally) unpack it in local directory",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "repo",
 						Description: "Add, list, remove, update, and index chart repositories",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "rollback",
 						Description: "Roll back a release to a previous revision",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "search",
 						Description: "Search for a keyword in charts",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "show",
 						Description: "Show information of a chart",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "status",
 						Description: "Display the status of the named release",
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
 							fs.Default().Bool("show-desc", false, "show description")
-							return nil
+							return allFlags(ctx, r, fs)
 						},
 						Execute: inst.execute,
 					},
 					{
 						Name:        "template",
 						Description: "Locally render templates",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "test",
 						Description: "Run tests for a release",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "uninstall",
 						Description: "Uninstall a release",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "upgrade",
 						Description: "Upgrade a release",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "verify",
 						Description: "Verify that a chart at the given path has been signed and is valid",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 					{
 						Name:        "version",
 						Description: "Print the client version information",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							allFlags(fs)
-							return nil
-						},
-						Execute: inst.execute,
+						Flags:       allFlags,
+						Execute:     inst.execute,
 					},
 				},
 			},
@@ -328,7 +269,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
 		return errors.New("missing [CLUSTER] argument")
-	case !c.kubectl.Cluster(r.Args().At(0)).ConfigExists():
+	case !c.kubectl.Cluster(r.Args().At(0)).ConfigExists(""):
 		return errors.New("invalid [CLUSTER] argument")
 	case r.Args().LenIs(1):
 		return errors.New("missing [CMD] argument")
@@ -350,12 +291,22 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
+	fs := r.FlagSets().Default()
+	ifs := r.FlagSets().Internal()
 	cluster, args := c.kubectl.Cluster(r.Args().At(0)), r.Args()[1:]
+
+	profile, err := ifs.GetString("profile")
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(args)
 
 	return shell.New(ctx, c.l, "helm").
 		Args(args...).
-		Args(r.Flags()...).
+		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
-		Env(cluster.Env()).
+		Args(r.AdditionalFlags()...).
+		Env(cluster.Env(profile)).
 		Run()
 }

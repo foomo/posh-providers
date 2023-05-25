@@ -14,34 +14,54 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 )
 
-type Command struct {
-	l           log.Logger
-	name        string
-	cache       cache.Cache
-	kubectl     *kubectl.Kubectl
-	teleport    *Teleport
-	commandTree tree.Root
+type (
+	Command struct {
+		l           log.Logger
+		name        string
+		cache       cache.Cache
+		kubectl     *kubectl.Kubectl
+		teleport    *Teleport
+		commandTree tree.Root
+	}
+	CommandOption func(*Command)
+)
+
+// ------------------------------------------------------------------------------------------------
+// ~ Options
+// ------------------------------------------------------------------------------------------------
+
+func CommandWithName(v string) CommandOption {
+	return func(o *Command) {
+		o.name = v
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, cache cache.Cache, teleport *Teleport, kubectl *kubectl.Kubectl, opts ...Option) *Command {
+func NewCommand(l log.Logger, cache cache.Cache, teleport *Teleport, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:        l.Named("teleport"),
+		name:     "teleport",
 		cache:    cache,
 		kubectl:  kubectl,
 		teleport: teleport,
+	}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(inst)
+		}
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "teleport",
 		Description: "Manage access points through teleport",
+		Execute:     inst.auth,
 		Nodes: tree.Nodes{
 			{
-				Name:    "login",
-				Execute: inst.login,
+				Name:    "auth",
+				Execute: inst.auth,
 			},
 			{
 				Name:        "kubeconfig",
@@ -54,6 +74,10 @@ func NewCommand(l log.Logger, cache cache.Cache, teleport *Teleport, kubectl *ku
 							return suggests.List(inst.teleport.Clusters(ctx))
 						},
 					},
+				},
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					fs.Internal().String("profile", "", "Profile to use.")
+					return fs.Internal().SetValues("profile", "teleport")
 				},
 				Execute: inst.kubeconfig,
 			},
@@ -73,64 +97,6 @@ func NewCommand(l log.Logger, cache cache.Cache, teleport *Teleport, kubectl *ku
 			},
 		},
 	})
-
-	/*
-	 // Execute ...
-	 func (c *Teleport) Execute(args, passArgs, pipeArgs []string) error {
-	 	var env []string
-	 	cmd, args := args[0], args[1:]
-
-	 	env = append(env, "HOME="+path.Join(os.Getenv("PROJECT_ROOT"), "devops", "config"))
-
-	 	switch cmd {
-	 	case "login":
-	 		if err := shell.New("tsh", "login").
-	 			WithArgs(
-	 				"--auth=github",
-	 				fmt.Sprintf("--proxy=%s:443", c.config().Hostname),
-	 			).
-	 			WithPassArgs(passArgs...).
-	 			WithPipeArgs(pipeArgs...).
-	 			WithEnv(env).
-	 			Run(); err != nil {
-	 			return err
-	 		}
-	 	case "database":
-	 		database, _ := args[0], args[1:]
-	 		databaseUser := "developers"
-	 		if value := os.Getenv("TELEPORT_DATABASE_USER"); value != "" {
-	 			databaseUser = value
-	 		}
-	 		if err := shell.New("tsh", "db", "login", "--db-user", databaseUser, database).
-	 			WithPassArgs(passArgs...).
-	 			WithPipeArgs(pipeArgs...).
-	 			WithEnv(env).
-	 			Run(); err != nil {
-	 			return err
-	 		}
-	 	case "kubeconfig":
-	 		cluster, _ := args[0], args[1:]
-	 		env = append(env, fmt.Sprintf("KUBECONFIG=%s", kubectl.Cluster(cluster).GetConfig()))
-	 		// delete old config
-	 		kubectl.Cluster(cluster).DeleteConfig()
-	 		// generate & filter new config
-	 		if err := shell.New("tsh", "kube", "login", cluster).
-	 			WithPassArgs(passArgs...).
-	 			WithPipeArgs(pipeArgs...).
-	 			WithEnv(env).
-	 			Run(); err != nil {
-	 			return err
-	 		} else if err = config.GenerateTeleportKubeconfig(kubectl.Cluster(cluster).GetConfig(), cluster); err != nil {
-	 			return errors.Wrap(err, "failed to create teleport kubeconfig")
-	 		}
-	 	}
-
-	 	cache.Clear("")
-
-	 	return nil
-	 }
-
-	*/
 
 	return inst
 }
@@ -167,7 +133,6 @@ func (c *Command) database(ctx context.Context, r *readline.Readline) error {
 	databse := r.Args().At(1)
 
 	return shell.New(ctx, c.l, "tsh", "db", "login",
-		fmt.Sprintf("--proxy=%s", c.teleport.Config().Hostname),
 		"--db-user", c.teleport.Config().Database.EnvUser(),
 		databse,
 	).
@@ -178,26 +143,31 @@ func (c *Command) database(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
+	ifs := r.FlagSets().Internal()
 	cluster := c.kubectl.Cluster(r.Args().At(1))
 
+	profile, err := ifs.GetString("profile")
+	if err != nil {
+		return err
+	}
+
 	// delete old config
-	if err := cluster.DeleteConfig(); err != nil {
+	if err := cluster.DeleteConfig(profile); err != nil {
 		return err
 	}
 
 	// generate & filter new config
 	return shell.New(ctx, c.l, "tsh", "kube", "login",
-		fmt.Sprintf("--proxy=%s", c.teleport.Config().Hostname),
 		cluster.Name(),
 	).
-		Env(cluster.Env()).
+		Env(cluster.Env(profile)).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()
 }
 
-func (c *Command) login(ctx context.Context, r *readline.Readline) error {
+func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
 	if err := shell.New(ctx, c.l, "tsh", "login",
 		fmt.Sprintf("--proxy=%s", c.teleport.Config().Hostname),
 		"--auth=github",

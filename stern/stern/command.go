@@ -69,6 +69,12 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron *squadron.Squad
 			fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query.")
 			fs.Default().String("since", "", "Return logs newer than a relative duration like 5s, 2m, or 3h. Defaults to 48h")
 			fs.Default().String("tail", "", "The number of lines from the end of the logs to show. Defaults to -1, showing all logs. (default -1)")
+			fs.Internal().String("profile", "", "Profile to use.")
+			if r.Args().HasIndex(0) {
+				if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
+					return err
+				}
+			}
 			return nil
 		},
 		Args: tree.Args{
@@ -124,9 +130,16 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
+	ifs := r.FlagSets().Internal()
 	cluster, fleet, squad, unit := r.Args().At(0), r.Args().At(1), r.Args().At(2), r.Args().At(3)
+
+	profile, err := ifs.GetString("profile")
+	if err != nil {
+		return err
+	}
+
 	return shell.New(ctx, c.l, "stern").
-		Env(c.kubectl.Cluster(cluster).Env()).
+		Env(c.kubectl.Cluster(cluster).Env(profile)).
 		Args("--namespace", c.namespaceFn(cluster, fleet, squad)).
 		Args("--selector", "\"app.kubernetes.io/name="+squad+"-"+unit+"\"").
 		Args(r.AdditionalArgs()...).
@@ -152,6 +165,7 @@ func (c *Command) completeSquadrons(ctx context.Context, t tree.Root, r *readlin
 		return suggests.List(value)
 	}
 }
+
 func (c *Command) completeSquadronUnits(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 	cluster, fleet, squad := r.Args().At(0), r.Args().At(1), r.Args().At(2)
 	if value, err := c.squadron.ListUnits(ctx, squad, cluster, fleet, true); err != nil {

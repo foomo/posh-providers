@@ -85,7 +85,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) 
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
-func (op *OnePassword) Session() (bool, error) {
+func (op *OnePassword) IsAuthenticated() (bool, error) {
 	var sessChanged bool
 	sess := os.Getenv("OP_SESSION_" + op.cfg.Account)
 	op.isSignedInLock.Lock()
@@ -127,7 +127,7 @@ func (op *OnePassword) Session() (bool, error) {
 }
 
 func (op *OnePassword) SignIn(ctx context.Context) error {
-	if ok, _ := op.Session(); ok {
+	if ok, _ := op.IsAuthenticated(); ok {
 		return nil
 	}
 
@@ -189,7 +189,7 @@ func (op *OnePassword) Get(ctx context.Context, secret Secret) (string, error) {
 			return strings.ReplaceAll(strings.TrimSpace(value), "\\n", "\n"), nil
 		}
 	} else {
-		if ok, _ := op.Session(); !ok {
+		if ok, _ := op.IsAuthenticated(); !ok {
 			return "", ErrNotSignedIn
 		} else if fields := op.clientGet(ctx, secret.Vault, secret.Item); len(fields) == 0 {
 			return "", fmt.Errorf("could not find secret '%s' '%s'", secret.Vault, secret.Item)
@@ -209,7 +209,7 @@ func (op *OnePassword) GetDocument(ctx context.Context, secret Secret) (string, 
 			return value, nil
 		}
 	} else {
-		if ok, _ := op.Session(); !ok {
+		if ok, _ := op.IsAuthenticated(); !ok {
 			return "", ErrNotSignedIn
 		} else if value := op.clientGetDoument(ctx, secret.Vault, secret.Item); len(value) == 0 {
 			return "", fmt.Errorf("could not find document '%s' '%s'", secret.Vault, secret.Item)
@@ -220,7 +220,7 @@ func (op *OnePassword) GetDocument(ctx context.Context, secret Secret) (string, 
 }
 
 func (op *OnePassword) GetOnetimePassword(ctx context.Context, account, uuid string) (string, error) {
-	if ok, _ := op.Session(); !ok {
+	if ok, _ := op.IsAuthenticated(); !ok {
 		return "", ErrNotSignedIn
 	}
 
@@ -421,7 +421,7 @@ func (op *OnePassword) watch() {
 	if v, ok := op.watching[op.cfg.Account]; !ok || !v {
 		go func() {
 			for {
-				if ok, err := op.Session(); err != nil {
+				if ok, err := op.IsAuthenticated(); err != nil {
 					op.l.Warnf("\n1password session keep alive failed for '%s' (%s)", op.cfg.Account, err.Error())
 					op.watching[op.cfg.Account] = false
 					return

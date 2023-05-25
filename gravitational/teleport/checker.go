@@ -1,4 +1,4 @@
-package onepassword
+package teleport
 
 import (
 	"context"
@@ -7,13 +7,13 @@ import (
 	"github.com/foomo/posh/pkg/prompt/check"
 )
 
-func AuthChecker(p *OnePassword) check.Checker {
+func AuthChecker(p *Teleport) check.Checker {
 	return func(ctx context.Context, l log.Logger) check.Info {
-		name := "1Password"
-		if ok, _ := p.IsAuthenticated(); ok {
+		name := "Teleport"
+		if p.IsAuthenticated(ctx) {
 			return check.NewSuccessInfo(name, "Authenticated")
 		} else {
-			return check.NewFailureInfo(name, "Run `op auth` to sign into 1password")
+			return check.NewFailureInfo(name, "Run `teleport auth` to sign into teleport")
 		}
 	}
 }

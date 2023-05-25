@@ -76,7 +76,7 @@ func (t *Teleport) Config() Config {
 	return t.cfg
 }
 
-func (t *Teleport) IsSignedIn(ctx context.Context) bool {
+func (t *Teleport) IsAuthenticated(ctx context.Context) bool {
 	if t.signedIn && time.Since(t.signedInTime) < 12*time.Hour {
 		return true
 	} else if _, err := shell.New(ctx, t.l, "tsh", "status").Quiet().Output(); err != nil {
@@ -90,8 +90,10 @@ func (t *Teleport) IsSignedIn(ctx context.Context) bool {
 }
 
 // Clusters returns a list of cluster
+//
+//nolint:forcetypeassert
 func (t *Teleport) Clusters(ctx context.Context) []string {
-	if !t.IsSignedIn(ctx) {
+	if !t.IsAuthenticated(ctx) {
 		return nil
 	}
 	return t.cache.Get("clusters", func() interface{} {
@@ -102,7 +104,6 @@ func (t *Teleport) Clusters(ctx context.Context) []string {
 		}
 
 		value, err := shell.New(ctx, t.l, "tsh", "kube", "ls",
-			fmt.Sprintf("--proxy=%s", t.cfg.Hostname),
 			fmt.Sprintf("--query='%s'", t.cfg.Query()),
 			"--format", "json",
 		).
@@ -126,8 +127,10 @@ func (t *Teleport) Clusters(ctx context.Context) []string {
 }
 
 // Databases returns a list of cluster
+//
+//nolint:forcetypeassert
 func (t *Teleport) Databases(ctx context.Context) []string {
-	if !t.IsSignedIn(ctx) {
+	if !t.IsAuthenticated(ctx) {
 		return nil
 	}
 	return t.cache.Get("databases", func() interface{} {
@@ -142,7 +145,6 @@ func (t *Teleport) Databases(ctx context.Context) []string {
 			}
 		)
 		value, err := shell.New(ctx, t.l, "tsh", "db", "ls",
-			fmt.Sprintf("--proxy=%s", t.cfg.Hostname),
 			fmt.Sprintf("--query='%s'", t.cfg.Query()),
 			"--format", "json",
 		).

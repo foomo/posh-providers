@@ -159,7 +159,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		if value, err := files.Find(ctx, ".", "gocontentful.yml"); err != nil {
+		if value, err := files.Find(ctx, ".", "gocontentful.yaml", files.FindWithIgnore(`^\.`, "node_modules")); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return []string{}
 		} else {
