@@ -9,7 +9,9 @@ import (
 	"strings"
 
 	prompt2 "github.com/c-bata/go-prompt"
+	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
+	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
@@ -21,6 +23,7 @@ import (
 type Command struct {
 	l           log.Logger
 	etcd        *ETCD
+	kubectl     *kubectl.Kubectl
 	commandTree tree.Root
 }
 
@@ -28,20 +31,32 @@ type Command struct {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, etcd *ETCD, opts ...Option) *Command {
+func NewCommand(l log.Logger, etcd *ETCD, kubectl *kubectl.Kubectl, opts ...Option) *Command {
 	inst := &Command{
-		l:    l.Named("etcd"),
-		etcd: etcd,
+		l:       l.Named("etcd"),
+		etcd:    etcd,
+		kubectl: kubectl,
 	}
 
-	pathArg := &tree.Arg{
-		Name: "path",
-		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []prompt2.Suggest {
-			if value, ok := inst.etcd.cfg.Cluster(r.Args().At(0)); ok {
-				return suggests.List(value.Paths)
-			}
-			return nil
+	args := tree.Args{
+		{
+			Name: "path",
+			Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []prompt2.Suggest {
+				if value, ok := inst.etcd.cfg.Cluster(r.Args().At(0)); ok {
+					return suggests.List(value.Paths)
+				}
+				return nil
+			},
 		},
+	}
+	flags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+		if r.Args().HasIndex(0) {
+			fs.Internal().String("profile", "", "Profile to use.")
+			if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
@@ -62,12 +77,14 @@ func NewCommand(l log.Logger, etcd *ETCD, opts ...Option) *Command {
 				Nodes: tree.Nodes{
 					{
 						Name:    "get",
-						Args:    tree.Args{pathArg},
+						Args:    args,
+						Flags:   flags,
 						Execute: inst.get,
 					},
 					{
 						Name:    "edit",
-						Args:    tree.Args{pathArg},
+						Args:    args,
+						Flags:   flags,
 						Execute: inst.edit,
 					},
 				},
@@ -108,9 +125,16 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) get(ctx context.Context, r *readline.Readline) error {
 	etcdPath := r.Args().At(2)
+	ifs := r.FlagSets().Internal()
+
+	profile, err := ifs.GetString("profile")
+	if err != nil {
+		return err
+	}
+
 	if cluster, ok := c.etcd.cfg.Cluster(r.Args().At(0)); !ok {
 		return errors.New("invalid cluster")
-	} else if out, err := c.etcd.GetPath(ctx, cluster, etcdPath); err != nil {
+	} else if out, err := c.etcd.GetPath(ctx, cluster, profile, etcdPath); err != nil {
 		return errors.Wrap(err, out)
 	} else {
 		prints.Code(c.l, etcdPath, out+"\n", "yaml")
@@ -129,10 +153,16 @@ func (c *Command) edit(ctx context.Context, r *readline.Readline) error {
 	}
 
 	etcdPath := r.Args().At(2)
-	filename := path.Join(os.Getenv("PROJECT_ROOT"), c.etcd.cfg.ConfigPath, etcdPath)
+	ifs := r.FlagSets().Internal()
+	filename := env.Path(c.etcd.cfg.ConfigPath, etcdPath)
+
+	profile, err := ifs.GetString("profile")
+	if err != nil {
+		return err
+	}
 
 	{ // retrieve data
-		if value, err := c.etcd.GetPath(ctx, cluster, etcdPath); err != nil {
+		if value, err := c.etcd.GetPath(ctx, cluster, profile, etcdPath); err != nil {
 			return err
 		} else {
 			prev = []byte(strings.ReplaceAll(value, "\r\r\n", "\n"))
@@ -173,7 +203,7 @@ func (c *Command) edit(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("updating config")
-	if out, err := c.etcd.SetPath(ctx, cluster, etcdPath, string(next)); err != nil {
+	if out, err := c.etcd.SetPath(ctx, cluster, profile, etcdPath, string(next)); err != nil {
 		return errors.Wrap(err, out)
 	}
 	return nil

@@ -78,7 +78,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 		return nil, errors.Wrapf(err, "failed to create directory %q", inst.cfg.ConfigPath)
 	}
 
-	if err := os.Setenv("CLOUDSDK_CONFIG", path.Join(os.Getenv(env.ProjectRoot), inst.cfg.ConfigPath)); err != nil {
+	if err := os.Setenv("CLOUDSDK_CONFIG", env.Path(inst.cfg.ConfigPath)); err != nil {
 		return nil, err
 	}
 

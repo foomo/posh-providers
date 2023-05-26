@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path"
 
 	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
@@ -109,6 +108,10 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 						},
 					},
 				},
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					fs.Internal().String("profile", "", "Store credentials in given profile.")
+					return fs.Internal().SetValues("profile", "gcloud")
+				},
 				Execute: inst.containerClustersGetCredentials,
 			},
 		},
@@ -161,8 +164,7 @@ func (c *Command) authLogin(ctx context.Context, r *readline.Readline) error {
 	}
 
 	// resolve or retrieve service account access token
-	keyFilename := path.Join(
-		os.Getenv(env.ProjectRoot),
+	keyFilename := env.Path(
 		c.gcloud.ServiceAccountKeysPath(),
 		fmt.Sprintf("%s.json", accountName),
 	)
@@ -208,11 +210,14 @@ func (c *Command) authConfigureDocker(ctx context.Context, r *readline.Readline)
 
 func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readline.Readline) error {
 	var args []string
+	ifs := r.FlagSets().Internal()
 	clusterName := r.Args().At(1)
+
 	cluster, err := c.gcloud.cfg.Cluster(clusterName)
 	if err != nil {
 		return errors.Errorf("failed to retrieve cluster for: %q", clusterName)
 	}
+
 	kubectlCluster := c.kubectl.Cluster(c.clusterNameFn(clusterName, cluster))
 	if kubectlCluster == nil {
 		return errors.Errorf("failed to retrieve kubectl cluster for: %q", cluster.Name)
@@ -226,12 +231,17 @@ func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readli
 		}
 	}
 
+	profile, err := ifs.GetString("profile")
+	if err != nil {
+		return err
+	}
+
 	return shell.New(ctx, c.l, "gcloud", "container", "clusters", "get-credentials", cluster.Name,
 		"--project", cluster.Project,
 		"--region", cluster.Region,
 	).
 		Args(args...).
 		Args(r.AdditionalArgs()...).
-		Env(kubectlCluster.Env()).
+		Env(kubectlCluster.Env(profile)).
 		Run()
 }

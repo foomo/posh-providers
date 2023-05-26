@@ -2,9 +2,9 @@ package licensefinder
 
 import (
 	"context"
-	"os"
 	"os/exec"
 	"path"
+	"sort"
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
@@ -15,6 +15,8 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
+	"github.com/spf13/viper"
 )
 
 type (
@@ -49,11 +51,11 @@ func CommandWithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command {
+func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("licensefinder"),
 		name:      "licensefinder",
-		configKey: "licensefinder",
+		configKey: "licenseFinder",
 		cache:     cache.Get("licensefinder"),
 	}
 	for _, opt := range opts {
@@ -61,77 +63,89 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 			opt(inst)
 		}
 	}
+	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
+		return nil, err
+	}
 
-	addNode := tree.Node{
-		Name:        "add",
-		Args:        tree.Args{{Name: "name"}},
-		Description: "Add entry",
-		Execute:     inst.execute,
+	nameArg := &tree.Arg{
+		Name:        "name",
+		Description: "Name of the license",
 	}
-	listNode := tree.Node{
-		Name:        "list",
-		Description: "List entry",
-		Execute:     inst.execute,
-	}
-	removeNode := tree.Node{
-		Name:        "remove",
-		Args:        tree.Args{{Name: "name"}},
-		Description: "Remove entry",
-		Execute:     inst.execute,
+	addFlags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+		fs.Default().String("who", "", "Who approved")
+		fs.Default().String("why", "", "Reason to approve")
+		return nil
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run license finder",
-		Execute:     inst.execute,
+		Description: "List unapproved dependencies",
+		Execute:     inst.actionItems,
 		Nodes: tree.Nodes{
 			{
-				Name:        "restricted_licenses",
-				Description: "Manage restricted licenses",
+				Name:        "report",
+				Description: "Print a report of the project's dependencies",
+				Execute:     inst.report,
+			},
+			{
+				Name:        "add",
+				Description: "Add licenses or dependencies",
 				Nodes: tree.Nodes{
-					&addNode,
-					&listNode,
-					&removeNode,
+					{
+						Name:        "permitted",
+						Description: "Add permitted licenses",
+						Args:        tree.Args{nameArg},
+						Flags:       addFlags,
+						Execute:     inst.addPermitted,
+					},
+					{
+						Name:        "ignored",
+						Description: "Add ignored dependencies",
+						Args:        tree.Args{nameArg},
+						Flags:       addFlags,
+						Execute:     inst.addIgnored,
+					},
 				},
 			},
 			{
-				Name:        "ignored_dependencies",
-				Description: "Manage ignored dependencies",
+				Name:        "list",
+				Description: "List licenses or dependencies",
 				Nodes: tree.Nodes{
-					&addNode,
-					&listNode,
-					&removeNode,
+					{
+						Name:        "permitted",
+						Description: "Add permitted licenses",
+						Execute:     inst.listPermitted,
+					},
+					{
+						Name:        "ignored",
+						Description: "List ignored dependencies",
+						Args:        tree.Args{nameArg},
+						Execute:     inst.listIgnored,
+					},
 				},
 			},
 			{
-				Name:        "permitted_licenses",
-				Description: "Manage permitted licenses",
+				Name:        "remove",
+				Description: "Remove licenses or dependencies",
 				Nodes: tree.Nodes{
-					&addNode,
-					&listNode,
-					&removeNode,
-				},
-			},
-			{
-				Name:        "approvals",
-				Description: "Manage approvals",
-				Nodes: tree.Nodes{
-					&addNode,
-					&removeNode,
-				},
-			},
-			{
-				Name:        "licenses",
-				Description: "Manage licenses",
-				Nodes: tree.Nodes{
-					&addNode,
-					&removeNode,
+					{
+						Name:        "permitted",
+						Description: "Add permitted licenses",
+						Args:        tree.Args{nameArg},
+						Execute:     inst.removePermitted,
+					},
+					{
+						Name:        "ignored",
+						Description: "Remove ignored dependencies",
+						Args:        tree.Args{nameArg},
+						Execute:     inst.removeIgnored,
+					},
 				},
 			},
 		},
 	})
 
-	return inst
+	return inst, nil
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -162,17 +176,6 @@ $ brew update
 $ brew install licensefinder
         `)
 	}
-	switch {
-	case r.Args().LenIs(0):
-		return nil
-	case r.Args().LenGt(1):
-		return errors.New("too many arguments")
-	}
-
-	if info, err := os.Stat(r.Args().At(0)); err != nil || info.IsDir() {
-		return errors.New("invalid [path] parameter")
-	}
-
 	return nil
 }
 
@@ -188,31 +191,71 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
-	var paths []string
-	args := []string{
-		"--log-directory=" + c.cfg.LogPath,
-		"--decisions_file=" + c.cfg.DecisionsPath,
-	}
-	if r.Args().LenIs(0) {
-		paths = append(paths, c.paths(ctx, "go.sum")...)
-		paths = append(paths, c.paths(ctx, "yarn.lock")...)
-		args = append(args, "--aggregate_paths="+strings.Join(paths, " "))
-	}
+func (c *Command) addPermitted(ctx context.Context, r *readline.Readline) error {
+	return c.execute(ctx, r, append([]string{"permitted_licenses", "add"}, r.Args().From(2)...)...)
+}
+
+func (c *Command) listPermitted(ctx context.Context, r *readline.Readline) error {
+	return c.execute(ctx, r, "permitted_licenses", "list")
+}
+
+func (c *Command) removePermitted(ctx context.Context, r *readline.Readline) error {
+	return c.execute(ctx, r, append([]string{"permitted_licenses", "remove"}, r.Args().From(2)...)...)
+}
+
+func (c *Command) addIgnored(ctx context.Context, r *readline.Readline) error {
+	return c.execute(ctx, r, append([]string{"ignored_dependencies", "add"}, r.Args().From(2)...)...)
+}
+
+func (c *Command) listIgnored(ctx context.Context, r *readline.Readline) error {
+	return c.execute(ctx, r, "ignored_dependencies", "list")
+}
+
+func (c *Command) removeIgnored(ctx context.Context, r *readline.Readline) error {
+	return c.execute(ctx, r, append([]string{"ignored_dependencies", "remove"}, r.Args().From(2)...)...)
+}
+
+func (c *Command) actionItems(ctx context.Context, r *readline.Readline) error {
+	return c.execute(ctx, r, "action_items", c.aggregatePaths(ctx))
+}
+
+func (c *Command) report(ctx context.Context, r *readline.Readline) error {
+	return c.execute(ctx, r, "report", c.aggregatePaths(ctx))
+}
+
+func (c *Command) execute(ctx context.Context, r *readline.Readline, args ...string) error {
+	fs := r.FlagSets().Default()
 	return shell.New(ctx, c.l, "license_finder").
 		Args(args...).
-		Args(r.Args()...).
-		Args(r.Flags()...).
+		Args(
+			"--log-directory="+c.cfg.LogPath,
+			"--decisions-file="+c.cfg.DecisionsPath,
+		).
+		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
 		Run()
+}
+
+func (c *Command) aggregatePaths(ctx context.Context) string {
+	var paths []string
+	paths = append(paths, c.paths(ctx, "go.sum")...)
+	paths = append(paths, c.paths(ctx, "yarn.lock")...)
+	paths = lo.Uniq(paths)
+	sort.Strings(paths)
+	c.l.Info("Aggregating liceses from:")
+	for _, value := range paths {
+		c.l.Info("└  " + value)
+	}
+	return "--aggregate_paths=" + strings.Join(paths, " ")
 }
 
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context, filename string) []string {
 	return c.cache.Get("paths-"+filename, func() any {
-		if value, err := files.Find(ctx, ".", filename); err != nil {
+		if value, err := files.Find(ctx, ".", filename, files.FindWithIgnore(`^\.`, "vendor", "node_modules")); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
-			return nil
+			return []string{}
 		} else {
 			for i, s := range value {
 				value[i] = path.Dir(s)

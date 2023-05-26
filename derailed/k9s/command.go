@@ -75,6 +75,15 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron *squadron.Squad
 				Suggest: inst.completeSquadrons,
 			},
 		},
+		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+			if r.Args().HasIndex(0) {
+				fs.Internal().String("profile", "", "Profile to use.")
+				if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
 		Execute: inst.execute,
 	})
 	return inst
@@ -109,10 +118,17 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
+	ifs := r.FlagSets().Internal()
 	cluster, fleet, squad := r.Args().At(0), r.Args().At(1), r.Args().At(2)
+
+	profile, err := ifs.GetString("profile")
+	if err != nil {
+		return err
+	}
+
 	return shell.New(ctx, c.l, "k9s", "-n", c.namespaceFn(cluster, fleet, squad), "--logoless").
 		Args(r.AdditionalArgs()...).
-		Env(c.kubectl.Cluster(cluster).Env()).
+		Env(c.kubectl.Cluster(cluster).Env(profile)).
 		Run()
 }
 

@@ -195,17 +195,21 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	if log.MustGet(ifs.GetBool("debug"))(c.l) {
 		envs = append(envs, fmt.Sprintf("debug=%s", "true"))
 	}
+
 	if log.MustGet(ifs.GetBool("headless"))(c.l) {
 		envs = append(envs, fmt.Sprintf("HEADLESS=%s", "true"))
 	}
+
 	if log.MustGet(ifs.GetBool("ci"))(c.l) {
 		envs = append(envs, fmt.Sprintf("E2E_ENV=%s", "ci"))
 	} else {
 		envs = append(envs, fmt.Sprintf("E2E_ENV=%s", "chromium"))
 	}
+
 	if value := log.MustGet(ifs.GetString("scenario"))(c.l); value != "" {
 		envs = append(envs, fmt.Sprintf("SCENARIOS=%s", strings.Trim(value, "\"")))
 	}
+
 	if value := log.MustGet(ifs.GetString("tag"))(c.l); value != "" {
 		args = append(args, "--cucumberOpts.tagExpression", "'"+strings.Trim(value, "\"")+"'")
 	}

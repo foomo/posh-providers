@@ -112,9 +112,9 @@ func (c *Command) completePaths(ctx context.Context) []goprompt.Suggest {
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		if value, err := files.Find(ctx, ".", "zeus"); err != nil {
+		if value, err := files.Find(ctx, ".", "zeus", files.FindWithIgnore(`^\.`, "node_modules"), files.FindWithIsDir(true)); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
-			return nil
+			return []string{}
 		} else {
 			return value
 		}

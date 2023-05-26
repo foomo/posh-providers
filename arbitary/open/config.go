@@ -14,7 +14,6 @@ type (
 	ConfigRoute struct {
 		Path        string              `yaml:"path"`
 		Description string              `yaml:"description"`
-		Username    *onepassword.Secret `yaml:"username"`
-		Password    *onepassword.Secret `yaml:"password"`
+		BasicAuth   *onepassword.Secret `yaml:"basicAuth"`
 	}
 )
