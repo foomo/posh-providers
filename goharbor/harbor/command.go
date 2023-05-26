@@ -13,16 +13,14 @@ import (
 	"github.com/foomo/posh/pkg/util/browser"
 	"github.com/google/go-github/v47/github"
 	"github.com/pterm/pterm"
-	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 )
 
 type (
 	Command struct {
 		l           log.Logger
-		cfg         Config
 		name        string
-		configKey   string
+		harbor      *Harbor
 		commandTree tree.Root
 	}
 	CommandOption func(*Command)
@@ -38,29 +36,20 @@ func CommandWithName(v string) CommandOption {
 	}
 }
 
-func WithConfigKey(v string) CommandOption {
-	return func(o *Command) {
-		o.configKey = v
-	}
-}
-
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, opts ...CommandOption) *Command {
+func NewCommand(l log.Logger, harbor *Harbor, opts ...CommandOption) *Command {
 	inst := &Command{
-		l:         l.Named("harbor"),
-		name:      "harbor",
-		configKey: "harbor",
+		l:      l.Named("harbor"),
+		name:   "harbor",
+		harbor: harbor,
 	}
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
-	}
-	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
-		return nil
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
@@ -115,7 +104,7 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
-	return browser.OpenRawURL(c.cfg.AuthURL)
+	return browser.OpenRawURL(c.harbor.Config().AuthURL)
 }
 
 func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
@@ -136,11 +125,11 @@ func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	pterm.Info.Println("registry: " + c.cfg.URL)
+	pterm.Info.Println("registry: " + c.harbor.Config().DockerRegistry())
 	pterm.Info.Println("username: " + username)
 	pterm.Info.Println("please enter your CLI secret as password...")
 
-	return shell.New(ctx, c.l, "docker", "login", c.cfg.URL, "-u", username).
+	return shell.New(ctx, c.l, "docker", "login", c.harbor.Config().URL, "-u", username).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()
