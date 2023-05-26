@@ -71,6 +71,11 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 		Name:        "name",
 		Description: "Name of the license",
 	}
+	addFlags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+		fs.Default().String("who", "", "Who approved")
+		fs.Default().String("why", "", "Reason to approve")
+		return nil
+	}
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
@@ -90,12 +95,14 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 						Name:        "permitted",
 						Description: "Add permitted licenses",
 						Args:        tree.Args{nameArg},
+						Flags:       addFlags,
 						Execute:     inst.addPermitted,
 					},
 					{
 						Name:        "ignored",
 						Description: "Add ignored dependencies",
 						Args:        tree.Args{nameArg},
+						Flags:       addFlags,
 						Execute:     inst.addIgnored,
 					},
 				},
@@ -217,13 +224,14 @@ func (c *Command) report(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline, args ...string) error {
+	fs := r.FlagSets().Default()
 	return shell.New(ctx, c.l, "license_finder").
 		Args(args...).
 		Args(
 			"--log-directory="+c.cfg.LogPath,
 			"--decisions-file="+c.cfg.DecisionsPath,
 		).
-		Args(r.Flags()...).
+		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()
