@@ -127,8 +127,9 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	}
 
 	return shell.New(ctx, c.l, "k9s", "-n", c.namespaceFn(cluster, fleet, squad), "--logoless").
-		Args(r.AdditionalArgs()...).
 		Env(c.kubectl.Cluster(cluster).Env(profile)).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
 		Run()
 }
 
