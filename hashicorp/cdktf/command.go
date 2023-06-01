@@ -253,7 +253,6 @@ func (c *Command) deploy(ctx context.Context, r *readline.Readline) error {
 		Env(envs...).
 		Dir(c.cfg.Path).
 		Args(r.Args().From(1)...).
-		Args(r.Args().From(1)...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
