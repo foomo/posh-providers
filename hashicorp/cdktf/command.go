@@ -116,6 +116,8 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 				Args:        tree.Args{stacksArg},
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					skipSynthFlag(fs)
+					fs.Default().Bool("refresh-only", false, "Select the 'refresh only' planning mode")
+					fs.Default().Bool("migrate-state", false, "Pass this flag after switching state backends")
 					return nil
 				},
 				Execute: inst.diff,
@@ -126,6 +128,9 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 				Args:        tree.Args{stacksArg},
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					skipSynthFlag(fs)
+					fs.Default().Bool("auto-approve", false, "Auto approve")
+					fs.Default().Bool("refresh-only", false, "Select the 'refresh only' planning mode")
+					fs.Default().Bool("migrate-state", false, "Pass this flag after switching state backends")
 					return nil
 				},
 				Execute: inst.deploy,
@@ -136,6 +141,8 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 				Args:        tree.Args{stacksArg},
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					skipSynthFlag(fs)
+					fs.Default().Bool("auto-approve", false, "Auto approve")
+					fs.Default().Bool("migrate-state", false, "Pass this flag after switching state backends")
 					return nil
 				},
 				Execute: inst.destroy,
@@ -243,6 +250,7 @@ func (c *Command) diff(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) deploy(ctx context.Context, r *readline.Readline) error {
 	var envs []string
+	fs := r.FlagSets().Default()
 	ifs := r.FlagSets().Internal()
 	if value, err := ifs.GetBool("skip-synth"); err != nil {
 		return err
@@ -253,7 +261,7 @@ func (c *Command) deploy(ctx context.Context, r *readline.Readline) error {
 		Env(envs...).
 		Dir(c.cfg.Path).
 		Args(r.Args().From(1)...).
-		Args(r.Flags()...).
+		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()
