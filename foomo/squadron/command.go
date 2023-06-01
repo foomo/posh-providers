@@ -337,10 +337,8 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	tag, _ := ifs.GetString("tag")
 	noOverride := log.MustGet(ifs.GetBool("no-override"))(c.l)
 
-	profile, err := ifs.GetString("profile")
-	if err != nil {
-		return err
-	}
+	// try retrieve profile
+	profile, _ := ifs.GetString("profile")
 
 	{ // handle 1password
 		if c.op != nil {
