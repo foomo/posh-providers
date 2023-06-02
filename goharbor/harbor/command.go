@@ -66,7 +66,7 @@ func NewCommand(l log.Logger, harbor *Harbor, opts ...CommandOption) *Command {
 			{
 				Name:        "docker",
 				Args:        nil,
-				Description: "Configure docker.",
+				Description: "Configure docker to be able to access registry.",
 				Execute:     inst.docker,
 			},
 		},
@@ -127,7 +127,9 @@ func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
 
 	pterm.Info.Println("registry: " + c.harbor.Config().DockerRegistry())
 	pterm.Info.Println("username: " + username)
-	pterm.Info.Println("please enter your CLI secret as password...")
+	pterm.Info.Println("please enter your CLI secret as password provided on your profile settings...")
+
+	_ = browser.OpenRawURL(c.harbor.Config().AuthURL)
 
 	return shell.New(ctx, c.l, "docker", "login", c.harbor.Config().URL, "-u", username).
 		Args(r.AdditionalArgs()...).
