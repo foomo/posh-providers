@@ -14,6 +14,7 @@ type (
 	Command struct {
 		l           log.Logger
 		op          *OnePassword
+		name        string
 		commandTree tree.Root
 	}
 	CommandOption func(*Command) error
@@ -23,14 +24,22 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+func CommandWithName(v string) CommandOption {
+	return func(o *Command) error {
+		o.name = v
+		return nil
+	}
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
 func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
-		l:  l.Named("onePassword"),
-		op: op,
+		l:    l.Named("onePassword"),
+		op:   op,
+		name: "op",
 	}
 	for _, opt := range opts {
 		if opt != nil {
@@ -40,7 +49,7 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 		}
 	}
 	inst.commandTree = tree.New(&tree.Node{
-		Name:        "op",
+		Name:        inst.name,
 		Description: "Execute 1Password commands",
 		Execute:     inst.auth,
 		Nodes: tree.Nodes{

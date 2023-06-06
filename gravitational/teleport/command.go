@@ -55,7 +55,7 @@ func NewCommand(l log.Logger, cache cache.Cache, teleport *Teleport, kubectl *ku
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
-		Name:        "teleport",
+		Name:        inst.name,
 		Description: "Manage access points through teleport",
 		Execute:     inst.auth,
 		Nodes: tree.Nodes{
