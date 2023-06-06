@@ -85,7 +85,7 @@ func (i *K3d) Registry(ctx context.Context, name string) (*Registry, error) {
 			return registry, nil
 		}
 	}
-	return nil, nil
+	return nil, nil //nolint: nilnil
 }
 
 func (i *K3d) Cluster(ctx context.Context, name string) (*Cluster, error) {
@@ -102,5 +102,5 @@ func (i *K3d) Cluster(ctx context.Context, name string) (*Cluster, error) {
 			return cluster, nil
 		}
 	}
-	return nil, nil
+	return nil, nil //nolint: nilnil
 }

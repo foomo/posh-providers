@@ -10,7 +10,7 @@ import (
 type (
 	Config struct {
 		Charts   ConfigCharts    `json:"charts" yaml:"charts"`
-		Registry ConfigRegistry  `json:"registry" json:"registry"`
+		Registry ConfigRegistry  `json:"registry" yaml:"registry"`
 		Clusters []ConfigCluster `json:"clusters" yaml:"clusters"`
 	}
 	ConfigCharts struct {
@@ -18,8 +18,8 @@ type (
 		Prefix string `json:"prefix" yaml:"prefix"`
 	}
 	ConfigRegistry struct {
-		Name string `json:"name" json:"name"`
-		Port string `json:"port" json:"port"`
+		Name string `json:"name" yaml:"name"`
+		Port string `json:"port" yaml:"port"`
 	}
 	ConfigCluster struct {
 		Name  string   `json:"name" yaml:"name"`
