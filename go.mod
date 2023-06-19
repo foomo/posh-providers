@@ -5,7 +5,7 @@ go 1.19
 replace github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
 
 require (
-	github.com/1Password/connect-sdk-go v1.5.0
+	github.com/1Password/connect-sdk-go v1.5.1
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/foomo/posh v0.4.3
@@ -55,7 +55,7 @@ require (
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
