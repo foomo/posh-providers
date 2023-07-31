@@ -5,7 +5,7 @@ go 1.19
 replace github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
 
 require (
-	github.com/1Password/connect-sdk-go v1.5.0
+	github.com/1Password/connect-sdk-go v1.5.3
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/foomo/posh v0.4.3
