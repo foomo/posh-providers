@@ -1,6 +1,6 @@
 module github.com/foomo/posh-providers
 
-go 1.19
+go 1.20
 
 replace github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
 
@@ -8,7 +8,7 @@ require (
 	github.com/1Password/connect-sdk-go v1.5.3
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
-	github.com/foomo/posh v0.4.4
+	github.com/foomo/posh v0.4.5
 	github.com/google/go-github/v47 v47.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
@@ -16,7 +16,7 @@ require (
 	github.com/samber/lo v1.38.1
 	github.com/slack-go/slack v0.12.2
 	github.com/spf13/viper v1.16.0
-	golang.org/x/exp v0.0.0-20230810033253-352e893a4cad
+	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 	golang.org/x/oauth2 v0.11.0
 	golang.org/x/sync v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
