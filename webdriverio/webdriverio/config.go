@@ -6,22 +6,22 @@ import (
 
 type (
 	Config struct {
-		Secrets map[string]onepassword.Secret `yaml:"secrets"`
-		Modes   ConfigModes                   `yaml:"modes"`
-		Sites   ConfigSites                   `yaml:"sites"`
-		Dirs    []string                      `yaml:"dirs"`
+		Dirs         []string                      `json:"dirs" yaml:"dirs"`
+		Modes        ConfigModes                   `json:"modes" yaml:"modes"`
+		Sites        ConfigSites                   `json:"sites" yaml:"sites"`
+		Secrets      map[string]onepassword.Secret `json:"secrets" yaml:"secrets"`
+		BrowserStack *onepassword.Secret           `json:"browserStack" yaml:"browserStack"`
 	}
 	ConfigModes map[string]ConfigMode
 	ConfigMode  struct {
-		Port       string `yaml:"port"`
-		HostPrefix string `yaml:"hostPrefix"`
+		Port       string `json:"port" yaml:"port"`
+		HostPrefix string `json:"hostPrefix" yaml:"hostPrefix"`
 	}
 	ConfigSites map[string]ConfigEnvs
 	ConfigEnvs  map[string]ConfigEnv
 	ConfigEnv   struct {
-		Domain       string              `yaml:"domain"`
-		AuthUsername *onepassword.Secret `yaml:"authUsername"`
-		AuthPassword *onepassword.Secret `yaml:"authPassword"`
+		Auth   *onepassword.Secret `json:"auth" yaml:"auth"`
+		Domain string              `json:"domain" yaml:"domain"`
 	}
 )
 

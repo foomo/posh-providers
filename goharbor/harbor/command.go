@@ -1,23 +1,29 @@
-package onepassword
+package harbor
 
 import (
 	"context"
+	"os"
 
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
+	"github.com/foomo/posh/pkg/util"
+	"github.com/foomo/posh/pkg/util/browser"
+	"github.com/google/go-github/v47/github"
+	"github.com/pterm/pterm"
+	"golang.org/x/oauth2"
 )
 
 type (
 	Command struct {
 		l           log.Logger
-		op          *OnePassword
 		name        string
+		harbor      *Harbor
 		commandTree tree.Root
 	}
-	CommandOption func(*Command) error
+	CommandOption func(*Command)
 )
 
 // ------------------------------------------------------------------------------------------------
@@ -25,9 +31,8 @@ type (
 // ------------------------------------------------------------------------------------------------
 
 func CommandWithName(v string) CommandOption {
-	return func(o *Command) error {
+	return func(o *Command) {
 		o.name = v
-		return nil
 	}
 }
 
@@ -35,54 +40,39 @@ func CommandWithName(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command, error) {
+func NewCommand(l log.Logger, harbor *Harbor, opts ...CommandOption) *Command {
 	inst := &Command{
-		l:    l.Named("onePassword"),
-		op:   op,
-		name: "op",
+		l:      l.Named("harbor"),
+		name:   "harbor",
+		harbor: harbor,
 	}
 	for _, opt := range opts {
 		if opt != nil {
-			if err := opt(inst); err != nil {
-				return nil, err
-			}
+			opt(inst)
 		}
 	}
+
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Execute 1Password commands",
+		Description: "Run harbor",
 		Execute:     inst.auth,
 		Nodes: tree.Nodes{
 			{
 				Name:        "auth",
-				Description: "Sign into your account",
+				Args:        nil,
+				Description: "Sign in to Harbor",
 				Execute:     inst.auth,
 			},
 			{
-				Name:        "get",
-				Description: "Retrieve an item",
-				Args: tree.Args{
-					{
-						Name:        "id",
-						Description: "Item name or uuid",
-					},
-				},
-				Execute: inst.get,
-			},
-			{
-				Name:        "register",
-				Description: "Register an account",
-				Args: tree.Args{
-					{
-						Name:        "email",
-						Description: "User email address",
-					},
-				},
-				Execute: inst.register,
+				Name:        "docker",
+				Args:        nil,
+				Description: "Configure docker to be able to access registry.",
+				Execute:     inst.docker,
 			},
 		},
 	})
-	return inst, nil
+
+	return inst
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -113,33 +103,36 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) get(ctx context.Context, r *readline.Readline) error {
-	return shell.New(ctx, c.l,
-		"op",
-		"--account", c.op.cfg.Account,
-		"item", "get", r.Args().At(1),
-		"--format", "json",
-	).
-		Args(r.AdditionalArgs()...).
-		Run()
-}
-
-func (c *Command) register(ctx context.Context, r *readline.Readline) error {
-	return shell.New(ctx, c.l,
-		"op", "account", "add",
-		"--address", c.op.cfg.Account+".1password.eu",
-		"--email", r.Args().At(1),
-	).
-		Args(r.AdditionalArgs()...).
-		Wait()
-}
-
 func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
-	if ok, _ := c.op.IsAuthenticated(); ok {
-		c.l.Info("Already signed in")
-		return nil
-	} else if err := c.op.SignIn(ctx); err != nil {
+	return browser.OpenRawURL(c.harbor.Config().AuthURL)
+}
+
+func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
+	client := github.NewClient(
+		oauth2.NewClient(
+			ctx,
+			oauth2.StaticTokenSource(
+				&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+			),
+		),
+	)
+
+	var username string
+	user, _, err := client.Users.Get(ctx, "")
+	if err == nil && user != nil && user.Login != nil {
+		username = *user.Login
+	} else if username, err = util.Prompt("github username"); err != nil {
 		return err
 	}
-	return nil
+
+	pterm.Info.Println("registry: " + c.harbor.Config().DockerRegistry())
+	pterm.Info.Println("username: " + username)
+	pterm.Info.Println("please enter your CLI secret as password provided on your profile settings...")
+
+	_ = browser.OpenRawURL(c.harbor.Config().AuthURL)
+
+	return shell.New(ctx, c.l, "docker", "login", c.harbor.Config().URL, "-u", username).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
+		Run()
 }

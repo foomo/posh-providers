@@ -1,4 +1,4 @@
-# POSH kubectl provider
+# POSH teleport provider
 
 ## Usage
 
@@ -17,6 +17,7 @@ type Plugin struct {
   l        log.Logger
   cache    cache.Cache
   kubectl  *kubectl.Kubectl
+  teleport *teleport.Teleport
   commands command.Commands
 }
 
@@ -35,25 +36,31 @@ func New(l log.Logger) (plugin.Plugin, error) {
     inst.kubectl = value
   }
 
+  if value, err := teleport.NewTeleport(l, inst.cache); err != nil {
+    return nil, err
+  } else {
+    inst.teleport = value
+  }
+
+  // ...
+
+  inst.commands.Add(teleport.NewCommand(l, inst.cache, inst.teleport, inst.kubectl))
+
   // ...
 
   return inst, nil
 }
 ```
 
-## Environment:
-
-Add this to your environment:
-
-```yaml
-env:
-  - name: KUBECONFIG
-    value: "${PROJECT_ROOT}/.posh/config/kubeconfig.yaml"
-```
-
 ## Configuration:
 
 ```yaml
-kubectl:
-  path: devops/config/kubectl
+## Teleport
+teleport:
+  path: ".posh/config/teleport"
+  hostname: teleport.foo.bar:443
+  labels:
+    project: "foo"
+  database:
+    user: developers
 ```

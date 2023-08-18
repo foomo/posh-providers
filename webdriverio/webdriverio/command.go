@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/cache"
@@ -195,17 +196,43 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	if log.MustGet(ifs.GetBool("debug"))(c.l) {
 		envs = append(envs, fmt.Sprintf("debug=%s", "true"))
 	}
+
 	if log.MustGet(ifs.GetBool("headless"))(c.l) {
 		envs = append(envs, fmt.Sprintf("HEADLESS=%s", "true"))
 	}
+
 	if log.MustGet(ifs.GetBool("ci"))(c.l) {
 		envs = append(envs, fmt.Sprintf("E2E_ENV=%s", "ci"))
+	} else if mode == "browserstack" {
+		secret := *c.cfg.BrowserStack
+		secret.Field = "username"
+		username, err := c.op.Get(ctx, secret)
+		if err != nil {
+			return err
+		}
+		secret.Field = "password"
+		password, err := c.op.Get(ctx, secret)
+		if err != nil {
+			return err
+		}
+
+		envs = append(envs,
+			fmt.Sprintf("E2E_TAG=%s", c.browserStackTag(ctx)),
+			fmt.Sprintf("E2E_PROJECT=%s", strings.ToUpper(site[:1])+site[1:]),
+			fmt.Sprintf("E2E_BUILD_NAME=%s", env),
+			fmt.Sprintf("E2E_BUILD_NUMBER=%d", time.Now().Unix()), // TODO use git tag
+			fmt.Sprintf("BROWSERSTACK_USER=%s", username),
+			fmt.Sprintf("BROWSERSTACK_ACCESSKEY=%s", password),
+			fmt.Sprintf("E2E_ENV=%s", "browserstack"),
+		)
 	} else {
 		envs = append(envs, fmt.Sprintf("E2E_ENV=%s", "chromium"))
 	}
+
 	if value := log.MustGet(ifs.GetString("scenario"))(c.l); value != "" {
 		envs = append(envs, fmt.Sprintf("SCENARIOS=%s", strings.Trim(value, "\"")))
 	}
+
 	if value := log.MustGet(ifs.GetString("tag"))(c.l); value != "" {
 		args = append(args, "--cucumberOpts.tagExpression", "'"+strings.Trim(value, "\"")+"'")
 	}
@@ -219,15 +246,21 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		baseURL += ":" + modeConfig.Port
 	}
 	envs = append(envs, fmt.Sprintf("E2E_BASE_URL=%s", baseURL))
+
 	// basic auth
-	if siteConfig.AuthUsername != nil && siteConfig.AuthPassword != nil {
-		if username, err := c.op.Get(ctx, *siteConfig.AuthUsername); err != nil {
+	if siteConfig.Auth != nil {
+		secret := *siteConfig.Auth
+		secret.Field = "username"
+		username, err := c.op.Get(ctx, secret)
+		if err != nil {
 			return err
-		} else if password, err := c.op.Get(ctx, *siteConfig.AuthPassword); err != nil {
-			return err
-		} else {
-			envs = append(envs, fmt.Sprintf("BASIC_AUTH=%s:%s", url.QueryEscape(username), url.QueryEscape(password)))
 		}
+		secret.Field = "password"
+		password, err := c.op.Get(ctx, secret)
+		if err != nil {
+			return err
+		}
+		envs = append(envs, fmt.Sprintf("BASIC_AUTH=%s:%s", url.QueryEscape(username), url.QueryEscape(password)))
 	}
 
 	var dirs []string
@@ -348,4 +381,17 @@ func (c *Command) scenarios(ctx context.Context, dir, spec string) []string {
 		}
 		return ret
 	}).([]string)
+}
+
+// browserStackTag ...
+func (c *Command) browserStackTag(ctx context.Context) string {
+	out, err := shell.New(ctx, c.l,
+		"git", "describe", "--tags", "--exact-match", "2>", "/dev/null",
+		"||", "git", "symbolic-ref -q", "--short HEAD",
+		"||", "git rev-parse", "--short", "HEAD",
+	).Output()
+	if err != nil {
+		return ""
+	}
+	return string(out)
 }

@@ -11,6 +11,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
@@ -25,14 +26,15 @@ import (
 
 type (
 	OnePassword struct {
-		l         log.Logger
-		cfg       Config
-		cache     cache.Namespace
-		connect   connect.Client
-		uuidRegex *regexp.Regexp
-		watching  map[string]bool
-		configKey string
-		last      time.Time
+		l              log.Logger
+		cfg            Config
+		cache          cache.Namespace
+		connect        connect.Client
+		uuidRegex      *regexp.Regexp
+		watching       map[string]bool
+		configKey      string
+		isSignedInLock sync.Mutex
+		isSignedInTime time.Time
 	}
 	Option func(*OnePassword) error
 )
@@ -83,9 +85,11 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) 
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
-func (op *OnePassword) Session() (bool, error) {
+func (op *OnePassword) IsAuthenticated() (bool, error) {
 	var sessChanged bool
 	sess := os.Getenv("OP_SESSION_" + op.cfg.Account)
+	op.isSignedInLock.Lock()
+	defer op.isSignedInLock.Unlock()
 
 	if op.cfg.TokenFilename != "" {
 		if err := godotenv.Overload(op.cfg.TokenFilename); err != nil {
@@ -99,7 +103,7 @@ func (op *OnePassword) Session() (bool, error) {
 		}
 	}
 
-	if sessChanged || op.last.IsZero() || time.Since(op.last) > time.Minute*10 {
+	if sessChanged || op.isSignedInTime.IsZero() || time.Since(op.isSignedInTime) > time.Minute*10 {
 		out, err := exec.Command("op", "account", "--account", op.cfg.Account, "get", "--format", "json").Output()
 		if err != nil {
 			return false, fmt.Errorf("%w: %s", err, string(out))
@@ -114,7 +118,7 @@ func (op *OnePassword) Session() (bool, error) {
 		}
 
 		if data.Name == op.cfg.Account {
-			op.last = time.Now()
+			op.isSignedInTime = time.Now()
 			op.watch()
 			return true, nil
 		}
@@ -123,7 +127,7 @@ func (op *OnePassword) Session() (bool, error) {
 }
 
 func (op *OnePassword) SignIn(ctx context.Context) error {
-	if ok, _ := op.Session(); ok {
+	if ok, _ := op.IsAuthenticated(); ok {
 		return nil
 	}
 
@@ -185,7 +189,7 @@ func (op *OnePassword) Get(ctx context.Context, secret Secret) (string, error) {
 			return strings.ReplaceAll(strings.TrimSpace(value), "\\n", "\n"), nil
 		}
 	} else {
-		if ok, _ := op.Session(); !ok {
+		if ok, _ := op.IsAuthenticated(); !ok {
 			return "", ErrNotSignedIn
 		} else if fields := op.clientGet(ctx, secret.Vault, secret.Item); len(fields) == 0 {
 			return "", fmt.Errorf("could not find secret '%s' '%s'", secret.Vault, secret.Item)
@@ -205,7 +209,7 @@ func (op *OnePassword) GetDocument(ctx context.Context, secret Secret) (string, 
 			return value, nil
 		}
 	} else {
-		if ok, _ := op.Session(); !ok {
+		if ok, _ := op.IsAuthenticated(); !ok {
 			return "", ErrNotSignedIn
 		} else if value := op.clientGetDoument(ctx, secret.Vault, secret.Item); len(value) == 0 {
 			return "", fmt.Errorf("could not find document '%s' '%s'", secret.Vault, secret.Item)
@@ -216,7 +220,7 @@ func (op *OnePassword) GetDocument(ctx context.Context, secret Secret) (string, 
 }
 
 func (op *OnePassword) GetOnetimePassword(ctx context.Context, account, uuid string) (string, error) {
-	if ok, _ := op.Session(); !ok {
+	if ok, _ := op.IsAuthenticated(); !ok {
 		return "", ErrNotSignedIn
 	}
 
@@ -417,7 +421,7 @@ func (op *OnePassword) watch() {
 	if v, ok := op.watching[op.cfg.Account]; !ok || !v {
 		go func() {
 			for {
-				if ok, err := op.Session(); err != nil {
+				if ok, err := op.IsAuthenticated(); err != nil {
 					op.l.Warnf("\n1password session keep alive failed for '%s' (%s)", op.cfg.Account, err.Error())
 					op.watching[op.cfg.Account] = false
 					return

@@ -101,6 +101,15 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 			fs.Internal().Bool("slack", false, "send slack notification")
 		}
 	}
+	profileFlag := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+		if r.Args().HasIndex(0) {
+			fs.Internal().String("profile", "", "Profile to use.")
+			if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 	commonFlags := func(fs *readline.FlagSets) {
 		fs.Internal().Bool("no-override", false, "ignore override files")
 		fs.Default().Bool("verbose", inst.l.IsLevel(log.LevelDebug), "set verbose level")
@@ -153,6 +162,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											slackFlag(fs)
 											commonFlags(fs)
+											if err := profileFlag(ctx, r, fs); err != nil {
+												return err
+											}
 											fs.Default().Bool("diff", false, "show diff")
 											fs.Default().Bool("push", false, "push image")
 											fs.Default().Bool("build", false, "build image")
@@ -178,8 +190,11 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Description: "Uninstalls the squadron chart",
 										Args:        tree.Args{unitsArg},
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											commonFlags(fs)
 											slackFlag(fs)
+											commonFlags(fs)
+											if err := profileFlag(ctx, r, fs); err != nil {
+												return err
+											}
 											return nil
 										},
 										Execute: inst.execute,
@@ -216,6 +231,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Args:        tree.Args{unitsArg},
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
+											if err := profileFlag(ctx, r, fs); err != nil {
+												return err
+											}
 											return nil
 										},
 										Execute: inst.execute,
@@ -236,9 +254,12 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Description: "Roll back the squadron chart",
 										Args:        tree.Args{unitsArg},
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+											slackFlag(fs)
 											commonFlags(fs)
 											fs.Default().String("revision", "", "revision number to rollback to")
-											slackFlag(fs)
+											if err := profileFlag(ctx, r, fs); err != nil {
+												return err
+											}
 											return nil
 										},
 										Execute: inst.execute,
@@ -316,9 +337,12 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	tag, _ := ifs.GetString("tag")
 	noOverride := log.MustGet(ifs.GetBool("no-override"))(c.l)
 
+	// try retrieve profile
+	profile, _ := ifs.GetString("profile")
+
 	{ // handle 1password
 		if c.op != nil {
-			if ok, _ := c.op.Session(); !ok {
+			if ok, _ := c.op.IsAuthenticated(); !ok {
 				c.l.Info("missing 1password session, please login")
 				if err := c.op.SignIn(ctx); err != nil {
 					return err
@@ -343,7 +367,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		if tag != "" {
 			env = append(env, fmt.Sprintf("TAG=%q", tag))
 		}
-		env = append(env, c.kubectl.Cluster(cluster).Env())
+		env = append(env, c.kubectl.Cluster(cluster).Env(profile))
 	}
 
 	{ // handle squadrons

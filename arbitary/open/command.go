@@ -149,14 +149,30 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	if route.Username != nil && route.Password != nil {
-		if username, err := c.op.Get(ctx, *route.Username); err != nil {
-			return err
-		} else if password, err := c.op.Get(ctx, *route.Password); err != nil {
-			return err
-		} else {
-			u.User = url.UserPassword(username, password)
+	if route.BasicAuth != nil {
+		var (
+			username string
+			password string
+		)
+		{
+			secret := *route.BasicAuth
+			secret.Field = "username"
+			if value, err := c.op.Get(ctx, secret); err != nil {
+				return err
+			} else {
+				username = value
+			}
 		}
+		{
+			secret := *route.BasicAuth
+			secret.Field = "password"
+			if value, err := c.op.Get(ctx, secret); err != nil {
+				return err
+			} else {
+				password = value
+			}
+		}
+		u.User = url.UserPassword(username, password)
 	}
 
 	return browser.OpenURL(u)

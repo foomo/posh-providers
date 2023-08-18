@@ -347,7 +347,7 @@ func (c *Command) completePaths(ctx context.Context, filename string, dir bool) 
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context, filename string, dir bool) []string {
 	return c.cache.Get("paths-"+filename, func() any {
-		if value, err := files.Find(ctx, ".", filename); err != nil {
+		if value, err := files.Find(ctx, ".", filename, files.FindWithIgnore(`^(node_modules|\.\w*)$`)); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return []string{}
 		} else if dir {
