@@ -20,7 +20,7 @@ outdated:
 .PHONY: test
 ## Run tests
 test:
-	@go test -v ./...
+	@go test -coverprofile=coverage.out -race -json ./... | gotestfmt
 
 .PHONY: lint.fix
 ## Fix lint violations
