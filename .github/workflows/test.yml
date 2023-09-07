@@ -31,7 +31,8 @@ jobs:
 
       - run: make test
 
-      - uses: coverallsapp/github-action@v2
-        with:
-          file: coverage.out
+      # TODO enable once we have tests
+      # - uses: coverallsapp/github-action@v2
+      #   with:
+      #     file: coverage.out
 
