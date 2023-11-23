@@ -1,14 +1,8 @@
 # POSH License Finder provider
 
-## Config:
-
-```yaml
-licenseFinder:
-  logPath: .posh/logs/licenses.log
-  decisionsPath: .posh/licenses.yaml
-```
-
 ## Usage
+
+### Plugin
 
 ```go
 func New(l log.Logger) (plugin.Plugin, error) {
@@ -17,3 +11,12 @@ func New(l log.Logger) (plugin.Plugin, error) {
 	// ...
 }
 ```
+
+## Config
+
+```yaml
+licenseFinder:
+  logPath: .posh/logs/licenses.log
+  decisionsPath: .posh/licenses.yaml
+```
+

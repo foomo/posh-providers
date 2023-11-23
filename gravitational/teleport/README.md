@@ -2,6 +2,8 @@
 
 ## Usage
 
+### Plugin
+
 ```go
 package main
 
@@ -52,7 +54,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 }
 ```
 
-## Configuration:
+### Config
 
 ```yaml
 ## Teleport

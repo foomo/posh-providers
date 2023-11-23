@@ -1,6 +1,8 @@
 # POSH Zeus provider
 
-## Usage:
+## Usage
+
+### Plugin
 
 ```go
 package plugin
@@ -37,7 +39,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 }
 ```
 
-## Ownbrew:
+### Ownbrew
 
 To install binary locally, add:
 

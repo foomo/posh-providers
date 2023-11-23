@@ -2,6 +2,8 @@
 
 ## Usage
 
+### Plugin
+
 ```go
 package main
 
@@ -21,6 +23,7 @@ type Plugin struct {
 }
 
 func New(l log.Logger) (plugin.Plugin, error) {
+  var err error
   inst := &Plugin{
     l:        l,
     cache:    &cache.MemoryCache{},
@@ -29,10 +32,9 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
   // ...
 
-  if value, err := kubectl.New(l, inst.cache); err != nil {
-    return nil, err
-  } else {
-    inst.kubectl = value
+  inst.kubectl, err = kubectl.New(l, inst.c)
+  if err != nil {
+    return nil, errors.Wrap(err, "failed to create kubectl")
   }
 
   // ...
@@ -41,19 +43,23 @@ func New(l log.Logger) (plugin.Plugin, error) {
 }
 ```
 
-## Environment:
-
-Add this to your environment:
+### Config
 
 ```yaml
-env:
-  - name: KUBECONFIG
-    value: "${PROJECT_ROOT}/.posh/config/kubeconfig.yaml"
+## kubectl
+kubectl:
+  configPath: devops/config/kubectl
 ```
 
-## Configuration:
+### Ownbrew
+
+To install binary locally, add:
 
 ```yaml
-kubectl:
-  path: devops/config/kubectl
+ownbrew:
+  packages:
+    ## https://kubernetes.io/releases/
+    - name: kubectl
+      tap: foomo/tap/kubernetes/kubectl
+      version: 1.28.4
 ```

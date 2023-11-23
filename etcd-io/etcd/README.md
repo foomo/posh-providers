@@ -2,8 +2,7 @@
 
 ## Usage
 
-
-## Configuration:
+## Configuration
 
 ```yaml
 etcd:

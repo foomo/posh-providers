@@ -16,17 +16,9 @@ Available commands:
   register [email]  Add your 1Password account
 ```
 
-## Configuration
+## Usage
 
-Add this to your '.posh.yml' file:
-
-```yaml
-onePassword:
-  account: <ACCOUNT>
-  tokenFilename: .posh/config/.op
-```
-
-## Usage:
+### Plugin
 
 ```go
 package plugin
@@ -70,7 +62,15 @@ func New(l log.Logger) (plugin.Plugin, error) {
 }
 ```
 
-## Require
+### Config
+
+Add this to your '.posh.yml' file:
+
+```yaml
+onePassword:
+  account: <ACCOUNT>
+  tokenFilename: .posh/config/.op
+```
 
 To add a requirement check for op, add:
 
