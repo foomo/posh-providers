@@ -1,4 +1,4 @@
-# POSH kubectl provider
+# POSH doctl provider
 
 ## Usage
 
@@ -18,7 +18,7 @@ import (
 type Plugin struct {
   l        log.Logger
   cache    cache.Cache
-  kubectl  *kubectl.Kubectl
+  doctl    *doctl.Doctl
   commands command.Commands
 }
 
@@ -32,9 +32,9 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
   // ...
 
-  inst.kubectl, err = kubectl.New(l, inst.c)
-  if err != nil {
-    return nil, errors.Wrap(err, "failed to create kubectl")
+  inst.doctl, err = doctl.New(l, inst.cache)
+	if err != nil {
+    return nil, errors.Wrap(err, "failed to create doctl")
   }
 
   // ...
@@ -46,9 +46,12 @@ func New(l log.Logger) (plugin.Plugin, error) {
 ### Config
 
 ```yaml
-## kubectl
-kubectl:
-  configPath: devops/config/kubectl
+## doctl
+doctl:
+  configPath: .posh/config/doctl.yaml
+  clusters:
+    prod:
+      name: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 ```
 
 ### Ownbrew
@@ -58,8 +61,8 @@ To install binary locally, add:
 ```yaml
 ownbrew:
   packages:
-    ## https://kubernetes.io/releases/
-    - name: kubectl
-      tap: foomo/tap/kubernetes/kubectl
-      version: 1.28.4
+    ## https://github.com/digitalocean/doctl/releases
+    - name: doctl
+      tap: foomo/tap/digitalocean/doctl
+      version: 1.100.0
 ```

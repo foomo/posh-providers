@@ -22,11 +22,16 @@ type (
 		Port string `json:"port" yaml:"port"`
 	}
 	ConfigCluster struct {
-		Name  string   `json:"name" yaml:"name"`
-		Alias string   `json:"alias" yaml:"alias"`
-		Image string   `json:"image" yaml:"image"`
-		Port  string   `json:"port" yaml:"port"`
-		Args  []string `json:"args" yaml:"args"`
+		// Cluster name
+		Name string `json:"name" yaml:"name"`
+		// K3d cluster name
+		Alias string `json:"alias" yaml:"alias"`
+		// Docker image to use
+		Image string `json:"image" yaml:"image"`
+		// Port to bind to
+		Port string `json:"port" yaml:"port"`
+		// Additional arguments
+		Args []string `json:"args" yaml:"args"`
 	}
 )
 

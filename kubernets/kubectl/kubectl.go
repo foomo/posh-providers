@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/pkg/errors"
@@ -66,6 +67,10 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*Kubectl, error) {
 
 	if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
 		return nil, errors.Wrapf(err, "failed to create config path: %s", inst.cfg.ConfigPath)
+	}
+
+	if err := os.Setenv("KUBECONFIG", env.Path(inst.cfg.ConfigPath, "kubeconfig.yaml")); err != nil {
+		return nil, errors.Wrapf(err, "failed to set KUBECONFIG")
 	}
 
 	return inst, nil

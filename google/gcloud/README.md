@@ -1,6 +1,54 @@
 # POSH gcloud provider
 
-## Configuration:
+## Usage
+
+## Plugin
+
+```go
+func New(l log.Logger) (plugin.Plugin, error) {
+  inst := &Plugin{}
+
+	// ...
+
+  // create provider
+  provider, err := gcloud.New(l, inst.cache)
+  if err != nil {
+    return nil
+  }
+
+  // add command
+  inst.commands.Add(
+    gcloud.NewCommand(l, provider, inst.kubectl),
+	)
+
+	// ...
+}
+```
+
+Using service account access tokens retrieved by OnePassword:
+
+```go
+func New(l log.Logger) (plugin.Plugin, error) {
+  inst := &Plugin{}
+
+  // ...
+
+  // create provider
+  provider, err := gcloud.New(l, inst.cache)
+  if err != nil {
+    return nil
+  }
+
+  // add command
+  inst.commands.Add(
+    gcloud.NewCommand(l, provider, inst.kubectl, gcloud.CommandWithOnePassword(inst.op)),
+	)
+
+	// ...
+}
+```
+
+### Config
 
 ```yaml
 gcloud:
@@ -50,53 +98,7 @@ gcloud:
         account: foomo
 ```
 
-## Usage
-
-```go
-func New(l log.Logger) (plugin.Plugin, error) {
-  inst := &Plugin{}
-
-	// ...
-
-  // create provider
-  provider, err := gcloud.New(l, inst.cache)
-  if err != nil {
-    return nil
-  }
-
-  // add command
-  inst.commands.Add(
-    gcloud.NewCommand(l, provider, inst.kubectl),
-	)
-
-	// ...
-}
-```
-
-Using service account access tokens retrieved by OnePassword:
-
-```go
-func New(l log.Logger) (plugin.Plugin, error) {
-  inst := &Plugin{}
-
-  // ...
-
-  // create provider
-  provider, err := gcloud.New(l, inst.cache)
-  if err != nil {
-    return nil
-  }
-
-  // add command
-  inst.commands.Add(
-    gcloud.NewCommand(l, provider, inst.kubectl, gcloud.CommandWithOnePassword(inst.op)),
-	)
-
-	// ...
-}
-```
-
-## Ownbrew
+### Ownbrew
 
 ```yaml
 require:
