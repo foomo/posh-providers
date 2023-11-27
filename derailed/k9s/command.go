@@ -46,9 +46,14 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron *squadron.Squad
 		kubectl:  kubectl,
 		squadron: squadron,
 		namespaceFn: func(cluster, fleet, squadron string) string {
-			if fleet == "default" {
+			switch {
+			case fleet == "":
+				return ""
+			case squadron == "":
+				return fleet
+			case fleet == "default":
 				return squadron
-			} else {
+			default:
 				return fmt.Sprintf("%s-%s", fleet, squadron)
 			}
 		},
@@ -67,12 +72,14 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron *squadron.Squad
 				Suggest: inst.completeClusters,
 			},
 			{
-				Name:    "fleet",
-				Suggest: inst.completeFleets,
+				Name:     "fleet",
+				Optional: true,
+				Suggest:  inst.completeFleets,
 			},
 			{
-				Name:    "squadron",
-				Suggest: inst.completeSquadrons,
+				Name:     "squadron",
+				Optional: true,
+				Suggest:  inst.completeSquadrons,
 			},
 		},
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -119,7 +126,7 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	ifs := r.FlagSets().Internal()
-	cluster, fleet, squad := r.Args().At(0), r.Args().At(1), r.Args().At(2)
+	cluster, fleet, squad := r.Args().At(0), r.Args().AtDefault(1, ""), r.Args().AtDefault(2, "")
 
 	profile, err := ifs.GetString("profile")
 	if err != nil {

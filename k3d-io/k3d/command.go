@@ -219,9 +219,10 @@ func (c *Command) install(ctx context.Context, r *readline.Readline) error {
 	}
 
 	return shell.New(ctx, c.l, "helm",
-		"upgrade", name, "--install",
-		"--namespace", fmt.Sprintf("%s%s", cfg.Charts.Prefix, name),
+		"upgrade", name,
+		"--install",
 		"--dependency-update",
+		"--namespace", fmt.Sprintf("%s%s", cfg.Charts.Prefix, name),
 		"--create-namespace",
 		"--force",
 		env.Path(cfg.Charts.Path, name),
