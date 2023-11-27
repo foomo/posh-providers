@@ -125,6 +125,7 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
+	var args []string
 	ifs := r.FlagSets().Internal()
 	cluster, fleet, squad := r.Args().At(0), r.Args().AtDefault(1, ""), r.Args().AtDefault(2, "")
 
@@ -133,8 +134,13 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	return shell.New(ctx, c.l, "k9s", "-n", c.namespaceFn(cluster, fleet, squad), "--logoless").
+	if value := c.namespaceFn(cluster, fleet, squad); value != "" {
+		args = append(args, "-n", value)
+	}
+
+	return shell.New(ctx, c.l, "k9s", "--logoless").
 		Env(c.kubectl.Cluster(cluster).Env(profile)).
+		Args(args...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()
