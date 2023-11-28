@@ -19,6 +19,7 @@ type Plugin struct {
   l        log.Logger
   cache    cache.Cache
   doctl    *doctl.Doctl
+  kubectl  *kubectl.Kubectl
   commands command.Commands
 }
 
@@ -32,10 +33,19 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
   // ...
 
+  inst.kubectl, err = kubectl.New(l, inst.c)
+  if err != nil {
+    return nil, errors.Wrap(err, "failed to create kubectl")
+  }
+
   inst.doctl, err = doctl.New(l, inst.cache)
 	if err != nil {
     return nil, errors.Wrap(err, "failed to create doctl")
   }
+
+  // ...
+
+  inst.commands.Add(doctl.NewCommand(l, inst.cache, inst.doctl, inst.kubectl))
 
   // ...
 

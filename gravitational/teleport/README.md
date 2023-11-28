@@ -65,4 +65,9 @@ teleport:
     project: "foo"
   database:
     user: developers
+  kubernetes:
+    aliases:
+      kubernetes-dev: dev
+      kubernetes-prod: prod
+
 ```
