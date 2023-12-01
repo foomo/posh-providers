@@ -33,7 +33,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
   // ...
 
-  inst.kubectl, err = kubectl.New(l, inst.c)
+  inst.kubectl, err = kubectl.New(l, inst.cache)
   if err != nil {
     return nil, errors.Wrap(err, "failed to create kubectl")
   }
