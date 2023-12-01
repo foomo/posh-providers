@@ -60,8 +60,9 @@ func NewCommand(l log.Logger, cache cache.Cache, teleport *Teleport, kubectl *ku
 		Execute:     inst.auth,
 		Nodes: tree.Nodes{
 			{
-				Name:    "auth",
-				Execute: inst.auth,
+				Name:        "auth",
+				Description: "Log in to a cluster and retrieve the session certificate",
+				Execute:     inst.auth,
 			},
 			{
 				Name:        "kubeconfig",
@@ -94,6 +95,11 @@ func NewCommand(l log.Logger, cache cache.Cache, teleport *Teleport, kubectl *ku
 					},
 				},
 				Execute: inst.database,
+			},
+			{
+				Name:        "logout",
+				Description: "Log out",
+				Execute:     inst.logout,
 			},
 		},
 	})
@@ -172,6 +178,17 @@ func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
 		fmt.Sprintf("--proxy=%s", c.teleport.Config().Hostname),
 		"--auth=github",
 	).
+		Args(r.Flags()...).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
+		Run(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Command) logout(ctx context.Context, r *readline.Readline) error {
+	if err := shell.New(ctx, c.l, "tsh", "logout").
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
