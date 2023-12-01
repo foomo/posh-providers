@@ -92,8 +92,8 @@ github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.m
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/fatih/color v1.14.1 h1:qfhVLaG5s+nCROl1zJsZRxFeYrHLqWroPOQ8BWiNb4w=
 github.com/fatih/color v1.14.1/go.mod h1:2oHN61fhTpgcxD3TSWCgKDiH1+x4OiDVVGH8WlgGZGg=
-github.com/foomo/posh v0.5.2 h1:EyKd/JZdz/KEA1RXP97FU35lPNd2mJh8B/4GdHlkyGQ=
-github.com/foomo/posh v0.5.2/go.mod h1:ZAPH4wZaRPrDL/RZYH31C6O7L4+N0Al6Sse5jks1skc=
+github.com/foomo/posh v0.5.3 h1:Fklmj3s058PhPuXh1b8aQswS3jm1DWip8xqx2MtFU0Q=
+github.com/foomo/posh v0.5.3/go.mod h1:ZAPH4wZaRPrDL/RZYH31C6O7L4+N0Al6Sse5jks1skc=
 github.com/frankban/quicktest v1.14.4 h1:g2rn0vABPOOXmZUj+vbmUp0lPoXEMuhTpIluN0XL9UY=
 github.com/frankban/quicktest v1.14.4/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=

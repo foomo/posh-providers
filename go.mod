@@ -9,7 +9,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/digitalocean/godo v1.106.0
-	github.com/foomo/posh v0.5.2
+	github.com/foomo/posh v0.5.3
 	github.com/google/go-github/v47 v47.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
