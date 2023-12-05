@@ -1,4 +1,4 @@
-# POSH kubectl provider
+# POSH doctl provider
 
 ## Usage
 
@@ -10,7 +10,6 @@ package main
 type Plugin struct {
   l        log.Logger
   cache    cache.Cache
-  kubectl  *kubectl.Kubectl
   commands command.Commands
 }
 
@@ -24,10 +23,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
   // ...
 
-  inst.kubectl, err = kubectl.New(l, inst.c)
-  if err != nil {
-    return nil, errors.Wrap(err, "failed to create kubectl")
-  }
+  inst.commands.MustAdd(hygen.NewCommand(l, inst.cache))
 
   // ...
 
@@ -38,9 +34,9 @@ func New(l log.Logger) (plugin.Plugin, error) {
 ### Config
 
 ```yaml
-## kubectl
-kubectl:
-  configPath: devops/config/kubectl
+## hygen
+hygen:
+  templatePath: .posh/scaffold
 ```
 
 ### Ownbrew
@@ -50,8 +46,8 @@ To install binary locally, add:
 ```yaml
 ownbrew:
   packages:
-    ## https://kubernetes.io/releases/
-    - name: kubectl
-      tap: foomo/tap/kubernetes/kubectl
-      version: 1.28.4
+    ## https://github.com/jondot/hygen/releases
+    - name: hygen
+      tap: foomo/tap/jondot/hygen
+      version: 6.2.11
 ```
