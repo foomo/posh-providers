@@ -15,32 +15,36 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 type (
 	Command struct {
 		l           log.Logger
+		cfg         Config
 		name        string
 		cache       cache.Namespace
-		templateDir string
+		configKey   string
 		commandTree tree.Root
 	}
-	CommandOption func(*Command)
+	Option func(*Command) error
 )
 
 // ------------------------------------------------------------------------------------------------
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func CommandWithName(v string) CommandOption {
-	return func(o *Command) {
+func CommandWithName(v string) Option {
+	return func(o *Command) error {
 		o.name = v
+		return nil
 	}
 }
 
-func CommandWithTemplateDir(v string) CommandOption {
-	return func(o *Command) {
-		o.templateDir = v
+func WithConfigKey(v string) Option {
+	return func(o *Command) error {
+		o.configKey = v
+		return nil
 	}
 }
 
@@ -48,18 +52,25 @@ func CommandWithTemplateDir(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command {
+func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, error) {
 	inst := &Command{
-		l:           l.Named("hygen"),
-		name:        "hygen",
-		templateDir: ".posh/scaffold",
-		cache:       cache.Get("hygen"),
+		l:     l.Named("hygen"),
+		name:  "hygen",
+		cache: cache.Get("hygen"),
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
-			opt(inst)
+			if err := opt(inst); err != nil {
+				return nil, err
+			}
 		}
 	}
+
+	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
+		return nil, err
+	}
+
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
 		Description: "Run hygen",
@@ -95,7 +106,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 		},
 	})
 
-	return inst
+	return inst, nil
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -124,7 +135,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 		return errors.New("too many arguments")
 	}
 
-	if info, err := os.Stat(filepath.Join(c.templateDir, r.Args().At(0))); err != nil || !info.IsDir() {
+	if info, err := os.Stat(filepath.Join(c.cfg.TemplatePath, r.Args().At(0))); err != nil || !info.IsDir() {
 		return errors.Errorf("invalid [TEMPLATE] parameter: %s", r.Args().At(0))
 	}
 
@@ -148,14 +159,14 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		Args(r.Args()...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
-		Env(fmt.Sprintf("HYGEN_TMPLS=%s", path.Dir(c.templateDir))).
+		Env(fmt.Sprintf("HYGEN_TMPLS=%s", path.Dir(c.cfg.TemplatePath))).
 		Run()
 }
 
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		files, err := os.ReadDir(c.templateDir)
+		files, err := os.ReadDir(c.cfg.TemplatePath)
 		if err != nil {
 			c.l.Debug("failed to read template dir:", err.Error())
 			return []string{}
