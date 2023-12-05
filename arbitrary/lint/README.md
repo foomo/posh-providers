@@ -9,14 +9,6 @@
 ```go
 package main
 
-import (
-  "github.com/foomo/posh/provider/foomo/gotsrpc"
-  "github.com/foomo/posh/pkg/command"
-  "github.com/foomo/posh/pkg/log"
-  "github.com/foomo/posh/pkg/plugin"
-  "github.com/spf13/viper"
-)
-
 type Plugin struct {
   l        log.Logger
   cache    cache.Cache

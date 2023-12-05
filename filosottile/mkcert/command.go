@@ -1,19 +1,15 @@
-package hygen
+package mkcert
 
 import (
 	"context"
 	"fmt"
-	"os"
-	"path"
-	"path/filepath"
 
-	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
-	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/foomo/posh/pkg/util/files"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -23,7 +19,6 @@ type (
 		l           log.Logger
 		cfg         Config
 		name        string
-		cache       cache.Namespace
 		configKey   string
 		commandTree tree.Root
 	}
@@ -52,11 +47,11 @@ func WithConfigKey(v string) Option {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, error) {
+func NewCommand(l log.Logger, opts ...Option) (*Command, error) {
 	inst := &Command{
-		l:     l.Named("hygen"),
-		name:  "hygen",
-		cache: cache.Get("hygen"),
+		l:         l.Named("mkcert"),
+		name:      "mkcert",
+		configKey: "mkcert",
 	}
 
 	for _, opt := range opts {
@@ -73,35 +68,39 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, erro
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run hygen",
-		Args: tree.Args{
-			{
-				Name: "path",
-				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-					return suggests.List(inst.paths(ctx))
-				},
-			},
-		},
+		Description: "Run mkcert",
 		Nodes: tree.Nodes{
 			{
-				Name:        "template",
-				Description: "Render template",
-				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
-					return suggests.List(inst.paths(ctx))
-				},
-				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-					fs.Default().Bool("dry", false, "Perform a dry run. Files will be generated but not saved")
-					return nil
-				},
-				Args: tree.Args{
+				Name:        "install",
+				Description: "Install the local CA in the system trust store",
+				Execute:     inst.install,
+			},
+			{
+				Name:        "caroot",
+				Description: "Print the CA certificate and key storage location",
+				Execute:     inst.caroot,
+			},
+			{
+				Name:        "uninstall",
+				Description: "Uninstall the local CA (but do not delete it)",
+				Execute:     inst.uninstall,
+			},
+			{
+				Name:        "generate",
+				Description: "Generate configured certificates",
+				Execute:     inst.generate,
+			},
+			{
+				Name:        "create",
+				Description: "Creat a new certificate for the given names",
+				Args: []*tree.Arg{
 					{
-						Name: "path",
-						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-							return nil
-						},
+						Name:        "names",
+						Description: "List of names including wildcard",
+						Repeat:      true,
 					},
 				},
-				Execute: inst.execute,
+				Execute: inst.create,
 			},
 		},
 	})
@@ -128,17 +127,8 @@ func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
-		return errors.New("missing [template] argument")
-	case r.Args().LenIs(1):
-		return errors.New("missing [path] argument")
-	case r.Args().LenGt(2):
-		return errors.New("too many arguments")
+		return errors.New("missing [CMD] argument")
 	}
-
-	if info, err := os.Stat(filepath.Join(c.cfg.TemplatePath, r.Args().At(0))); err != nil || !info.IsDir() {
-		return errors.Errorf("invalid [TEMPLATE] parameter: %s", r.Args().At(0))
-	}
-
 	return nil
 }
 
@@ -154,29 +144,59 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
-	return shell.New(ctx, c.l, "hygen", "scaffold").
+func (c *Command) install(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "mkcert", "-install").
 		Args(r.Args()...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
-		Env(fmt.Sprintf("HYGEN_TMPLS=%s", path.Dir(c.cfg.TemplatePath))).
 		Run()
 }
 
-//nolint:forcetypeassert
-func (c *Command) paths(ctx context.Context) []string {
-	return c.cache.Get("paths", func() any {
-		files, err := os.ReadDir(c.cfg.TemplatePath)
-		if err != nil {
-			c.l.Debug("failed to read template dir:", err.Error())
-			return []string{}
+func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
+	if err := files.MkdirAll(c.cfg.CertificatePath); err != nil {
+		return err
+	}
+	c.l.Info("Generating certificates:")
+	for _, certificate := range c.cfg.Certificates {
+		c.l.Info("└  " + certificate.Name)
+		if err := shell.New(ctx, c.l, "mkcert").
+			Args("-key-file", fmt.Sprintf("%s-key.pem", certificate.Name)).
+			Args("-cert-file", fmt.Sprintf("%s.pem", certificate.Name)).
+			Dir(c.cfg.CertificatePath).
+			Args(certificate.Names...).
+			Args(r.Flags()...).
+			Args(r.AdditionalArgs()...).
+			Run(); err != nil {
+			return err
 		}
-		ret := make([]string, 0, len(files))
-		for _, value := range files {
-			if value.IsDir() {
-				ret = append(ret, value.Name())
-			}
-		}
-		return ret
-	}).([]string)
+	}
+	return nil
+}
+
+func (c *Command) caroot(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "mkcert", "-CAROOT").
+		Args(r.Args()...).
+		Args(r.Flags()...).
+		Args(r.AdditionalArgs()...).
+		Run()
+}
+
+func (c *Command) uninstall(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "mkcert", "-uninstall").
+		Args(r.Args()...).
+		Args(r.Flags()...).
+		Args(r.AdditionalArgs()...).
+		Run()
+}
+
+func (c *Command) create(ctx context.Context, r *readline.Readline) error {
+	if err := files.MkdirAll(c.cfg.CertificatePath); err != nil {
+		return err
+	}
+	return shell.New(ctx, c.l, "mkcert").
+		Dir(c.cfg.CertificatePath).
+		Args(r.Args().From(1)...).
+		Args(r.Flags()...).
+		Args(r.AdditionalArgs()...).
+		Run()
 }

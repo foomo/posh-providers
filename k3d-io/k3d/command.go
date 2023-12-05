@@ -163,7 +163,8 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 */
 func (c *Command) up(ctx context.Context, r *readline.Readline) error {
 	cfg := c.k3d.Config()
-	name := r.Args().At(1)
+	_, args := r.Args().Shift()
+	name, args := args.Shift()
 
 	// ensure registry
 	registry, err := c.k3d.Registry(ctx, cfg.Registry.Name)
@@ -202,6 +203,7 @@ func (c *Command) up(ctx context.Context, r *readline.Readline) error {
 		"--agents", "1",
 	).
 		Env(c.kubectl.Cluster(name).Env("")).
+		Args(args...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()
