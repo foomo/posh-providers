@@ -16,6 +16,7 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/git"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/pkg/errors"
 	slackgo "github.com/slack-go/slack"
 	"golang.org/x/exp/slices"
 )
@@ -169,6 +170,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Default().Bool("push", false, "push image")
 											fs.Default().Bool("build", false, "build image")
 											fs.Default().Int64("parallel", 0, "number of parallel processes")
+											// build args
+											fs.Get("build-args").StringArray("build-arg", nil, "set build-time variables")
+											// internal
 											fs.Internal().String("tag", "", "image tag")
 											fs.Internal().Bool("create-namespace", false, "create namespace if not exist")
 											return nil
@@ -207,6 +211,8 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											fs.Default().Bool("build", false, "build image")
 											fs.Default().Int64("parallel", 0, "number of parallel processes")
+											// build args
+											fs.Get("build-args").StringArray("build-arg", nil, "set build-time variables")
 											fs.Internal().String("tag", "", "image tag")
 											return nil
 										},
@@ -220,6 +226,8 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											fs.Default().Bool("push", false, "push image")
 											fs.Default().Int64("parallel", 0, "number of parallel processes")
+											// build args
+											fs.Get("build-args").StringArray("build-arg", nil, "set build-time variables")
 											fs.Internal().String("tag", "", "image tag")
 											return nil
 										},
@@ -327,9 +335,11 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	var env []string
+	var buildArgs []string
 	var squadrons []string
 	fs := r.FlagSets().Default()
 	ifs := r.FlagSets().Internal()
+	bfs := r.FlagSets().Get("build-args")
 	passFlags := []string{"--"}
 	cluster, fleet, squadron, cmd, units := r.Args()[0], r.Args()[1], r.Args()[2], r.Args()[3], r.Args()[4:]
 
@@ -399,17 +409,28 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		c.l.Infof("Fleet:    %s", fleet)
 		c.l.Infof("Squadron: %s", s)
 
+		if value, err := bfs.GetStringArray("build-arg"); err == nil && len(value) > 0 {
+			for _, v := range value {
+				buildArgs = append(buildArgs, "--build-arg", v)
+			}
+		}
+		// flatten build args
+		if len(buildArgs) > 0 {
+			buildArgs = []string{fmt.Sprintf("--build-args='%s'", strings.Join(buildArgs, " "))}
+		}
+
 		if err := shell.New(ctx, c.l, "squadron", cmd, "--file", files).
 			Env(env...).
 			Dir(path.Join(c.squadron.cfg.Path, s)).
 			Args(units...).
 			Args(flags...).
 			Args(fs.Visited().Args()...).
-			Args(r.AdditionalFlags()...).
+			Args(buildArgs...).
+			// FIXME Args(r.AdditionalFlags()...).
 			Args(passFlags...).
 			Args(r.AdditionalArgs()...).
 			Run(); err != nil {
-			return err
+			return errors.Wrap(err, "failed to execute squadron")
 		}
 	}
 	return nil
