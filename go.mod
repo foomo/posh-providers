@@ -8,7 +8,7 @@ require (
 	github.com/1Password/connect-sdk-go v1.5.3
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
-	github.com/digitalocean/godo v1.106.0
+	github.com/digitalocean/godo v1.107.0
 	github.com/foomo/posh v0.5.3
 	github.com/google/go-github/v47 v47.1.0
 	github.com/joho/godotenv v1.5.1
