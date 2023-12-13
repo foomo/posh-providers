@@ -54,9 +54,10 @@ func WithConfigKey(v string) Option {
 
 func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, error) {
 	inst := &Command{
-		l:     l.Named("hygen"),
-		name:  "hygen",
-		cache: cache.Get("hygen"),
+		l:         l.Named("hygen"),
+		name:      "hygen",
+		configKey: "hygen",
+		cache:     cache.Get("hygen"),
 	}
 
 	for _, opt := range opts {
