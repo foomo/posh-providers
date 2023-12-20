@@ -125,7 +125,7 @@ func (op *OnePassword) IsAuthenticated(ctx context.Context) (bool, error) {
 
 		if data.Name == op.cfg.Account {
 			op.isSignedInTime = time.Now()
-			op.watch()
+			op.watch(context.WithoutCancel(ctx))
 			return true, nil
 		}
 	}
@@ -181,7 +181,7 @@ $ export OP_SESSION_%s=%s
 `, op.cfg.TokenFilename)
 		}
 	}
-	op.watch()
+	op.watch(context.WithoutCancel(ctx))
 	return nil
 }
 
@@ -423,11 +423,11 @@ func (op *OnePassword) connectGetFileContent(vaultQuery, itemQuery, fileUUID str
 	}).(string)
 }
 
-func (op *OnePassword) watch() {
+func (op *OnePassword) watch(ctx context.Context) {
 	if v, ok := op.watching[op.cfg.Account]; !ok || !v {
 		go func() {
 			for {
-				if ok, err := op.IsAuthenticated(context.Background()); err != nil {
+				if ok, err := op.IsAuthenticated(ctx); err != nil {
 					op.l.Warnf("\n1password session keep alive failed for '%s' (%s)", op.cfg.Account, err.Error())
 					op.watching[op.cfg.Account] = false
 					return
