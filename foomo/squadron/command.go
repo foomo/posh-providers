@@ -352,7 +352,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	{ // handle 1password
 		if c.op != nil {
-			if ok, _ := c.op.IsAuthenticated(); !ok {
+			if ok, _ := c.op.IsAuthenticated(ctx); !ok {
 				c.l.Info("missing 1password session, please login")
 				if err := c.op.SignIn(ctx); err != nil {
 					return err

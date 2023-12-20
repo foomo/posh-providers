@@ -135,7 +135,7 @@ func (c *Command) register(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
-	if ok, _ := c.op.IsAuthenticated(); ok {
+	if ok, _ := c.op.IsAuthenticated(ctx); ok {
 		c.l.Info("Already signed in")
 		return nil
 	} else if err := c.op.SignIn(ctx); err != nil {
