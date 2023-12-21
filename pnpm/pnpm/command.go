@@ -2,7 +2,6 @@ package pnpm
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -172,7 +171,6 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) run(ctx context.Context, dirname, script string) error {
-	fmt.Print(dirname, script)
 	return shell.New(ctx, c.l, "pnpm", "run", script).
 		Dir(dirname).
 		Run()
