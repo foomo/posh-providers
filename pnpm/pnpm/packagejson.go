@@ -18,8 +18,8 @@ type PackageJSON struct {
 	Files       []string          `json:"files"`
 	Main        string            `json:"main"`
 	Scripts     map[string]string `json:"scripts"`
-	Os          []string          `json:"os"`
-	Cpu         []string          `json:"cpu"`
+	OS          []string          `json:"os"`
+	CPU         []string          `json:"cpu"`
 	Private     bool              `json:"private"`
 }
 
