@@ -195,6 +195,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 									{
 										Name:        "diff",
 										Description: "Shows the diff between the installed and local chart",
+										Args:        tree.Args{unitsArg},
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
