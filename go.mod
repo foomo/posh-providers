@@ -6,6 +6,7 @@ replace github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v
 
 require (
 	github.com/1Password/connect-sdk-go v1.5.3
+	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/digitalocean/godo v1.107.0

@@ -21,8 +21,3 @@ func (c Config) ClusterNames() []string {
 	}
 	return ret
 }
-
-type Cluster struct {
-	Name   string   `json:"name" yaml:"name"`
-	Fleets []string `json:"fleets" yaml:"fleets"`
-}
