@@ -95,6 +95,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 			cluster := r.Args().At(0)
 			fleet := r.Args().At(1)
 			squadron := r.Args().At(2)
+			//nolint:forcetypeassert
 			return inst.cache.Get(fmt.Sprintf("units-%s-%s-%s", squadron, cluster, fleet), func() any {
 				if value, err := inst.squadron.ListUnits(ctx, squadron, cluster, fleet, true); err != nil {
 					return []goprompt.Suggest{}
