@@ -18,7 +18,7 @@ type (
 	Command struct {
 		l           log.Logger
 		kubectl     *kubectl.Kubectl
-		squadron    *squadron.Squadron
+		squadron    squadron.Squadron
 		commandTree tree.Root
 		namespaceFn NamespaceFn
 	}
@@ -40,7 +40,7 @@ func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron *squadron.Squadron, opts ...CommandOption) *Command {
+func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadron, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:        l.Named("k9s"),
 		kubectl:  kubectl,
