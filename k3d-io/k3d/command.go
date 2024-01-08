@@ -93,7 +93,7 @@ func NewCommand(l log.Logger, k3d *K3d, kubectl *kubectl.Kubectl, opts ...Comman
 			},
 			{
 				Name:        "uninstall",
-				Description: "Unnstall predified charts",
+				Description: "Uninstall predefined charts",
 				Args:        tree.Args{nameArg, chartArg},
 				Execute:     inst.uninstall,
 			},
@@ -195,11 +195,16 @@ func (c *Command) up(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
+	k3sArg := ""
+	if !clusterCfg.EnableTraefikRouter {
+		k3sArg = "--k3s-arg \"--disable=traefik@server:0\""
+	}
+
 	return shell.New(ctx, c.l, "k3d", "cluster", "create", clusterCfg.AliasName(),
 		"--image", clusterCfg.Image,
 		"--registry-use", fmt.Sprintf("%s:%s", cfg.Registry.Name, cfg.Registry.Port),
 		"--port", fmt.Sprintf("%s:443@loadbalancer", clusterCfg.Port),
-		"--k3s-arg \"--disable=traefik@server:0\"",
+		k3sArg,
 		"--agents", "1",
 	).
 		Env(c.kubectl.Cluster(name).Env("")).
