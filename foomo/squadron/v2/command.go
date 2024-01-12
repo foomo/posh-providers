@@ -27,6 +27,7 @@ type (
 	Command struct {
 		l              log.Logger
 		op             *onepassword.OnePassword
+		name           string
 		slack          *slack.Slack
 		slackChannelID string
 		cache          cache.Namespace
@@ -55,6 +56,12 @@ func CommandWithSlack(v *slack.Slack) CommandOption {
 	}
 }
 
+func CommandWithName(v string) CommandOption {
+	return func(o *Command) {
+		o.name = v
+	}
+}
+
 func CommandWithSlackChannelID(v string) CommandOption {
 	return func(o *Command) {
 		o.slackChannelID = v
@@ -67,9 +74,9 @@ func CommandWithSlackChannelID(v string) CommandOption {
 
 func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *onepassword.OnePassword, cache cache.Cache, opts ...CommandOption) *Command {
 	inst := &Command{
-		l:              l.Named("squadron"),
+		l:              l,
 		op:             op,
-		cache:          cache.Get("squadron"),
+		name:           "squadron",
 		kubectl:        kubectl,
 		squadron:       squadron,
 		slackChannelID: "squadron",
@@ -86,6 +93,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 			opt(inst)
 		}
 	}
+
+	inst.l = l.Named(inst.name)
+	inst.cache = cache.Get(inst.name)
 
 	unitsArg := &tree.Arg{
 		Name:     "unit",
@@ -136,7 +146,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
-		Name:        "squadron",
+		Name:        inst.name,
 		Description: "Manage your squadron",
 		Nodes: tree.Nodes{
 			{
@@ -200,6 +210,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
 											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Internal().String("tag", "", "image tag")
 											return nil
 										},
 										Execute: inst.execute,

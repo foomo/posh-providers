@@ -134,8 +134,10 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	if value := c.namespaceFn(cluster, fleet, squad); value != "" {
-		args = append(args, "-n", value)
+	if value := c.namespaceFn(cluster, fleet, squad); value == "all" {
+		args = append(args, "--all-namespaces")
+	} else if value != "" {
+		args = append(args, "--namespace", value)
 	}
 
 	return shell.New(ctx, c.l, "k9s", "--logoless").
