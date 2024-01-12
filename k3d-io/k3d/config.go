@@ -30,6 +30,8 @@ type (
 		Image string `json:"image" yaml:"image"`
 		// Port to bind to
 		Port string `json:"port" yaml:"port"`
+		// EnableTraefikRouter allows to create the cluster with the default traefik router
+		EnableTraefikRouter bool `json:"enableTraefikRouter" yaml:"enableTraefikRouter"`
 		// Additional arguments
 		Args []string `json:"args" yaml:"args"`
 	}

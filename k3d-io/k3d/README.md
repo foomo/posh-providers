@@ -53,6 +53,7 @@ k3d:
     - name: local
       port: 9443
       alias: foomo
+      enableTraefikRouter: false
       image: rancher/k3s:v1.28.2-k3s1
 ```
 
