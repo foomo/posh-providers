@@ -54,11 +54,6 @@ func New(l log.Logger) (plugin.Plugin, error) {
 pulumi:
   path: .posh/pulumi
   configPath: .posh/config/pulumi
-  passphrase:
-    account: xxxx
-    vault: xxxx
-    itemId: xxxx
-    field: password
   backends:
       prod:
         location: Germany West Central
@@ -66,4 +61,9 @@ pulumi:
         subscription: xxx
         resourceGroup: rg-my-name
         storageAccount: sa-my-name
+        passphrase:
+          account: xxxx
+          vault: xxxx
+          itemId: xxxx
+          field: password
 ```

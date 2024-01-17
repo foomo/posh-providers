@@ -435,6 +435,7 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) completeEnvs(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
+	//nolint:forcetypeassert
 	return c.cache.Get("envs", func() any {
 		entries, err := os.ReadDir(c.cfg.Path)
 		if err != nil {
@@ -462,7 +463,7 @@ func (c *Command) configureStack(ctx context.Context, env, proj, stack string) e
 
 	out, err := shell.New(ctx, c.l, "cat", filename, "|", "op", "inject").Output()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to inject onepassword")
 	}
 
 	var args []string
@@ -495,7 +496,7 @@ func (c *Command) executeStack(ctx context.Context, r *readline.Readline) error 
 		return err
 	}
 
-	passphrase, err := c.op.Get(ctx, c.cfg.Passphrase) // TODO
+	passphrase, err := c.op.Get(ctx, be.Passphrase)
 	if err != nil {
 		return err
 	}
@@ -513,9 +514,10 @@ func (c *Command) executeStack(ctx context.Context, r *readline.Readline) error 
 }
 
 func (c *Command) completeProjects(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-	env := r.Args().At(0)
-	return c.cache.Get("projects-"+env, func() any {
-		entries, err := os.ReadDir(path.Join(c.cfg.Path, env))
+	e := r.Args().At(0)
+	//nolint:forcetypeassert
+	return c.cache.Get("projects-"+e, func() any {
+		entries, err := os.ReadDir(path.Join(c.cfg.Path, e))
 		if err != nil {
 			c.l.Debug(err.Error())
 			return []goprompt.Suggest{}
@@ -531,10 +533,11 @@ func (c *Command) completeProjects(ctx context.Context, t tree.Root, r *readline
 }
 
 func (c *Command) completeStacks(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-	env := r.Args().At(0)
+	e := r.Args().At(0)
 	project := r.Args().At(2)
-	return c.cache.Get("stacks-"+env+"-"+project, func() any {
-		entries, err := os.ReadDir(path.Join(c.cfg.Path, env, project))
+	//nolint:forcetypeassert
+	return c.cache.Get("stacks-"+e+"-"+project, func() any {
+		entries, err := os.ReadDir(path.Join(c.cfg.Path, e, project))
 		if err != nil {
 			c.l.Debug(err.Error())
 			return []goprompt.Suggest{}

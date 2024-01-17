@@ -1,7 +1,6 @@
 package pulumi
 
 import (
-	"github.com/foomo/posh-providers/onepassword"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 )
@@ -9,7 +8,6 @@ import (
 type Config struct {
 	Path       string             `json:"path" yaml:"path"`
 	ConfigPath string             `json:"configPath" yaml:"configPath"`
-	Passphrase onepassword.Secret `json:"passphrase" yaml:"passphrase"`
 	Backends   map[string]Backend `json:"backends" yaml:"backends"`
 }
 
