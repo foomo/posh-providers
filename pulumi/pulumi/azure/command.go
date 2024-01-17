@@ -156,23 +156,10 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 								Name:        "login",
 								Description: "Log into your object storage backend",
 								Execute: func(ctx context.Context, r *readline.Readline) error {
-									be, err := inst.cfg.Backend(r.Args().At(0))
+									be, sks, err := inst.backendKey(ctx, r.Args().At(0))
 									if err != nil {
 										return err
 									}
-
-									// retrieve storage key
-									inst.l.Info("retrieving storage key")
-									sk, err := shell.New(ctx, inst.l, "az", "storage", "account", "keys", "list").
-										Args("--resource-group", be.ResourceGroup).
-										Args("--subscription", be.Subscription).
-										Args("--account-name", be.StorageAccount).
-										Args("-o", "tsv", "--query", "'[0].value'").
-										Output()
-									if err != nil {
-										return err
-									}
-									sks := strings.ReplaceAll(strings.TrimSpace(string(sk)), "\n", "")
 
 									return shell.New(ctx, inst.l, "pulumi", "login", fmt.Sprintf("azblob://%s", be.Container)).
 										Env("AZURE_STORAGE_ACCOUNT=" + be.StorageAccount).
@@ -490,7 +477,7 @@ func (c *Command) executeStack(ctx context.Context, r *readline.Readline) error 
 	proj := r.Args().At(2)
 	stack := r.Args().At(3)
 
-	be, err := c.cfg.Backend(e)
+	be, sks, err := c.backendKey(ctx, e)
 	if err != nil {
 		return err
 	}
@@ -510,8 +497,10 @@ func (c *Command) executeStack(ctx context.Context, r *readline.Readline) error 
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
-		Env("PULUMI_CONFIG_PASSPHRASE=" + passphrase).
 		Env("PULUMI_BACKEND_URL=" + fmt.Sprintf("azblob://%s", be.Container)).
+		Env("PULUMI_CONFIG_PASSPHRASE=" + passphrase).
+		Env("AZURE_STORAGE_ACCOUNT=" + be.StorageAccount).
+		Env("AZURE_STORAGE_KEY=" + sks).
 		Dir(path.Join(c.cfg.Path, e, proj)).
 		Run()
 }
@@ -533,6 +522,27 @@ func (c *Command) completeProjects(ctx context.Context, t tree.Root, r *readline
 		}
 		return suggests.List(ret)
 	}).([]goprompt.Suggest)
+}
+
+func (c *Command) backendKey(ctx context.Context, env string) (Backend, string, error) {
+	be, err := c.cfg.Backend(env)
+	if err != nil {
+		return Backend{}, "", err
+	}
+
+	// retrieve storage key
+	c.l.Info("retrieving storage key")
+	sk, err := shell.New(ctx, c.l, "az", "storage", "account", "keys", "list").
+		Args("--resource-group", be.ResourceGroup).
+		Args("--subscription", be.Subscription).
+		Args("--account-name", be.StorageAccount).
+		Args("-o", "tsv", "--query", "'[0].value'").
+		Output()
+	if err != nil {
+		return Backend{}, "", err
+	}
+
+	return be, strings.ReplaceAll(strings.TrimSpace(string(sk)), "\n", ""), nil
 }
 
 func (c *Command) completeStacks(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
