@@ -442,7 +442,7 @@ func (c *Command) completeEnvs(ctx context.Context, r *readline.Readline) []gopr
 	}).([]goprompt.Suggest)
 }
 
-func (c *Command) configureStack(ctx context.Context, env, proj, stack string) error {
+func (c *Command) configureStack(ctx context.Context, env, proj, stack string, be Backend, storageAccountKey, passphrase string) error {
 	filename := path.Join(c.cfg.Path, env, proj, fmt.Sprintf("Pulumi.%s.op", stack))
 
 	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
@@ -464,10 +464,18 @@ func (c *Command) configureStack(ctx context.Context, env, proj, stack string) e
 		}
 	}
 
+	if len(args) == 0 {
+		return nil
+	}
+
 	return shell.New(ctx, c.l, "pulumi", "config", "set-all").
 		Args(args...).
 		Args("--stack", stack).
 		Dir(path.Join(c.cfg.Path, env, proj)).
+		Env("PULUMI_BACKEND_URL=" + fmt.Sprintf("azblob://%s", be.Container)).
+		Env("PULUMI_CONFIG_PASSPHRASE=" + passphrase).
+		Env("AZURE_STORAGE_ACCOUNT=" + be.StorageAccount).
+		Env("AZURE_STORAGE_KEY=" + storageAccountKey).
 		Args().
 		Run()
 }
@@ -477,17 +485,17 @@ func (c *Command) executeStack(ctx context.Context, r *readline.Readline) error 
 	proj := r.Args().At(2)
 	stack := r.Args().At(3)
 
-	be, sks, err := c.backendKey(ctx, e)
+	be, storageAccountKey, err := c.backendKey(ctx, e)
 	if err != nil {
-		return err
-	}
-
-	if err := c.configureStack(ctx, e, proj, stack); err != nil {
 		return err
 	}
 
 	passphrase, err := c.op.Get(ctx, be.Passphrase)
 	if err != nil {
+		return err
+	}
+
+	if err := c.configureStack(ctx, e, proj, stack, be, storageAccountKey, passphrase); err != nil {
 		return err
 	}
 
@@ -500,7 +508,7 @@ func (c *Command) executeStack(ctx context.Context, r *readline.Readline) error 
 		Env("PULUMI_BACKEND_URL=" + fmt.Sprintf("azblob://%s", be.Container)).
 		Env("PULUMI_CONFIG_PASSPHRASE=" + passphrase).
 		Env("AZURE_STORAGE_ACCOUNT=" + be.StorageAccount).
-		Env("AZURE_STORAGE_KEY=" + sks).
+		Env("AZURE_STORAGE_KEY=" + storageAccountKey).
 		Dir(path.Join(c.cfg.Path, e, proj)).
 		Run()
 }
