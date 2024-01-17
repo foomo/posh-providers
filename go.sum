@@ -40,8 +40,8 @@ github.com/dlclark/regexp2 v1.4.0 h1:F1rxgk7p4uKjwIQxBs9oAXe5CqrXlCduYEJvrF4u93E
 github.com/dlclark/regexp2 v1.4.0/go.mod h1:2pZnwuY/m+8K6iRw6wQdMtk+rH5tNGR1i55kozfMjCc=
 github.com/fatih/color v1.14.1 h1:qfhVLaG5s+nCROl1zJsZRxFeYrHLqWroPOQ8BWiNb4w=
 github.com/fatih/color v1.14.1/go.mod h1:2oHN61fhTpgcxD3TSWCgKDiH1+x4OiDVVGH8WlgGZGg=
-github.com/foomo/posh v0.5.4 h1:OHiHvf9AO+q3ZXvYdwha/bD+iU1X1UwH5UpYaPsB7A8=
-github.com/foomo/posh v0.5.4/go.mod h1:ZAPH4wZaRPrDL/RZYH31C6O7L4+N0Al6Sse5jks1skc=
+github.com/foomo/posh v0.5.5 h1:84qJD9kVMX6w2vP+t1O4Nss9wwo6DU/ytRYXQo3Jp0w=
+github.com/foomo/posh v0.5.5/go.mod h1:JPwyuGfYjqMeWRZ8feT2qUQJqWPvmasHxSWckB3kN7g=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=
