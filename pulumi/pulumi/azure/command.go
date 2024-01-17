@@ -142,11 +142,12 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									if err != nil {
 										return err
 									}
+									sks := strings.ReplaceAll(strings.TrimSpace(string(sk)), "\n", "")
 
 									inst.l.Info("creating storage container:", be.Container)
 									return shell.New(ctx, inst.l, "az", "storage", "container", "create").
 										Args("--account-name", be.StorageAccount).
-										Args("--account-key", string(sk)).
+										Args("--account-key", sks).
 										Args("--name", be.Container).
 										Run()
 								},
@@ -171,10 +172,11 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									if err != nil {
 										return err
 									}
+									sks := strings.ReplaceAll(strings.TrimSpace(string(sk)), "\n", "")
 
 									return shell.New(ctx, inst.l, "pulumi", "login", fmt.Sprintf("azblob://%s", be.Container)).
 										Env("AZURE_STORAGE_ACCOUNT=" + be.StorageAccount).
-										Env("AZURE_STORAGE_KEY=" + string(sk)).
+										Env("AZURE_STORAGE_KEY=" + sks).
 										Run()
 								},
 							},
