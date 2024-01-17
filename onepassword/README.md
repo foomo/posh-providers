@@ -24,32 +24,33 @@ Available commands:
 package plugin
 
 type Plugin struct {
-	l        log.Logger
-	c        cache.Cache
-	commands command.Commands
+  l        log.Logger
+  oo       *onepassword.OnePassword
+  cacche   cache.Cache
+  commands command.Commands
 }
 
 func New(l log.Logger) (plugin.Plugin, error) {
-	inst := &Plugin{
-		l:        l,
-		c:        cache.MemoryCache{},
-		commands: command.Commands{},
-	}
+  inst := &Plugin{
+    l:        l,
+    cache:    cache.MemoryCache{},
+    commands: command.Commands{},
+  }
 
-	// ...
+  // ...
 
-	// 1Password
-	if onePassword, err := onepassword.New(l, inst.c)); err != nil {
-		return nil, err
-	} else if cmd, err := onepassword.NewCommand(l, onePassword); err != nil {
-		return nil, err
-	} else {
-		inst.commands.Add(cmd)
-	}
+  inst.op, err := onepassword.New(l, inst.cache));
+  if err != nil {
+    return nil, errors.Wrap(err, "failed to create onepassword")
+  }
 
-	// ...
+  // ...
 
-	return inst, nil
+  inst.commands.MustAdd(onepassword.NewCommand(l, onePassword))
+
+  // ...
+
+  return inst, nil
 }
 ```
 
