@@ -184,7 +184,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 					},
 					{
 						Name:        "stack",
-						Description: "Opens the current stack in the Pulumi Console",
+						Description: "Manage stacks and view stack state",
 						Args: tree.Args{
 							{
 								Name:    "project",
@@ -198,6 +198,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 								Name: "command",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return []goprompt.Suggest{
+										{Text: "init", Description: "Create an empty stack with the given name, ready for updates"},
 										{Text: "output", Description: "Show a stack's output properties"},
 										{Text: "history", Description: "Display history for a stack"},
 									}
