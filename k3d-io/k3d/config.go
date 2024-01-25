@@ -5,13 +5,14 @@ import (
 
 	"github.com/foomo/posh/pkg/env"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 )
 
 type (
 	Config struct {
-		Charts   ConfigCharts    `json:"charts" yaml:"charts"`
-		Registry ConfigRegistry  `json:"registry" yaml:"registry"`
-		Clusters []ConfigCluster `json:"clusters" yaml:"clusters"`
+		Charts   ConfigCharts             `json:"charts" yaml:"charts"`
+		Registry ConfigRegistry           `json:"registry" yaml:"registry"`
+		Clusters map[string]ConfigCluster `json:"clusters" yaml:"clusters"`
 	}
 	ConfigCharts struct {
 		Path   string `json:"path" yaml:"path"`
@@ -23,7 +24,7 @@ type (
 	}
 	ConfigCluster struct {
 		// Cluster name
-		Name string `json:"name" yaml:"name"`
+		Name string `json:"-" yaml:"-"`
 		// K3d cluster name
 		Alias string `json:"alias" yaml:"alias"`
 		// Docker image to use
@@ -36,15 +37,6 @@ type (
 		Args []string `json:"args" yaml:"args"`
 	}
 )
-
-func (c Config) Cluster(name string) (ConfigCluster, error) {
-	for _, v := range c.Clusters {
-		if v.Name == name {
-			return v, nil
-		}
-	}
-	return ConfigCluster{}, errors.Errorf("missing cluster config: %s", name)
-}
 
 func (c ConfigCharts) Names() ([]string, error) {
 	files, err := os.ReadDir(env.Path(c.Path))
@@ -62,12 +54,17 @@ func (c ConfigCharts) Names() ([]string, error) {
 	return ret, nil
 }
 
-func (c Config) ClusterNames() []string {
-	ret := make([]string, len(c.Clusters))
-	for i, v := range c.Clusters {
-		ret[i] = v.Name
+func (c Config) Cluster(name string) (ConfigCluster, error) {
+	if value, ok := c.Clusters[name]; ok {
+		value.Name = name
+		return value, nil
+	} else {
+		return ConfigCluster{}, errors.Errorf("missing cluster config: %s", name)
 	}
-	return ret
+}
+
+func (c Config) ClusterNames() []string {
+	return lo.Keys(c.Clusters)
 }
 
 func (c ConfigCluster) AliasName() string {

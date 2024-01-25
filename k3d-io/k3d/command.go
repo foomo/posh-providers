@@ -86,6 +86,12 @@ func NewCommand(l log.Logger, k3d *K3d, kubectl *kubectl.Kubectl, opts ...Comman
 				Execute:     inst.up,
 			},
 			{
+				Name:        "kubeconfig",
+				Description: "Retrieve kubeconfig from running cluster",
+				Args:        tree.Args{nameArg},
+				Execute:     inst.kubeconfig,
+			},
+			{
 				Name:        "install",
 				Description: "Install predified charts",
 				Args:        tree.Args{nameArg, chartArg},
@@ -253,6 +259,33 @@ func (c *Command) uninstall(ctx context.Context, r *readline.Readline) error {
 	).
 		Env(c.kubectl.Cluster(cluster).Env("")).
 		Args(fs.Visited().Args()...).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
+		Run()
+}
+
+func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
+	cfg := c.k3d.Config()
+	name := r.Args().At(1)
+
+	clusterCfg, err := cfg.Cluster(name)
+	if err != nil {
+		return err
+	}
+
+	// ensure cluster
+	cluster, err := c.k3d.Cluster(ctx, clusterCfg.AliasName())
+	if err != nil {
+		return err
+	} else if cluster == nil {
+		c.l.Info("cluster does not exist")
+		return nil
+	}
+
+	// delete cluster
+	return shell.New(ctx, c.l, "k3d", "kubeconfig", "get", clusterCfg.AliasName()).
+		Args(">", c.kubectl.Cluster(name).Config("")).
+		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()

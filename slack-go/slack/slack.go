@@ -3,6 +3,7 @@ package slack
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/log"
@@ -130,6 +131,8 @@ func (s *Slack) SendETCDUpdateMessage(ctx context.Context, cluster string) error
 }
 
 func (s *Slack) Send(ctx context.Context, channel string, opts ...slack.MsgOption) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
 	client, err := s.Client(ctx)
 	if err != nil {
 		return err
