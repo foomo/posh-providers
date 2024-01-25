@@ -50,7 +50,7 @@ k3d:
     name: foomo-registry
     port: 12345
   clusters:
-    - name: local
+    local:
       port: 9443
       alias: foomo
       enableTraefikRouter: false
