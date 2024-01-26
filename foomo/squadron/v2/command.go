@@ -448,12 +448,15 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		flags = append(flags, "--namespace", c.namespaceFn(cluster, fleet))
 	}
 
+	if r.AdditionalArgs().Len() > 1 {
+		passFlags = append(passFlags, r.AdditionalArgs().From(1)...)
+	}
+
 	if err := sh.
 		Args(flags...).
 		Args(fs.Visited().Args()...).
 		Args(buildArgs...).
 		Args(passFlags...).
-		Args(r.AdditionalArgs()...).
 		Run(); err != nil {
 		return errors.Wrap(err, "failed to execute squadron")
 	}
