@@ -236,8 +236,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Description: "List squadron units",
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
-											fs.Default().Bool("charts", false, "include charts")
-											fs.Default().Bool("builds", false, "include builds")
+											fs.Default().Bool("with-tags", false, "include tags")
+											fs.Default().Bool("with-charts", false, "include charts")
+											fs.Default().Bool("with-builds", false, "include builds")
 											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
 											return nil
 										},
