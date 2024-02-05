@@ -88,7 +88,9 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) 
 func (op *OnePassword) IsAuthenticated(ctx context.Context) (bool, error) {
 	var sessChanged bool
 
-	if os.Getenv("OP_CONNECT_TOKEN") != "" && os.Getenv("OP_CONNECT_HOST") != "" {
+	if os.Getenv("OP_SERVICE_ACCOUNT_TOKEN") != "" {
+		return true, nil
+	} else if os.Getenv("OP_CONNECT_TOKEN") != "" && os.Getenv("OP_CONNECT_HOST") != "" {
 		return true, nil
 	}
 
