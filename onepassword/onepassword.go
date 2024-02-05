@@ -87,6 +87,11 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) 
 
 func (op *OnePassword) IsAuthenticated(ctx context.Context) (bool, error) {
 	var sessChanged bool
+
+	if os.Getenv("OP_CONNECT_TOKEN") != "" && os.Getenv("OP_CONNECT_HOST") != "" {
+		return true, nil
+	}
+
 	sess := os.Getenv("OP_SESSION_" + op.cfg.Account)
 
 	// check for enabled cli integration
