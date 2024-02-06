@@ -62,7 +62,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 						Name:        "tidy",
 						Description: "Run go mod tidy",
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							fs.Internal().Int("parallel", 0, "number of parallel processes")
+							fs.Internal().Int("parallel", 0, "Number of parallel processes")
 							return nil
 						},
 						Args:    []*tree.Arg{pathModArg},
@@ -72,7 +72,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 						Name:        "download",
 						Description: "Run go mod download",
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							fs.Internal().Int("parallel", 0, "number of parallel processes")
+							fs.Internal().Int("parallel", 0, "Number of parallel processes")
 							return nil
 						},
 						Args:    []*tree.Arg{pathModArg},
@@ -82,7 +82,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 						Name:        "outdated",
 						Description: "Show go mod outdated",
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							fs.Internal().Int("parallel", 0, "number of parallel processes")
+							fs.Internal().Int("parallel", 0, "Number of parallel processes")
 							return nil
 						},
 						Args:    []*tree.Arg{pathModArg},
@@ -116,17 +116,30 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 				Name:        "generate",
 				Description: "Run go mod commands",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-					fs.Internal().Int("parallel", 0, "number of parallel processes")
+					fs.Internal().Int("parallel", 0, "Number of parallel processes")
 					return nil
 				},
 				Args:    []*tree.Arg{pathGenerateArg},
 				Execute: inst.generate,
 			},
 			{
+				Name:        "lint",
+				Description: "Run golangci lint",
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					fs.Default().Duration("timeout", 0, "Timeout for total work")
+					fs.Default().Bool("--fast", false, "Run only fast linters from enabled linters set")
+					fs.Default().Bool("--new", false, "Show only new issues")
+					fs.Default().Bool("--fix", false, "Fix found issue")
+					return nil
+				},
+				Args:    []*tree.Arg{pathModArg},
+				Execute: inst.lint,
+			},
+			{
 				Name:        "test",
 				Description: "Run go test",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-					fs.Internal().Int("parallel", 0, "number of parallel processes")
+					fs.Internal().String("tags", "", "Comma separeted string of tags")
 					return nil
 				},
 				Args:    []*tree.Arg{pathModArg},
@@ -136,7 +149,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 				Name:        "build",
 				Description: "Run go build",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-					fs.Internal().Int("parallel", 0, "number of parallel processes")
+					fs.Internal().Int("parallel", 0, "Number of parallel processes")
 					return nil
 				},
 				Args:    []*tree.Arg{pathModArg},
@@ -201,11 +214,16 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) test(ctx context.Context, r *readline.Readline) error {
+	var envs []string
 	var paths []string
 	if r.Args().HasIndex(1) {
 		paths = []string{r.Args().At(1)}
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
+	}
+	fsi := r.FlagSets().Internal()
+	if value, _ := fsi.GetString("tags"); value != "" {
+		envs = append(envs, "GO_TEST_TAGS="+value)
 	}
 
 	ctx, wg := c.wg(ctx, r)
@@ -218,6 +236,7 @@ func (c *Command) test(ctx context.Context, r *readline.Readline) error {
 				"go", "test", "-v", "./...", // TODO select test
 			).
 				Args(r.AdditionalArgs()...).
+				Env(envs...).
 				Dir(value).
 				Run()
 		})
@@ -313,6 +332,32 @@ func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {
 		Args(r.Args()...).
 		Args(r.AdditionalArgs()...).
 		Run()
+}
+
+func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
+	fsd := r.FlagSets().Default()
+	var paths []string
+	if r.Args().HasIndex(2) {
+		paths = []string{r.Args().At(2)}
+	} else {
+		paths = c.paths(ctx, "go.mod", true)
+	}
+	ctx, wg := c.wg(ctx, r)
+	c.l.Info("Running golangci-lint run...")
+	for _, value := range paths {
+		value := value
+		wg.Go(func() error {
+			c.l.Info("└ " + value)
+			return shell.New(ctx, c.l,
+				"golangci-lint", "run",
+			).
+				Args(fsd.Visited().Args()...).
+				Args(r.AdditionalArgs()...).
+				Dir(value).
+				Run()
+		})
+	}
+	return wg.Wait()
 }
 
 func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
