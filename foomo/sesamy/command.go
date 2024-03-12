@@ -36,6 +36,13 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 		cache: cache.Get("sesamy"),
 	}
 
+	args := tree.Args{
+		{
+			Name:     "path",
+			Optional: true,
+			Suggest:  inst.completePaths,
+		},
+	}
 	flags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 		fs.Default().Bool("verbose", false, "show verbose output")
 		return nil
@@ -60,15 +67,9 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 			{
 				Name:        "typescript",
 				Description: "Generate typescript definitions",
+				Args:        args,
 				Flags:       flags,
-				Args: tree.Args{
-					{
-						Name:     "path",
-						Optional: true,
-						Suggest:  inst.completePaths,
-					},
-				},
-				Execute: inst.typescript,
+				Execute:     inst.typescript,
 			},
 			{
 				Name:        "tagmanager",
@@ -77,12 +78,14 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 					{
 						Name:        "web",
 						Description: "Provision web container",
+						Args:        args,
 						Flags:       flags,
 						Execute:     inst.tagmanagerWeb,
 					},
 					{
 						Name:        "server",
 						Description: "Provision server container",
+						Args:        args,
 						Flags:       flags,
 						Execute:     inst.tagmanagerServer,
 					},
@@ -146,8 +149,8 @@ func (c *Command) config(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) typescript(ctx context.Context, r *readline.Readline) error {
 	var paths []string
-	if r.Args().HasIndex(1) {
-		paths = []string{r.Args().At(1)}
+	if r.Args().HasIndex(2) {
+		paths = []string{r.Args().At(2)}
 	} else {
 		paths = c.paths(ctx)
 	}
@@ -176,8 +179,8 @@ func (c *Command) typescript(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) tagmanagerWeb(ctx context.Context, r *readline.Readline) error {
 	var paths []string
-	if r.Args().HasIndex(1) {
-		paths = []string{r.Args().At(1)}
+	if r.Args().HasIndex(2) {
+		paths = []string{r.Args().At(2)}
 	} else {
 		paths = c.paths(ctx)
 	}
