@@ -209,8 +209,8 @@ func (c *Command) tagmanagerWeb(ctx context.Context, r *readline.Readline) error
 
 func (c *Command) tagmanagerServer(ctx context.Context, r *readline.Readline) error {
 	var paths []string
-	if r.Args().HasIndex(1) {
-		paths = []string{r.Args().At(1)}
+	if r.Args().HasIndex(2) {
+		paths = []string{r.Args().At(2)}
 	} else {
 		paths = c.paths(ctx)
 	}
