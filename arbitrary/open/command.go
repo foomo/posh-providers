@@ -175,5 +175,5 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		u.User = url.UserPassword(username, password)
 	}
 
-	return browser.OpenURL(u)
+	return browser.OpenURL(ctx, u)
 }

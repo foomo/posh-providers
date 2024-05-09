@@ -104,7 +104,7 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
-	return browser.OpenRawURL(c.harbor.Config().AuthURL)
+	return browser.OpenRawURL(ctx, c.harbor.Config().AuthURL)
 }
 
 func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
@@ -129,7 +129,7 @@ func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
 	pterm.Info.Println("username: " + username)
 	pterm.Info.Println("please enter your CLI secret as password provided on your profile settings...")
 
-	_ = browser.OpenRawURL(c.harbor.Config().AuthURL)
+	_ = browser.OpenRawURL(ctx, c.harbor.Config().AuthURL)
 
 	return shell.New(ctx, c.l, "docker", "login", c.harbor.Config().URL, "-u", username).
 		Args(r.AdditionalArgs()...).
