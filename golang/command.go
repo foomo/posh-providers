@@ -127,9 +127,9 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 				Description: "Run golangci lint",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					fs.Default().Duration("timeout", 0, "Timeout for total work")
-					fs.Default().Bool("--fast", false, "Run only fast linters from enabled linters set")
-					fs.Default().Bool("--new", false, "Show only new issues")
-					fs.Default().Bool("--fix", false, "Fix found issue")
+					fs.Default().Bool("fast", false, "Run only fast linters from enabled linters set")
+					fs.Default().Bool("new", false, "Show only new issues")
+					fs.Default().Bool("fix", false, "Fix found issue")
 					return nil
 				},
 				Args:    []*tree.Arg{pathModArg},
