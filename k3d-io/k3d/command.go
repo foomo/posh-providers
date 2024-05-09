@@ -86,6 +86,18 @@ func NewCommand(l log.Logger, k3d *K3d, kubectl *kubectl.Kubectl, opts ...Comman
 				Execute:     inst.up,
 			},
 			{
+				Name:        "pause",
+				Description: "Stop existing k3d cluster",
+				Args:        tree.Args{nameArg},
+				Execute:     inst.pause,
+			},
+			{
+				Name:        "resume",
+				Description: "Start existing k3d cluster",
+				Args:        tree.Args{nameArg},
+				Execute:     inst.resume,
+			},
+			{
 				Name:        "kubeconfig",
 				Description: "Retrieve kubeconfig from running cluster",
 				Args:        tree.Args{nameArg},
@@ -187,18 +199,18 @@ func (c *Command) up(ctx context.Context, r *readline.Readline) error {
 		}
 	}
 
+	clusterCfg, err := cfg.Cluster(name)
+	if err != nil {
+		return err
+	}
+
 	// ensure cluster
-	cluster, err := c.k3d.Cluster(ctx, name)
+	cluster, err := c.k3d.Cluster(ctx, clusterCfg.AliasName())
 	if err != nil {
 		return err
 	} else if cluster != nil {
 		c.l.Info("cluster already exists")
 		return nil
-	}
-
-	clusterCfg, err := cfg.Cluster(name)
-	if err != nil {
-		return err
 	}
 
 	k3sArg := ""
@@ -213,6 +225,58 @@ func (c *Command) up(ctx context.Context, r *readline.Readline) error {
 		k3sArg,
 		"--agents", "1",
 	).
+		Env(c.kubectl.Cluster(name).Env("")).
+		Args(args...).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
+		Run()
+}
+
+func (c *Command) pause(ctx context.Context, r *readline.Readline) error {
+	cfg := c.k3d.Config()
+	_, args := r.Args().Shift()
+	name, args := args.Shift()
+
+	clusterCfg, err := cfg.Cluster(name)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := c.k3d.Cluster(ctx, clusterCfg.AliasName())
+	if err != nil {
+		return err
+	} else if cluster == nil {
+		c.l.Info("cluster does not exists")
+		return nil
+	}
+
+	return shell.New(ctx, c.l, "k3d", "cluster", "stop", clusterCfg.AliasName()).
+		Env(c.kubectl.Cluster(name).Env("")).
+		Args(args...).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
+		Run()
+}
+
+func (c *Command) resume(ctx context.Context, r *readline.Readline) error {
+	cfg := c.k3d.Config()
+	_, args := r.Args().Shift()
+	name, args := args.Shift()
+
+	clusterCfg, err := cfg.Cluster(name)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := c.k3d.Cluster(ctx, clusterCfg.AliasName())
+	if err != nil {
+		return err
+	} else if cluster == nil {
+		c.l.Info("cluster does not exists")
+		return nil
+	}
+
+	return shell.New(ctx, c.l, "k3d", "cluster", "start", clusterCfg.AliasName()).
 		Env(c.kubectl.Cluster(name).Env("")).
 		Args(args...).
 		Args(r.AdditionalArgs()...).
@@ -308,7 +372,6 @@ func (c *Command) down(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	// ensure cluster
 	cluster, err := c.k3d.Cluster(ctx, clusterCfg.AliasName())
 	if err != nil {
 		return err
