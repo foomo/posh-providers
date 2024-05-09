@@ -164,7 +164,7 @@ func (op *OnePassword) SignIn(ctx context.Context) error {
 
 	token := strings.TrimSuffix(stdoutBuf.String(), "\n")
 	if token == "" {
-		return errors.New("failed to retrieve 1password token!")
+		return errors.New("failed to retrieve 1password token")
 	} else if err := os.Setenv(fmt.Sprintf("OP_SESSION_%s", op.cfg.Account), token); err != nil {
 		return err
 	} else {
