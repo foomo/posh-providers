@@ -10,7 +10,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/digitalocean/godo v1.115.0
-	github.com/foomo/posh v0.5.7
+	github.com/foomo/posh v0.5.8
 	github.com/google/go-github/v47 v47.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
@@ -29,12 +29,11 @@ require (
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
 	github.com/alecthomas/chroma v0.10.0 // indirect
-	github.com/charlievieth/fastwalk v1.0.2 // indirect
+	github.com/charlievieth/fastwalk v1.0.3 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-test/deep v1.1.0 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
@@ -65,13 +64,10 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
-	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )
