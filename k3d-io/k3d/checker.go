@@ -20,7 +20,8 @@ func ClusterChecker(inst *K3d, name string) check.Checker {
 		}
 
 		var clusters []struct {
-			Name string `json:"name"`
+			Name           string `json:"name"`
+			ServersRunning int    `json:"serversRunning"`
 		}
 		if err := json.Unmarshal(res, &clusters); err != nil {
 			return check.NewFailureInfo(title, fmt.Sprintf("Failed to unmarshal clusters (%s)", err.Error()))
@@ -28,6 +29,9 @@ func ClusterChecker(inst *K3d, name string) check.Checker {
 
 		for _, cluster := range clusters {
 			if cluster.Name == name {
+				if cluster.ServersRunning == 0 {
+					return check.NewNoteInfo(title, "Cluster is paused")
+				}
 				return check.NewSuccessInfo(title, "Cluster is up and running")
 			}
 		}
