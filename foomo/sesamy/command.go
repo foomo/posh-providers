@@ -185,7 +185,7 @@ func (c *Command) tagmanagerWeb(ctx context.Context, r *readline.Readline) error
 		paths = c.paths(ctx)
 	}
 
-	c.l.Info("Running sesamy tagmanger web ...")
+	c.l.Info("Running sesamy tagmanager web ...")
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
@@ -244,7 +244,7 @@ func (c *Command) completePaths(ctx context.Context, t tree.Root, r *readline.Re
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		if value, err := files.Find(ctx, ".", "sesamy.yml"); err != nil {
+		if value, err := files.Find(ctx, ".", "sesamy*.yml"); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return nil
 		} else {
