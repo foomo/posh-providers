@@ -149,8 +149,8 @@ func (c *Command) config(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) typescript(ctx context.Context, r *readline.Readline) error {
 	var paths []string
-	if r.Args().HasIndex(2) {
-		paths = []string{r.Args().At(2)}
+	if r.Args().HasIndex(1) {
+		paths = []string{r.Args().At(1)}
 	} else {
 		paths = c.paths(ctx)
 	}
@@ -215,7 +215,7 @@ func (c *Command) tagmanagerServer(ctx context.Context, r *readline.Readline) er
 		paths = c.paths(ctx)
 	}
 
-	c.l.Info("Running sesamy tagmanger server ...")
+	c.l.Info("Running sesamy tagmanager server ...")
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
