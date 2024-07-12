@@ -171,7 +171,9 @@ func (c *Command) authLogin(ctx context.Context, r *readline.Readline) error {
 	if err := files.Exists(keyFilename); err == nil {
 		c.l.Debug("using existing access token file:", keyFilename)
 		return c.authLoginServiceAccount(ctx, r, keyFilename)
-	} else if account.Key != nil && c.op != nil { // retrieve token and write to file
+	}
+
+	if account.Key != nil && c.op != nil { // retrieve token and write to file
 		if value, err := c.op.GetDocument(ctx, *account.Key); err != nil {
 			return errors.Wrap(err, "failed to retrieve service account key")
 		} else if err := files.MkdirAll(c.gcloud.ServiceAccountKeysPath()); err != nil {
