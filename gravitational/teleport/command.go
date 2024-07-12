@@ -97,6 +97,20 @@ func NewCommand(l log.Logger, cache cache.Cache, teleport *Teleport, kubectl *ku
 				Execute: inst.database,
 			},
 			{
+				Name:        "app",
+				Description: "Retrieve credentials to access remote app.",
+				Args: tree.Args{
+					{
+						Name:        "name",
+						Description: "Name of the app",
+						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+							return suggests.List(inst.teleport.Apps(ctx))
+						},
+					},
+				},
+				Execute: inst.app,
+			},
+			{
 				Name:        "logout",
 				Description: "Log out",
 				Execute:     inst.logout,
@@ -134,6 +148,19 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
+
+func (c *Command) app(ctx context.Context, r *readline.Readline) error {
+	app := r.Args().At(1)
+	appArgs := c.teleport.Config().Apps[app]
+
+	return shell.New(ctx, c.l, "tsh", "apps", "login").
+		Args(appArgs...).
+		Args(app).
+		Args(r.Flags()...).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
+		Run()
+}
 
 func (c *Command) database(ctx context.Context, r *readline.Readline) error {
 	databse := r.Args().At(1)
