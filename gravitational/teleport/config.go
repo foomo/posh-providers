@@ -8,11 +8,12 @@ import (
 
 type (
 	Config struct {
-		Path       string            `json:"path" yaml:"path"`
-		Labels     map[string]string `json:"labels" yaml:"labels"`
-		Hostname   string            `json:"hostname" yaml:"hostname"`
-		Kubernetes Kubernetes        `json:"kubernetes" yaml:"kubernetes"`
-		Database   Database          `json:"database" yaml:"database"`
+		Path       string              `json:"path" yaml:"path"`
+		Labels     map[string]string   `json:"labels" yaml:"labels"`
+		Hostname   string              `json:"hostname" yaml:"hostname"`
+		Kubernetes Kubernetes          `json:"kubernetes" yaml:"kubernetes"`
+		Apps       map[string][]string `json:"apps" yaml:"apps"`
+		Database   Database            `json:"database" yaml:"database"`
 	}
 	Kubernetes struct {
 		Aliases map[string]string `json:"aliases" yaml:"aliases"`

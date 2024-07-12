@@ -125,6 +125,48 @@ func (t *Teleport) Clusters(ctx context.Context) []string {
 	}).([]string)
 }
 
+// Apps returns a list of cluster
+//
+//nolint:forcetypeassert
+func (t *Teleport) Apps(ctx context.Context) []string {
+	if !t.IsAuthenticated(ctx) {
+		return nil
+	}
+	return t.cache.Get("apps", func() interface{} {
+		ret := []string{}
+
+		type (
+			metadata struct {
+				Name string `json:"name"`
+			}
+			app struct {
+				Metadata metadata `json:"metadata"`
+			}
+		)
+		value, err := shell.New(ctx, t.l, "tsh", "apps", "ls",
+			fmt.Sprintf("--query='%s'", t.cfg.Query()),
+			"--format", "json",
+		).
+			Output()
+		if err != nil {
+			pterm.Error.Println(err.Error())
+			return ret
+		}
+
+		var apps []app
+		if err := json.Unmarshal(value, &apps); err != nil {
+			pterm.Error.Println(err.Error())
+			return ret
+		}
+
+		for _, s := range apps {
+			ret = append(ret, s.Metadata.Name)
+		}
+
+		return ret
+	}).([]string)
+}
+
 // Databases returns a list of cluster
 //
 //nolint:forcetypeassert

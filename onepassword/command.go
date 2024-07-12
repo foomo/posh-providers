@@ -2,6 +2,8 @@ package onepassword
 
 import (
 	"context"
+	"os"
+	"path"
 
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
@@ -70,6 +72,21 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 				Execute: inst.get,
 			},
 			{
+				Name:        "download",
+				Description: "Download a document",
+				Args: tree.Args{
+					{
+						Name:        "id",
+						Description: "Item name or uuid",
+					},
+					{
+						Name:        "output",
+						Description: "Save the document to the file path instead of stdout",
+					},
+				},
+				Execute: inst.download,
+			},
+			{
 				Name:        "register",
 				Description: "Register an account",
 				Args: tree.Args{
@@ -119,6 +136,20 @@ func (c *Command) get(ctx context.Context, r *readline.Readline) error {
 		"--account", c.op.cfg.Account,
 		"item", "get", r.Args().At(1),
 		"--format", "json",
+	).
+		Args(r.AdditionalArgs()...).
+		Run()
+}
+
+func (c *Command) download(ctx context.Context, r *readline.Readline) error {
+	if err := os.MkdirAll(path.Dir(r.Args().At(2)), 0700); err != nil {
+		return err
+	}
+	return shell.New(ctx, c.l,
+		"op",
+		"--account", c.op.cfg.Account,
+		"document", "get", r.Args().At(1),
+		"--out-file", r.Args().At(2),
 	).
 		Args(r.AdditionalArgs()...).
 		Run()
