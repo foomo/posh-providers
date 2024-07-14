@@ -13,7 +13,6 @@ import (
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
-	"github.com/foomo/posh/pkg/util/prints"
 	"github.com/foomo/posh/pkg/util/suggests"
 )
 
@@ -79,15 +78,21 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 						Name:        "web",
 						Description: "Provision web container",
 						Args:        args,
-						Flags:       flags,
-						Execute:     inst.tagmanagerWeb,
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().StringSlice("tags", nil, "list of tags to run")
+							return flags(ctx, r, fs)
+						},
+						Execute: inst.tagmanagerWeb,
 					},
 					{
 						Name:        "server",
 						Description: "Provision server container",
 						Args:        args,
-						Flags:       flags,
-						Execute:     inst.tagmanagerServer,
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().StringSlice("tags", nil, "list of tags to run")
+							return flags(ctx, r, fs)
+						},
+						Execute: inst.tagmanagerServer,
 					},
 				},
 			},
@@ -142,7 +147,15 @@ func (c *Command) config(ctx context.Context, r *readline.Readline) error {
 			return err
 		}
 
-		prints.Code(c.l, value, string(out), "yaml")
+		if err := shell.New(ctx, c.l, "sesamy", "config").
+			Args(r.Flags()...).
+			Args("--config", "-").
+			Args(r.AdditionalArgs()...).
+			Stdin(bytes.NewReader(out)).
+			Dir(path.Dir(value)).
+			Run(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
