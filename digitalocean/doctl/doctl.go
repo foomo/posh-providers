@@ -67,7 +67,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*Doctl, error) {
 	}
 
 	if err := files.MkdirAll(path.Dir(inst.cfg.ConfigPath)); err != nil {
-		return nil, errors.Wrapf(err, "failed to create config path: %s", inst.cfg.ConfigPath)
+		return nil, errors.Wrapf(err, "failed to create config path: %s", path.Dir(inst.cfg.ConfigPath))
 	}
 
 	if err := os.Setenv("DIGITALOCEAN_CONFIG", env.Path(inst.cfg.ConfigPath)); err != nil {
