@@ -248,26 +248,6 @@ func (c *Command) secrets(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
-func (c *Command) state(ctx context.Context, r *readline.Readline) error {
-	env := r.Args().At(0)
-	site := r.Args().At(1)
-
-	// validate stack & change dir
-	values, err := files.Find(ctx, c.cfg.StacksPath(env, site), "secrets.tpl.yaml", files.FindWithIsFile(true))
-	if err != nil {
-		return err
-	}
-
-	c.l.Info("Rendering secret templates...")
-	for _, value := range values {
-		c.l.Info("└  " + value)
-		if err := c.op.RenderFileTo(ctx, value, strings.Replace(value, ".tpl.yaml", ".yaml", 1)); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	environment := r.Args().At(0)
 	site := r.Args().At(1)
