@@ -18,5 +18,8 @@ func New(l log.Logger) (plugin.Plugin, error) {
 licenseFinder:
   logPath: .posh/logs/licenses.log
   decisionsPath: .posh/licenses.yaml
+  sources:
+    - go.mod
+    - yarn.lock
 ```
 
