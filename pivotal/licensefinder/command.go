@@ -239,8 +239,9 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline, args ...str
 
 func (c *Command) aggregatePaths(ctx context.Context) string {
 	var paths []string
-	paths = append(paths, c.paths(ctx, "go.sum")...)
-	paths = append(paths, c.paths(ctx, "yarn.lock")...)
+	for _, file := range c.cfg.Sources {
+		paths = append(paths, c.paths(ctx, file)...)
+	}
 	paths = lo.Uniq(paths)
 	sort.Strings(paths)
 	c.l.Info("Aggregating liceses from:")
