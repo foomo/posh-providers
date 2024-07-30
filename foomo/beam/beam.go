@@ -13,12 +13,10 @@ import (
 
 type (
 	Beam struct {
-		l            log.Logger
-		cfg          Config
-		op           *onepassword.OnePassword
-		configKey    string
-		signedIn     bool
-		signedInTime time.Time
+		l         log.Logger
+		cfg       Config
+		op        *onepassword.OnePassword
+		configKey string
 	}
 	Option func(*Beam) error
 )
