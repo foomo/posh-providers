@@ -80,6 +80,10 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*Kubectl, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+func (k *Kubectl) Config() Config {
+	return k.cfg
+}
+
 func (k *Kubectl) Cluster(name string) *Cluster {
 	return NewCluster(k, name)
 }
