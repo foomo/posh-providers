@@ -93,7 +93,7 @@ func NewCommand(l log.Logger, cache cache.Cache, stackit *Stackit, kubectl *kube
 										Name:        "cluster",
 										Description: "Name of the cluster.",
 										Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-											project, err := inst.stackit.Config().Project(r.Args().At(0))
+											project, err := inst.stackit.Config().Project(r.Args().At(1))
 											if err != nil {
 												return []goprompt.Suggest{}
 											}
@@ -147,11 +147,11 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 	ifs := r.FlagSets().Internal()
-	project, err := c.stackit.Config().Project(r.Args().At(0))
+	project, err := c.stackit.Config().Project(r.Args().At(1))
 	if err != nil {
 		return err
 	}
-	clusterName := r.Args().At(2)
+	clusterName := r.Args().At(3)
 	cluster, err := project.Cluster(clusterName)
 	if err != nil {
 		return err
@@ -167,7 +167,7 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	return shell.New(ctx, c.l, "stackit", "ske", "cluster", "kubeconfig", "create", cluster.Name).
+	return shell.New(ctx, c.l, "stackit", "ske", "kubeconfig", "create", cluster.Name).
 		Args("--filepath", kubectlCluster.Config(profile)).
 		Args("--project-id", project.ID).
 		Args(r.AdditionalArgs()...).
