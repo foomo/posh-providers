@@ -182,7 +182,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											fs.Default().Bool("push", false, "push image")
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Default().String("tags", "", "list of tags to include or exclude")
 											// build args
 											fs.Get("build-args").StringArray("build-arg", nil, "set build-time variables")
 											fs.Internal().String("tag", "", "image tag")
@@ -197,7 +197,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
 											fs.Default().Bool("no-render", false, "don't render the config template")
-											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Default().String("tags", "", "list of tags to include or exclude")
 											return nil
 										},
 										Execute: inst.execute,
@@ -209,7 +209,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Default().String("tags", "", "list of tags to include or exclude")
 											fs.Internal().String("tag", "", "image tag")
 											return nil
 										},
@@ -223,7 +223,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											slackFlag(fs)
 											commonFlags(fs)
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Default().String("tags", "", "list of tags to include or exclude")
 											if err := profileFlag(ctx, r, fs); err != nil {
 												return err
 											}
@@ -239,7 +239,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Default().Bool("with-tags", false, "include tags")
 											fs.Default().Bool("with-charts", false, "include charts")
 											fs.Default().Bool("with-builds", false, "include builds")
-											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Default().String("tags", "", "list of tags to include or exclude")
 											return nil
 										},
 										Execute: inst.execute,
@@ -252,7 +252,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											fs.Default().Bool("build", false, "build image")
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Default().String("tags", "", "list of tags to include or exclude")
 											// build args
 											fs.Get("build-args").StringArray("build-arg", nil, "set build-time variables")
 											fs.Internal().String("tag", "", "image tag")
@@ -269,7 +269,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
 											fs.Default().String("revision", "", "revision number to rollback to")
-											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Default().String("tags", "", "list of tags to include or exclude")
 											if err := profileFlag(ctx, r, fs); err != nil {
 												return err
 											}
@@ -284,7 +284,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Default().String("tags", "", "list of tags to include or exclude")
 											if err := profileFlag(ctx, r, fs); err != nil {
 												return err
 											}
@@ -299,7 +299,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Default().String("tags", "", "list of tags to include or exclude")
 											fs.Internal().String("tag", "", "image tag")
 											return nil
 										},
@@ -318,7 +318,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Default().Bool("push", false, "push image")
 											fs.Default().Bool("build", false, "build image")
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().StringSlice("tags", nil, "list of tags to include or exclude")
+											fs.Default().String("tags", "", "list of tags to include or exclude")
 											// build args
 											fs.Get("build-args").StringArray("build-arg", nil, "set build-time variables")
 											// internal
