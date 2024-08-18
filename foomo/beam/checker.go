@@ -3,22 +3,42 @@ package beam
 import (
 	"context"
 	"fmt"
-	"net"
-	"time"
 
+	"github.com/foomo/posh-providers/cloudflare/cloudflared"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/check"
 )
 
-func TunnelChecker(p *Beam, tunnel, cluster string) check.Checker {
+func ClusterChecker(cf *cloudflared.Cloudflared, cluster Cluster) check.Checker {
 	return func(ctx context.Context, l log.Logger) check.Info {
-		name := "Beam"
-		c := p.Config().GetTunnel(tunnel).GetCluster(cluster)
-		addr := fmt.Sprintf("127.0.0.1:%d", c.Port)
-		if _, err := net.DialTimeout("tcp", addr, time.Second); err != nil {
-			return check.NewNoteInfo(name, fmt.Sprintf("Tunnel `%s` to cluster `%s` is closed", tunnel, cluster))
-		} else {
-			return check.NewSuccessInfo(name, fmt.Sprintf("Tunnel `%s` to cluster `%s` is open", tunnel, cluster))
+		name := "Beam Cluster"
+		title := fmt.Sprintf("%s => :%d", cluster.Hostname, cluster.Port)
+
+		if cf.IsConnected(ctx, cloudflared.Access{
+			Type:     "tcp",
+			Hostname: cluster.Hostname,
+			Port:     cluster.Port,
+		}) {
+			return check.NewSuccessInfo(name, title)
 		}
+
+		return check.NewNoteInfo(name, title)
+	}
+}
+
+func DatabaseChecker(cf *cloudflared.Cloudflared, database Database) check.Checker {
+	return func(ctx context.Context, l log.Logger) check.Info {
+		name := "Beam Database"
+		title := fmt.Sprintf("%s => :%d", database.Hostname, database.Port)
+
+		if cf.IsConnected(ctx, cloudflared.Access{
+			Type:     "tcp",
+			Hostname: database.Hostname,
+			Port:     database.Port,
+		}) {
+			return check.NewSuccessInfo(name, title)
+		}
+
+		return check.NewNoteInfo(name, title)
 	}
 }
