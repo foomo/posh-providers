@@ -56,7 +56,7 @@ func RegistryChecker(inst *K3d) check.Checker {
 
 		for _, registry := range registries {
 			if registry.Name == fmt.Sprintf("k3d-%s", inst.cfg.Registry.Name) {
-				ips, err := net.LookupIP(fmt.Sprintf(registry.Name))
+				ips, err := net.LookupIP(registry.Name)
 				if err != nil {
 					return check.NewFailureInfo(title, fmt.Sprintf("Failed to lookup registry IP (%s)", err.Error()))
 				}
