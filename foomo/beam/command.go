@@ -213,7 +213,7 @@ func (c *Command) clusterDisconnect(ctx context.Context, r *readline.Readline) e
 
 func (c *Command) databaseConnect(ctx context.Context, r *readline.Readline) error {
 	databaseName := r.Args().At(1)
-	databaseConfig := c.beam.Config().GetCluster(databaseName)
+	databaseConfig := c.beam.Config().GetDatabase(databaseName)
 
 	return c.cloudflared.Connect(ctx, cloudflared.Access{
 		Type:     "tcp",
@@ -224,7 +224,7 @@ func (c *Command) databaseConnect(ctx context.Context, r *readline.Readline) err
 
 func (c *Command) databaseDisconnect(ctx context.Context, r *readline.Readline) error {
 	databaseName := r.Args().At(1)
-	databaseConfig := c.beam.Config().GetCluster(databaseName)
+	databaseConfig := c.beam.Config().GetDatabase(databaseName)
 
 	return c.cloudflared.Disonnect(ctx, cloudflared.Access{
 		Type:     "tcp",
