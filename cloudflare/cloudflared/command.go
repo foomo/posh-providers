@@ -138,6 +138,10 @@ func NewCommand(l log.Logger, cloudflared *Cloudflared, opts ...CommandOption) (
 							{
 								Name:        "dns",
 								Description: "HostnameRoute a hostname by creating a DNS CNAME record to a tunnel",
+								Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+									fs.Default().Bool("overwrite-dns", false, "Overwrites existing DNS records")
+									return nil
+								},
 								Args: tree.Args{
 									{
 										Name:        "tunnel",
@@ -274,8 +278,8 @@ func (c *Command) tunnelCreate(ctx context.Context, r *readline.Readline) error 
 		return err
 	}
 
-	var outDec []byte
-	if _, err := base64.StdEncoding.Decode(outDec, out); err != nil {
+	outDec, err := base64.StdEncoding.DecodeString(string(out))
+	if err != nil {
 		return err
 	}
 
