@@ -138,6 +138,22 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache, op
 								Args:        stackArgs,
 								Execute:     inst.execute,
 							},
+							{
+								Name:        "refresh",
+								Description: "Update the state to match remote systems",
+								Args:        stackArgs,
+								Execute:     inst.execute,
+							},
+							{
+								Name:        "output",
+								Description: "Show output values from your root module",
+								Args:        stackArgs,
+								Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+									fs.Default().String("raw", "", "Print the raw string directly")
+									return nil
+								},
+								Execute: inst.execute,
+							},
 							// {
 							// 	Name: "command",
 							// 	Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -229,11 +245,11 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) secrets(ctx context.Context, r *readline.Readline) error {
-	env := r.Args().At(0)
-	site := r.Args().At(1)
+	envName := r.Args().At(0)
+	siteName := r.Args().At(1)
 
 	// validate stack & change dir
-	values, err := files.Find(ctx, c.cfg.StacksPath(env, site), "secrets.tpl.yaml", files.FindWithIsFile(true))
+	values, err := files.Find(ctx, c.cfg.StacksPath(envName, siteName), "secrets.tpl.yaml", files.FindWithIsFile(true))
 	if err != nil {
 		return err
 	}
@@ -249,8 +265,8 @@ func (c *Command) secrets(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
-	environment := r.Args().At(0)
-	site := r.Args().At(1)
+	envName := r.Args().At(0)
+	siteName := r.Args().At(1)
 	command := r.Args().At(2)
 	stacks := r.Args().From(3)
 
@@ -259,7 +275,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		c.l.Info("└  " + stack)
 		if err := shell.New(ctx, c.l, "terragrunt", command).
 			Args(r.AdditionalFlags()...).
-			Dir(path.Join(c.cfg.StacksPath(environment, site), stack)).
+			Dir(path.Join(c.cfg.StacksPath(envName, siteName), stack)).
 			Run(); err != nil {
 			return err
 		}
@@ -275,17 +291,17 @@ func (c *Command) getEnvs(ctx context.Context, r *readline.Readline) []goprompt.
 }
 
 func (c *Command) getSites(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
-	env := r.Args().At(0)
-	return c.cache.GetSuggests("sites-"+env, func() any {
-		return suggests.List(c.cfg.SiteNames(env))
+	envName := r.Args().At(0)
+	return c.cache.GetSuggests("sites-"+envName, func() any {
+		return suggests.List(c.cfg.SiteNames(envName))
 	})
 }
 
 func (c *Command) getStacks(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
-	env := r.Args().At(0)
+	envName := r.Args().At(0)
 	site := r.Args().At(1)
-	return c.cache.GetSuggests("stacks-"+env+"-"+site, func() any {
-		stacks, err := c.cfg.StackNames(ctx, env, site)
+	return c.cache.GetSuggests("stacks-"+envName+"-"+site, func() any {
+		stacks, err := c.cfg.StackNames(ctx, envName, site)
 		if err != nil {
 			c.l.Debug("failed to retrieve stacks", zap.Error(err))
 		}
