@@ -100,9 +100,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			{
 				Name:        "install",
 				Description: "Install dependencies",
-				Execute: func(ctx context.Context, r *readline.Readline) error {
-					return shell.New(ctx, l, "pnpm", "install").Run()
-				},
+				Execute:     fallback,
 			},
 			{
 				Name:        "run",
