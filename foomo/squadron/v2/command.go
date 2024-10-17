@@ -245,6 +245,18 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Execute: inst.execute,
 									},
 									{
+										Name:        "schema",
+										Description: "Generate json schema",
+										Args:        tree.Args{unitsArg},
+										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+											commonFlags(fs)
+											fs.Default().String("tags", "", "list of tags to include or exclude")
+											fs.Default().String("output", "", "output json file")
+											return nil
+										},
+										Execute: inst.execute,
+									},
+									{
 										Name:        "push",
 										Description: "Push squadron units",
 										Args:        tree.Args{unitsArg},
