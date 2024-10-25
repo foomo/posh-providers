@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh-providers/slack-go/slack"
@@ -397,7 +396,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	pushArgs, _ := ifs.GetStringSlice("push-args")
 	buildArgs, _ := ifs.GetStringSlice("build-args")
-	spew.Dump(buildArgs)
 
 	// try retrieve profile
 	profile, _ := ifs.GetString("profile")
