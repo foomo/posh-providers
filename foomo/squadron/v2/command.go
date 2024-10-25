@@ -3,8 +3,10 @@ package squadron
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh-providers/slack-go/slack"
@@ -184,7 +186,8 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
 											fs.Default().String("tags", "", "list of tags to include or exclude")
 											// build args
-											fs.Get("build-args").StringArray("build-arg", nil, "set build-time variables")
+											fs.Internal().StringSlice("push-args", nil, "additional docker push args")
+											fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
 											fs.Internal().String("tag", "", "image tag")
 											return nil
 										},
@@ -266,8 +269,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
 											fs.Default().String("tags", "", "list of tags to include or exclude")
 											// build args
-											fs.Get("build-args").StringArray("build-arg", nil, "set build-time variables")
 											fs.Internal().String("tag", "", "image tag")
+											fs.Internal().StringSlice("push-args", nil, "additional docker push args")
+											fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
 											return nil
 										},
 										Execute: inst.execute,
@@ -331,10 +335,10 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Default().Bool("build", false, "build image")
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
 											fs.Default().String("tags", "", "list of tags to include or exclude")
-											// build args
-											fs.Get("build-args").StringArray("build-arg", nil, "set build-time variables")
 											// internal
 											fs.Internal().String("tag", "", "image tag")
+											fs.Internal().StringSlice("push-args", nil, "additional docker push args")
+											fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
 											fs.Internal().Bool("create-namespace", false, "create namespace if not exist")
 											return nil
 										},
@@ -382,16 +386,18 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	var env []string
-	var buildArgs []string
 	fs := r.FlagSets().Default()
 	ifs := r.FlagSets().Internal()
-	bfs := r.FlagSets().Get("build-args")
 	passFlags := []string{"--"}
 	cluster, fleet, squadron, cmd, units := r.Args()[0], r.Args()[1], r.Args()[2], r.Args()[3], r.Args()[4:]
 
 	// retrieve flags
 	tag, _ := ifs.GetString("tag")
 	noOverride := log.MustGet(ifs.GetBool("no-override"))(c.l)
+
+	pushArgs, _ := ifs.GetStringSlice("push-args")
+	buildArgs, _ := ifs.GetStringSlice("build-args")
+	spew.Dump(buildArgs)
 
 	// try retrieve profile
 	profile, _ := ifs.GetString("profile")
@@ -437,16 +443,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	c.l.Infof("Fleet:    %s", fleet)
 	c.l.Infof("Cluster:  %s", cluster)
 
-	if value, err := bfs.GetStringArray("build-arg"); err == nil && len(value) > 0 {
-		for _, v := range value {
-			buildArgs = append(buildArgs, "--build-arg", v)
-		}
-	}
-	// flatten build args
-	if len(buildArgs) > 0 {
-		buildArgs = []string{fmt.Sprintf("--build-args='%s'", strings.Join(buildArgs, " "))}
-	}
-
 	sh := shell.New(ctx, c.l, "squadron", cmd).
 		Args("--file", strings.Join(c.squadron.GetFiles("", cluster, fleet, !noOverride), ",")).
 		Dir(c.squadron.cfg.Path).
@@ -461,6 +457,14 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		flags = append(flags, "--namespace", c.namespaceFn(cluster, fleet))
 	}
 
+	for _, arg := range pushArgs {
+		flags = append(flags, "--push-args", strconv.Quote(arg))
+	}
+
+	for _, arg := range buildArgs {
+		flags = append(flags, "--build-args", strconv.Quote(arg))
+	}
+
 	if r.AdditionalArgs().Len() > 1 {
 		passFlags = append(passFlags, r.AdditionalArgs().From(1)...)
 	}
@@ -468,7 +472,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	if err := sh.
 		Args(flags...).
 		Args(fs.Visited().Args()...).
-		Args(buildArgs...).
 		Args(passFlags...).
 		Run(); err != nil {
 		return errors.Wrap(err, "failed to execute squadron")
