@@ -10,11 +10,11 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/digitalocean/godo v1.126.0
-	github.com/foomo/posh v0.7.0
+	github.com/foomo/posh v0.8.0
 	github.com/google/go-github/v47 v47.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
-	github.com/pterm/pterm v0.12.79
+	github.com/pterm/pterm v0.12.80-0.20241004171054-a6948562ecff
 	github.com/samber/lo v1.47.0
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/slack-go/slack v0.14.0
@@ -48,7 +48,7 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/neilotoole/slogt v1.1.0 // indirect
