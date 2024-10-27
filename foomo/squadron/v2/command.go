@@ -413,7 +413,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	{ // handle pass through flags
 		if slices.Contains([]string{"up", "diff", "template"}, cmd) {
-			passFlags = append(passFlags, "--set", fmt.Sprintf("fleet=%v", fleet))
+			passFlags = append(passFlags, "--set", "global.foomo.squadron.fleet="+fleet)
 		}
 		if slices.Contains([]string{"up"}, cmd) {
 			if log.MustGet(ifs.GetBool("create-namespace"))(c.l) {
