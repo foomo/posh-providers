@@ -130,6 +130,8 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 					fs.Default().Bool("fast", false, "Run only fast linters from enabled linters set")
 					fs.Default().Bool("new", false, "Show only new issues")
 					fs.Default().Bool("fix", false, "Fix found issue")
+					fs.Default().Int("concurrency", 0, "Number of CPUs to use")
+					fs.Internal().Int("parallel", 0, "Number of parallel processes")
 					return nil
 				},
 				Args:    []*tree.Arg{pathModArg},
@@ -199,7 +201,6 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go build ...")
 	for _, value := range paths {
-		value := value
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l,
@@ -229,7 +230,6 @@ func (c *Command) test(ctx context.Context, r *readline.Readline) error {
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go test ...")
 	for _, value := range paths {
-		value := value
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l,
@@ -254,7 +254,6 @@ func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod tidy...")
 	for _, value := range paths {
-		value := value
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l,
@@ -278,7 +277,6 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod download...")
 	for _, value := range paths {
-		value := value
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l,
@@ -302,7 +300,6 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod outdated...")
 	for _, value := range paths {
-		value := value
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l,
@@ -319,7 +316,7 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
-	data := "go 1.19\n\nuse (\n"
+	data := "go 1.23.2\n\nuse (\n"
 	for _, value := range c.paths(ctx, "go.mod", true) {
 		data += "\t" + strings.TrimSuffix(value, "/go.mod") + "\n"
 	}
@@ -342,16 +339,20 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+	var args []string
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running golangci-lint run...")
+	if value, _ := r.FlagSets().Internal().GetInt("parallel"); value != 0 {
+		args = append(args, "--allow-parallel-runners")
+	}
 	for _, value := range paths {
-		value := value
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l,
 				"golangci-lint", "run",
 			).
 				Args(fsd.Visited().Args()...).
+				Args(args...).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
@@ -371,7 +372,6 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go generate...")
 	for _, value := range paths {
-		value := value
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l,
