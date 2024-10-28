@@ -130,6 +130,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 					fs.Default().Bool("fast", false, "Run only fast linters from enabled linters set")
 					fs.Default().Bool("new", false, "Show only new issues")
 					fs.Default().Bool("fix", false, "Fix found issue")
+					fs.Default().String("out-format", "", "Formats of output")
 					fs.Default().Int("concurrency", 0, "Number of CPUs to use")
 					fs.Internal().Int("parallel", 0, "Number of parallel processes")
 					return nil
@@ -204,8 +205,10 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l,
-				"go", "build", "-v", "./...", // TODO select test
+				"go", "build",
 			).
+				Args(r.Flags()...).
+				Args("-v", "./...").
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
@@ -282,6 +285,7 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 			return shell.New(ctx, c.l,
 				"go", "mod", "tidy",
 			).
+				Args(r.Flags()...).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
@@ -327,6 +331,7 @@ func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
 func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "go").
 		Args(r.Args()...).
+		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Run()
 }
@@ -351,8 +356,9 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 			return shell.New(ctx, c.l,
 				"golangci-lint", "run",
 			).
-				Args(fsd.Visited().Args()...).
 				Args(args...).
+				Args(fsd.Visited().Args()...).
+				Args(r.Flags()...).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
@@ -377,6 +383,7 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 			return shell.New(ctx, c.l,
 				"go", "generate", value,
 			).
+				Args(r.Flags()...).
 				Args(r.AdditionalArgs()...).
 				Run()
 		})
