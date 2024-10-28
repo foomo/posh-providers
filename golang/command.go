@@ -205,10 +205,8 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l,
-				"go", "build",
+				"go", "build", "-v", "./...", // TODO select test
 			).
-				Args(r.Flags()...).
-				Args("-v", "./...").
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
@@ -285,7 +283,6 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 			return shell.New(ctx, c.l,
 				"go", "mod", "tidy",
 			).
-				Args(r.Flags()...).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
@@ -331,7 +328,6 @@ func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
 func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "go").
 		Args(r.Args()...).
-		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Run()
 }
@@ -358,7 +354,6 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 			).
 				Args(args...).
 				Args(fsd.Visited().Args()...).
-				Args(r.Flags()...).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
@@ -383,7 +378,6 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 			return shell.New(ctx, c.l,
 				"go", "generate", value,
 			).
-				Args(r.Flags()...).
 				Args(r.AdditionalArgs()...).
 				Run()
 		})
