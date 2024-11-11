@@ -335,8 +335,8 @@ func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {
 func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 	fsd := r.FlagSets().Default()
 	var paths []string
-	if r.Args().HasIndex(2) {
-		paths = []string{r.Args().At(2)}
+	if r.Args().HasIndex(1) {
+		paths = []string{r.Args().At(1)}
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
