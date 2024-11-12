@@ -99,6 +99,8 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									fs.Default().String("debug", "", "Show full logs")
 									fs.Default().String("tags", "", "Quoted string with space-separated tags")
 									fs.Default().String("vebose", "", "Increase logging verbosity")
+									fs.Internal().String("group-args", "", "Additional group create args")
+									fs.Internal().String("storage-args", "", "Additional storaage create args")
 									return nil
 								},
 								Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -106,6 +108,19 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									if err != nil {
 										return err
 									}
+									fsi := r.FlagSets().Internal()
+
+									groupArgs, err := fsi.GetString("group-args")
+									if err != nil {
+										return err
+									}
+									groupArgs = strings.Trim(strings.Trim(groupArgs, "\""), "'")
+
+									storageArgs, err := fsi.GetString("storage-args")
+									if err != nil {
+										return err
+									}
+									storageArgs = strings.Trim(strings.Trim(storageArgs, "\""), "'")
 
 									// Create a new resource group
 									inst.l.Info("creating resource group:", be.ResourceGroup)
@@ -113,6 +128,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 										Args("--resource-group", be.ResourceGroup).
 										Args("--subscription", be.Subscription).
 										Args("--location", be.Location).
+										Args(strings.Split(groupArgs, " ")...).
 										Args(r.Flags()...).
 										Run(); err != nil {
 										return err
@@ -125,7 +141,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 										Args("--resource-group", be.ResourceGroup).
 										Args("--subscription", be.Subscription).
 										Args("--location", be.Location).
-										Args("--sku", "Standard_LRS").
+										Args(strings.Split(storageArgs, " ")...).
 										Args(r.Flags()...).
 										Run(); err != nil {
 										return err
@@ -164,6 +180,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									return shell.New(ctx, inst.l, "pulumi", "login", fmt.Sprintf("azblob://%s", be.Container)).
 										Env("AZURE_STORAGE_ACCOUNT=" + be.StorageAccount).
 										Env("AZURE_STORAGE_KEY=" + sks).
+										Env("ARM_SUBSCRIPTION_ID=" + be.Subscription).
 										Run()
 								},
 							},
@@ -476,6 +493,7 @@ func (c *Command) configureStack(ctx context.Context, env, proj, stack string, b
 		Env("PULUMI_CONFIG_PASSPHRASE=" + passphrase).
 		Env("AZURE_STORAGE_ACCOUNT=" + be.StorageAccount).
 		Env("AZURE_STORAGE_KEY=" + storageAccountKey).
+		Env("ARM_SUBSCRIPTION_ID=" + be.Subscription).
 		Args().
 		Run()
 }
@@ -509,6 +527,7 @@ func (c *Command) executeStack(ctx context.Context, r *readline.Readline) error 
 		Env("PULUMI_CONFIG_PASSPHRASE=" + passphrase).
 		Env("AZURE_STORAGE_ACCOUNT=" + be.StorageAccount).
 		Env("AZURE_STORAGE_KEY=" + storageAccountKey).
+		Env("ARM_SUBSCRIPTION_ID=" + be.Subscription).
 		Dir(path.Join(c.cfg.Path, e, proj)).
 		Run()
 }
