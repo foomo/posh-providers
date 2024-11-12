@@ -99,6 +99,8 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									fs.Default().String("debug", "", "Show full logs")
 									fs.Default().String("tags", "", "Quoted string with space-separated tags")
 									fs.Default().String("vebose", "", "Increase logging verbosity")
+									fs.Internal().String("group-args", "", "Additional group create args")
+									fs.Internal().String("storage-args", "", "Additional storaage create args")
 									return nil
 								},
 								Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -106,6 +108,19 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									if err != nil {
 										return err
 									}
+									fsi := r.FlagSets().Internal()
+
+									groupArgs, err := fsi.GetString("group-args")
+									if err != nil {
+										return err
+									}
+									groupArgs = strings.Trim(strings.Trim(groupArgs, "\""), "'")
+
+									storageArgs, err := fsi.GetString("storage-args")
+									if err != nil {
+										return err
+									}
+									storageArgs = strings.Trim(strings.Trim(storageArgs, "\""), "'")
 
 									// Create a new resource group
 									inst.l.Info("creating resource group:", be.ResourceGroup)
@@ -113,6 +128,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 										Args("--resource-group", be.ResourceGroup).
 										Args("--subscription", be.Subscription).
 										Args("--location", be.Location).
+										Args(strings.Split(groupArgs, " ")...).
 										Args(r.Flags()...).
 										Run(); err != nil {
 										return err
@@ -125,10 +141,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 										Args("--resource-group", be.ResourceGroup).
 										Args("--subscription", be.Subscription).
 										Args("--location", be.Location).
-										Args("--sku", "Standard_LRS").
-										Args("--allow-blob-public-access", "false").
-										Args("--min-tls-version", "TLS1_2").
-										Args("--public-network-access", "Disabled").
+										Args(strings.Split(storageArgs, " ")...).
 										Args(r.Flags()...).
 										Run(); err != nil {
 										return err
