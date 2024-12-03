@@ -96,9 +96,9 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 								Name:        "create",
 								Description: "Create a new object storage backend",
 								Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-									fs.Default().String("debug", "", "Show full logs")
 									fs.Default().String("tags", "", "Quoted string with space-separated tags")
-									fs.Default().String("vebose", "", "Increase logging verbosity")
+									fs.Default().Bool("debug", false, "Show full logs")
+									fs.Default().Bool("vebose", false, "Increase logging verbosity")
 									fs.Internal().String("group-args", "", "Additional group create args")
 									fs.Internal().String("storage-args", "", "Additional storaage create args")
 									return nil
@@ -129,7 +129,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 										Args("--subscription", be.Subscription).
 										Args("--location", be.Location).
 										Args(strings.Split(groupArgs, " ")...).
-										Args(r.Flags()...).
+										Args(r.FlagSets().Default().Visited().Args()...).
 										Run(); err != nil {
 										return err
 									}
@@ -142,7 +142,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 										Args("--subscription", be.Subscription).
 										Args("--location", be.Location).
 										Args(strings.Split(storageArgs, " ")...).
-										Args(r.Flags()...).
+										Args(r.FlagSets().Default().Visited().Args()...).
 										Run(); err != nil {
 										return err
 									}
