@@ -10,7 +10,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/digitalocean/godo v1.131.0
-	github.com/foomo/posh v0.8.1
+	github.com/foomo/posh v0.8.2
 	github.com/google/go-github/v47 v47.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
@@ -31,7 +31,7 @@ require (
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
 	github.com/alecthomas/chroma v0.10.0 // indirect
-	github.com/charlievieth/fastwalk v1.0.8 // indirect
+	github.com/charlievieth/fastwalk v1.0.9 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
