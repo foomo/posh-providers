@@ -9,12 +9,12 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
-	github.com/digitalocean/godo v1.130.0
-	github.com/foomo/posh v0.8.1
+	github.com/digitalocean/godo v1.131.0
+	github.com/foomo/posh v0.8.2
 	github.com/google/go-github/v47 v47.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
-	github.com/pterm/pterm v0.12.80-0.20241004171054-a6948562ecff
+	github.com/pterm/pterm v0.12.80
 	github.com/samber/lo v1.47.0
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/slack-go/slack v0.15.0
@@ -31,7 +31,7 @@ require (
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
 	github.com/alecthomas/chroma v0.10.0 // indirect
-	github.com/charlievieth/fastwalk v1.0.8 // indirect
+	github.com/charlievieth/fastwalk v1.0.9 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
@@ -74,9 +74,9 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/term v0.25.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/term v0.26.0 // indirect
+	golang.org/x/text v0.20.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
