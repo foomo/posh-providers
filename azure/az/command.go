@@ -69,7 +69,11 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 			{
 				Name:        "login",
 				Description: "Log in to Azure",
-				Execute:     inst.exec,
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					fs.Default().String("tenant", "", "The Microsoft Entra tenant")
+					return nil
+				},
+				Execute: inst.exec,
 			},
 			{
 				Name:        "logout",
@@ -80,6 +84,22 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 				Name:        "configure",
 				Description: "Manage Azure CLI configuration",
 				Execute:     inst.exec,
+			},
+			{
+				Name:        "acr",
+				Description: "Manage private registries with Azure Container Registries",
+				Execute:     inst.exec,
+				Nodes: tree.Nodes{
+					{
+						Name:        "login",
+						Description: "Log in to an Azure Container Registry through the Docker CLI",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().String("name", "", "The name of the container registry")
+							return nil
+						},
+						Execute: inst.exec,
+					},
+				},
 			},
 			{
 				Name:        "kubeconfig",
@@ -105,7 +125,7 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 					},
 				},
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-					fs.Internal().String("profile", "", "Store credentials in given profile.")
+					fs.Internal().String("profile", "", "Store credentials in given profile")
 					return fs.Internal().SetValues("profile", "azure")
 				},
 				Execute: inst.kubeconfig,
