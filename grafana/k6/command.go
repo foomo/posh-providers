@@ -41,7 +41,7 @@ func CommandWithName(v string) CommandOption {
 
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
-		o.name = v
+		o.configKey = v
 	}
 }
 
