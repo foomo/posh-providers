@@ -15,6 +15,7 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -123,6 +124,11 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 				Execute: inst.generate,
 			},
 			{
+				Name:        "clean-lint-cache",
+				Description: "Run golangci lint cache clean",
+				Execute:     inst.cleanLintCache,
+			},
+			{
 				Name:        "lint",
 				Description: "Run golangci lint",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -198,6 +204,7 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+	slices.Sort(paths)
 
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go build ...")
@@ -223,6 +230,8 @@ func (c *Command) test(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+	slices.Sort(paths)
+
 	fsi := r.FlagSets().Internal()
 	if value, _ := fsi.GetString("tags"); value != "" {
 		envs = append(envs, "GO_TEST_TAGS="+value)
@@ -252,6 +261,8 @@ func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+	slices.Sort(paths)
+
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod tidy...")
 	for _, value := range paths {
@@ -275,6 +286,8 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+	slices.Sort(paths)
+
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod download...")
 	for _, value := range paths {
@@ -298,6 +311,8 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+	slices.Sort(paths)
+
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod outdated...")
 	for _, value := range paths {
@@ -340,6 +355,8 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+	slices.Sort(paths)
+
 	var args []string
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running golangci-lint run...")
@@ -362,6 +379,10 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 	return wg.Wait()
 }
 
+func (c *Command) cleanLintCache(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "golangci-lint", "cache", "clean").Run()
+}
+
 func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 	var paths []string
 	if r.Args().HasIndex(1) {
@@ -369,6 +390,7 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "generate.go", false)
 	}
+	slices.Sort(paths)
 
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go generate...")
