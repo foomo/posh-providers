@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -17,6 +18,7 @@ import (
 type (
 	Command struct {
 		l           log.Logger
+		op          *onepassword.OnePassword
 		name        string
 		config      Config
 		configKey   string
@@ -38,6 +40,12 @@ func CommandWithName(v string) CommandOption {
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
+	}
+}
+
+func CommandWithOnePassword(v *onepassword.OnePassword) CommandOption {
+	return func(o *Command) {
+		o.op = v
 	}
 }
 
@@ -110,6 +118,17 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 								Execute: inst.execute,
 							},
 							{
+								Name:        "migrate",
+								Description: "Migrates either up or down to the specified version",
+								Args: tree.Args{
+									{
+										Name:        "version",
+										Description: "Version to migrate",
+									},
+								},
+								Execute: inst.execute,
+							},
+							{
 								Name:        "version",
 								Description: "Print the current version of the database",
 								Execute:     inst.execute,
@@ -161,6 +180,14 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	database := c.config.Database(r.Args().At(0))
 	source := c.config.Source(r.Args().At(1))
 
+	if c.op != nil {
+		if out, err := c.op.Render(ctx, database); err != nil {
+			return err
+		} else {
+			database = string(out)
+		}
+	}
+
 	m, err := migrate.New(source, database)
 	if err != nil {
 		return err
@@ -192,6 +219,12 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return m.Down()
 	case "down-by-one":
 		return m.Steps(-1)
+	case "migrate":
+		i, err := strconv.Atoi(r.Args().At(3))
+		if err != nil {
+			return err
+		}
+		return m.Migrate(uint(i))
 	case "force":
 		i, err := strconv.Atoi(r.Args().At(3))
 		if err != nil {
