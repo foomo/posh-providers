@@ -169,8 +169,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	m.Log = &logger{l: c.l}
 
 	go func() {
-		select {
-		case <-ctx.Done():
+		if <-ctx.Done(); true {
 			c.l.Info("triggering graceful migration shutdown")
 			m.GracefulStop <- true
 		}
@@ -194,11 +193,11 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	case "down-by-one":
 		return m.Steps(-1)
 	case "force":
-		i, err := strconv.ParseInt(r.Args().At(3), 10, 64)
+		i, err := strconv.Atoi(r.Args().At(3))
 		if err != nil {
 			return err
 		}
-		return m.Force(int(i))
+		return m.Force(i)
 	case "drop":
 		return m.Drop()
 	case "version":
