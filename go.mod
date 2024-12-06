@@ -11,9 +11,11 @@ require (
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/digitalocean/godo v1.131.0
 	github.com/foomo/posh v0.8.2
+	github.com/goccy/go-json v0.9.11
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/google/go-github/v47 v47.1.0
 	github.com/joho/godotenv v1.5.1
+	github.com/muesli/go-app-paths v0.2.2
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.80
 	github.com/samber/lo v1.47.0
@@ -53,6 +55,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/neilotoole/slogt v1.1.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
