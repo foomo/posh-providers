@@ -1,6 +1,6 @@
 module github.com/foomo/posh-providers
 
-go 1.23.2
+go 1.23.4
 
 replace github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
 
@@ -10,7 +10,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/digitalocean/godo v1.131.0
-	github.com/foomo/posh v0.8.2
+	github.com/foomo/posh v0.8.3
 	github.com/goccy/go-json v0.9.11
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/google/go-github/v47 v47.1.0
