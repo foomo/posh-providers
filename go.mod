@@ -11,7 +11,7 @@ require (
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/digitalocean/godo v1.131.0
 	github.com/foomo/posh v0.8.3
-	github.com/goccy/go-json v0.9.11
+	github.com/goccy/go-json v0.10.3
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/google/go-github/v47 v47.1.0
 	github.com/joho/godotenv v1.5.1
@@ -26,7 +26,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 	golang.org/x/oauth2 v0.24.0
-	golang.org/x/sync v0.9.0
+	golang.org/x/sync v0.10.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
