@@ -213,6 +213,9 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
 											fs.Default().String("tags", "", "list of tags to include or exclude")
 											fs.Internal().String("tag", "", "image tag")
+											if err := profileFlag(ctx, r, fs); err != nil {
+												return err
+											}
 											return nil
 										},
 										Execute: inst.execute,
