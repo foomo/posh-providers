@@ -1,4 +1,4 @@
-package pnpm
+package utils
 
 import (
 	"encoding/json"
@@ -21,6 +21,7 @@ type PackageJSON struct {
 	OS          []string          `json:"os"`
 	CPU         []string          `json:"cpu"`
 	Private     bool              `json:"private"`
+	Workspaces  []string          `json:"workspaces"`
 }
 
 func LoadPackageJSON(filename string) (*PackageJSON, error) {
