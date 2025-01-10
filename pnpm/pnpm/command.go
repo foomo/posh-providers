@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/foomo/posh-providers/utils"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
@@ -178,7 +179,7 @@ func (c *Command) run(ctx context.Context, dirname, script string) error {
 func (c *Command) scripts(ctx context.Context, dirname string) []string {
 	return c.cache.Get("scripts-"+dirname, func() any {
 		var ret []string
-		f, err := LoadPackageJSON(path.Join(dirname, "package.json"))
+		f, err := utils.LoadPackageJSON(path.Join(dirname, "package.json"))
 		if err != nil {
 			c.l.Debug("failed to load package.json", err.Error())
 			return []string{}
