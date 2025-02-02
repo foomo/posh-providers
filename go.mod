@@ -9,23 +9,23 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
-	github.com/digitalocean/godo v1.132.0
+	github.com/digitalocean/godo v1.136.0
 	github.com/foomo/posh v0.8.5
-	github.com/goccy/go-json v0.10.4
-	github.com/golang-migrate/migrate/v4 v4.18.1
+	github.com/goccy/go-json v0.10.5
+	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/google/go-github/v47 v47.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/muesli/go-app-paths v0.2.2
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.80
-	github.com/samber/lo v1.47.0
+	github.com/samber/lo v1.49.1
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/slack-go/slack v0.15.0
 	github.com/spf13/viper v1.19.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
-	golang.org/x/oauth2 v0.24.0
+	golang.org/x/oauth2 v0.25.0
 	golang.org/x/sync v0.10.0
 	gopkg.in/yaml.v3 v3.0.1
 )
