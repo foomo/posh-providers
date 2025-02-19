@@ -3,6 +3,7 @@ package squadron
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -19,7 +20,6 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 	slackgo "github.com/slack-go/slack"
-	"golang.org/x/exp/slices"
 )
 
 const All = "all"
@@ -392,9 +392,14 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	ifs := r.FlagSets().Internal()
 	passFlags := []string{"--"}
 	cluster, fleet, squadron, cmd, units := r.Args()[0], r.Args()[1], r.Args()[2], r.Args()[3], r.Args()[4:]
+	cfgCluster, ok := c.squadron.Cluster(cluster)
+	if !ok {
+		return errors.New("cluster configuration not found")
+	}
 
 	// retrieve flags
 	tag, _ := ifs.GetString("tag")
+	tags, _ := fs.GetString("tags")
 	noOverride := log.MustGet(ifs.GetBool("no-override"))(c.l)
 
 	pushArgs, _ := ifs.GetStringSlice("push-args")
@@ -433,14 +438,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		env = append(env, c.kubectl.Cluster(cluster).Env(profile))
 	}
 
-	{ // handle slack
-		if ok, _ := ifs.GetBool("slack"); ok {
-			if err := c.notify(ctx, cmd, cluster, fleet, squadron, tag, units); err != nil {
-				return err
-			}
-		}
-	}
-
 	c.l.Infof("Fleet:    %s", fleet)
 	c.l.Infof("Cluster:  %s", cluster)
 
@@ -477,10 +474,19 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		Run(); err != nil {
 		return errors.Wrap(err, "failed to execute squadron")
 	}
+
+	{ // handle notification
+		if ok, _ := ifs.GetBool("slack"); cfgCluster.Notify || ok {
+			if err := c.notify(ctx, cmd, cluster, fleet, squadron, tag, tags, units); err != nil {
+				c.l.Warn("failed to send notification:", err.Error())
+			}
+		}
+	}
+
 	return nil
 }
 
-func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag string, units []string) error {
+func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag, tags string, units []string) error {
 	if tag == "" {
 		tag = "latest"
 	}
@@ -501,19 +507,31 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 
 	switch cmd {
 	case "up":
-		if squadron == All {
+		if tags != "" {
+			str := make([]string, 0, len(units))
+			for _, v := range strings.Split(tags, ",") {
+				str = append(str, "- "+v)
+			}
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🏷️ Tag deployment to *%s* | *%s* _(%s)_\n\n%s\n", cluster, fleet, tag, strings.Join(str, "\n")))
+		} else if squadron == All {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🚢 Full deployment to *%s* | *%s* _(%s)_", cluster, fleet, tag))
 		} else if len(units) == 0 {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🛥 Deployment to *%s*\n\n- %s.all | *%s* _(%s)_\n", cluster, squadron, fleet, tag))
 		} else {
 			str := make([]string, 0, len(units))
-			for _, unit := range units {
-				str = append(str, "- "+squadron+"."+unit)
+			for _, v := range units {
+				str = append(str, "- "+squadron+"."+v)
 			}
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🛶 Deployment to *%s* | *%s* _(%s)_\n\n%s\n", cluster, fleet, tag, strings.Join(str, "\n")))
 		}
 	case "down":
-		if squadron == All {
+		if tags != "" {
+			str := make([]string, 0, len(units))
+			for _, v := range strings.Split(tags, ",") {
+				str = append(str, "- "+v)
+			}
+			msg = c.slack.MarkdownSection(fmt.Sprintf("💀️ Tag uninstallation of *%s* | *%s*\n\n%s\n", cluster, fleet, strings.Join(str, "\n")))
+		} else if squadron == All {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🪦 Full uninstallation of *%s* | *%s*", cluster, fleet))
 		} else if len(units) == 0 {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("💀 Uninstalling from *%s*\n\n- %s.all | *%s*\n", cluster, squadron, fleet))
@@ -525,7 +543,13 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🗑 Uninstalling from *%s* | *%s*\n\n%s\n", cluster, fleet, strings.Join(str, "\n")))
 		}
 	case "rollback":
-		if squadron == "all" {
+		if tags != "" {
+			str := make([]string, 0, len(units))
+			for _, v := range strings.Split(tags, ",") {
+				str = append(str, "- "+v)
+			}
+			msg = c.slack.MarkdownSection(fmt.Sprintf("⏪ Tag roll back of *%s* | *%s*\n\n%s\n", cluster, fleet, strings.Join(str, "\n")))
+		} else if squadron == "all" {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("⏬ Full roll back of *%s* | *%s*", cluster, fleet))
 		} else if len(units) == 0 {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("⏪ Rollback in *%s*\n\n- %s.all | *%s*\n", cluster, squadron, fleet))
@@ -538,6 +562,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 		}
 	default:
 		c.l.Debug("skipping notification for cmd:", cmd)
+		return nil
 	}
 
 	blockOpt := slackgo.MsgOptionBlocks(

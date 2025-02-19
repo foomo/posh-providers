@@ -197,6 +197,27 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 				},
 			},
 			{
+				Name:        "x",
+				Description: "Execute a package binary (CLI), installing if needed",
+				Flags:       globalFlags(nil),
+				Execute:     inst.run,
+			},
+			{
+				Name:        "run",
+				Description: "Execute a file with Bun",
+				Args: tree.Args{
+					{
+						Name:        "script",
+						Description: "Run scripts",
+						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+							return suggests.List(inst.scripts(ctx, "."))
+						},
+					},
+				},
+				Flags:   globalFlags(nil),
+				Execute: inst.run,
+			},
+			{
 				Name:        "install",
 				Description: "Install dependencies for a package.json",
 				Args: tree.Args{

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/acarl005/stripansi"
@@ -14,7 +15,6 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/slices"
 )
 
 type (
@@ -65,6 +65,10 @@ func New(l log.Logger, kubectl *kubectl.Kubectl, opts ...Option) (*Squadron, err
 // ------------------------------------------------------------------------------------------------
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
+
+func (s *Squadron) Config() squadron.Config {
+	return s.cfg
+}
 
 func (s *Squadron) Cluster(name string) (squadron.Cluster, bool) {
 	return s.cfg.Cluster(name)

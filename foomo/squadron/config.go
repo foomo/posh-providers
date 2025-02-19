@@ -1,7 +1,9 @@
 package squadron
 
 type Config struct {
-	Path     string    `json:"path" yaml:"path"`
+	// Path to the squadron root
+	Path string `json:"path" yaml:"path"`
+	// Cluster configurations
 	Clusters []Cluster `json:"clusters" yaml:"clusters"`
 }
 

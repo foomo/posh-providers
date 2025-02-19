@@ -2,10 +2,10 @@ package bruno
 
 import (
 	"os"
+	"slices"
 
 	"github.com/goccy/go-json"
 	"github.com/mitchellh/mapstructure"
-	"golang.org/x/exp/slices"
 )
 
 type Preferences struct {

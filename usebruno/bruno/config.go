@@ -4,9 +4,8 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 type Config struct {

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/foomo/posh-providers/foomo/squadron"
@@ -14,7 +15,6 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/slices"
 )
 
 type (
