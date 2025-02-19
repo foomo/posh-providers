@@ -3,6 +3,7 @@ package squadron
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -19,7 +20,6 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 	slackgo "github.com/slack-go/slack"
-	"golang.org/x/exp/slices"
 )
 
 const All = "all"

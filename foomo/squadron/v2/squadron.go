@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/acarl005/stripansi"
@@ -14,7 +15,6 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/slices"
 )
 
 type (

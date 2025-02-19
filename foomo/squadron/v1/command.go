@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/foomo/posh-providers/kubernets/kubectl"
@@ -18,7 +19,6 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 	slackgo "github.com/slack-go/slack"
-	"golang.org/x/exp/slices"
 )
 
 const All = "all"

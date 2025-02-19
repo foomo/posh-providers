@@ -4,10 +4,10 @@ import (
 	"context"
 	"os"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/foomo/posh/pkg/util/files"
-	"golang.org/x/exp/slices"
 )
 
 type Config struct {
