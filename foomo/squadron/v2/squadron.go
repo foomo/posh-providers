@@ -66,6 +66,10 @@ func New(l log.Logger, kubectl *kubectl.Kubectl, opts ...Option) (*Squadron, err
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+func (s *Squadron) Config() squadron.Config {
+	return s.cfg
+}
+
 func (s *Squadron) Cluster(name string) (squadron.Cluster, bool) {
 	return s.cfg.Cluster(name)
 }
