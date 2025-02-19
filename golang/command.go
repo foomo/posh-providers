@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path"
+	"slices"
 	"strings"
 
 	prompt2 "github.com/c-bata/go-prompt"
@@ -15,8 +16,8 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
-	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
+	"k8s.io/utils/env"
 )
 
 type Command struct {
@@ -211,10 +212,10 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
-			return shell.New(ctx, c.l,
-				"go", "build", "-v", "./...", // TODO select test
-			).
-				Args(r.AdditionalArgs()...).
+			return shell.New(ctx, c.l, "go", "build", "-v").
+				Args(c.getBuildTags()...).
+				Args(r.Flags()...).
+				Args("./..."). // TODO select test
 				Dir(value).
 				Run()
 		})
@@ -242,10 +243,10 @@ func (c *Command) test(ctx context.Context, r *readline.Readline) error {
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
-			return shell.New(ctx, c.l,
-				"go", "test", "-v", "./...", // TODO select test
-			).
-				Args(r.AdditionalArgs()...).
+			return shell.New(ctx, c.l, "go", "test", "-v").
+				Args(c.getBuildTags()...).
+				Args(r.Flags()...).
+				Args("./..."). // TODO select test
 				Env(envs...).
 				Dir(value).
 				Run()
@@ -294,7 +295,7 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l,
-				"go", "mod", "tidy",
+				"go", "mod", "download",
 			).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
@@ -332,7 +333,7 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
-	data := "go 1.23.2\n\nuse (\n"
+	data := "go 1.24.0\n\nuse (\n"
 	for _, value := range c.paths(ctx, "go.mod", true) {
 		data += "\t" + strings.TrimSuffix(value, "/go.mod") + "\n"
 	}
@@ -437,4 +438,12 @@ func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context
 		wg.SetLimit(1)
 	}
 	return ctx, wg
+}
+
+func (c *Command) getBuildTags() []string {
+	var buildTags []string
+	if value := env.GetString("GO_BUILD_TAGS", "safe"); value != "" {
+		buildTags = append(buildTags, "-tags", value)
+	}
+	return buildTags
 }
