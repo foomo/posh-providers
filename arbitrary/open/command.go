@@ -77,11 +77,12 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 				},
 			},
 			{
-				Name: "route",
+				Name:   "route",
+				Repeat: true,
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					var ret []goprompt.Suggest
 					if value, ok := inst.cfg[r.Args().At(0)]; ok {
-						for s, route := range value.Routes {
+						for s, route := range value.RoutesForPath(r.Args().From(1)) {
 							ret = append(ret, goprompt.Suggest{Text: s, Description: route.Description})
 						}
 					}
@@ -117,13 +118,11 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 		return errors.New("missing [router] argument")
 	case r.Args().LenIs(1):
 		return errors.New("missing [route] argument")
-	case r.Args().LenGt(2):
-		return errors.New("too many arguments")
 	}
-	if _, ok := c.cfg[r.Args().At(0)]; !ok {
+	if router, ok := c.cfg[r.Args().At(0)]; !ok {
 		return errors.New("invalid [router] argument")
-	} else if _, ok := c.cfg[r.Args().At(0)].Routes[r.Args().At(1)]; !ok {
-		return errors.New("invalid [rout] argument")
+	} else if route := router.RouteForPath(r.Args().From(1)); route.Path == "" {
+		return errors.New("invalid [route] argument")
 	}
 	return nil
 }
@@ -142,7 +141,7 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	router := c.cfg[r.Args().At(0)]
-	route := router.Routes[r.Args().At(1)]
+	route := router.RouteForPath(r.Args().From(1))
 
 	u, err := url.Parse(router.URL + route.Path)
 	if err != nil {
