@@ -44,7 +44,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 ## K3d
 k3d:
   charts:
-    path: devops/k3d
+    path: path/to/k3d
     prefix: shared-
   registry:
     name: foomo-registry

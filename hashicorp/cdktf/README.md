@@ -16,5 +16,5 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
 ```yaml
 cdktf:
-  path: devops/cdktf
+  path: path/to/cdktf
 ```

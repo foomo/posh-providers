@@ -16,6 +16,6 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
 ```yaml
 terragrunt:
-  path: devops/terragrunt
-  cachPath: devops/cache/terragrunt
+  path: path/to/terragrunt
+  cachPath: .posh/cache/terragrunt
 ```
