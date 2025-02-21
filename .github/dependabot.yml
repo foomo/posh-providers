@@ -18,8 +18,9 @@ updates:
       interval: 'weekly'
     groups:
       gomod-security:
-        applies-to: security-updates
         patterns: ['*']
+        applies-to: security-updates
       gomod-update:
         applies-to: version-updates
+        update-types: ['minor', 'patch']
         patterns: ['*']

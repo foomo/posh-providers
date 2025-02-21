@@ -16,7 +16,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
 ```yaml
 rclone:
-  path: devops/config/rclone.conf
+  path: .posh/config/rclone.conf
   config: |
     [cloudflare]
     type = s3

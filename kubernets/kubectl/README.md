@@ -40,7 +40,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 ```yaml
 ## kubectl
 kubectl:
-  configPath: devops/config/kubectl
+  configPath: .posh/config/kubectl
 ```
 
 ### Ownbrew

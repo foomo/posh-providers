@@ -52,7 +52,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 ```yaml
 ## az
 az:
-  configPath: devops/config/azure
+  configPath: .posh/config/azure
   resourceGroups:
     prod:
       name: rg-my-prod

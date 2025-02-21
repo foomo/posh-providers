@@ -44,7 +44,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
 ```yaml
 cloudflared:
-  path: devops/config/cloudflared
+  path: .posh/config/cloudflared
   access:
     my-access:
       type: tcp
