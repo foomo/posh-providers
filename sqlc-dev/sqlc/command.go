@@ -2,8 +2,6 @@ package sqlc
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"path"
 
 	"github.com/foomo/posh/pkg/cache"
