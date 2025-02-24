@@ -35,12 +35,10 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 		cache: cache.Get("sesamy"),
 	}
 
-	args := tree.Args{
-		{
-			Name:     "path",
-			Optional: true,
-			Suggest:  inst.completePaths,
-		},
+	configArg := &tree.Arg{
+		Name:     "path",
+		Optional: true,
+		Suggest:  inst.completePaths,
 	}
 	flags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 		fs.Default().Bool("verbose", false, "show verbose output")
@@ -54,45 +52,90 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 			{
 				Name:        "config",
 				Description: "Dump config",
-				Args: tree.Args{
-					{
-						Name:     "path",
-						Optional: true,
-						Suggest:  inst.completePaths,
-					},
-				},
-				Execute: inst.config,
+				Args:        tree.Args{configArg},
+				Execute:     inst.config,
+			},
+			{
+				Name:        "tags",
+				Description: "List available tags",
+				Args:        tree.Args{configArg},
+				Flags:       flags,
+				Execute:     inst.tags,
 			},
 			{
 				Name:        "typescript",
 				Description: "Generate typescript definitions",
-				Args:        args,
+				Args:        tree.Args{configArg},
 				Flags:       flags,
 				Execute:     inst.typescript,
 			},
 			{
-				Name:        "tagmanager",
-				Description: "Provision google tag manager",
+				Name:        "provision",
+				Description: "Provision Google Tag Manager",
 				Nodes: tree.Nodes{
 					{
 						Name:        "web",
-						Description: "Provision web container",
-						Args:        args,
+						Description: "Provision Web Container",
+						Args:        tree.Args{configArg},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							fs.Default().StringSlice("tags", nil, "list of tags to run")
 							return flags(ctx, r, fs)
 						},
-						Execute: inst.tagmanagerWeb,
+						Execute: inst.provisionWeb,
 					},
 					{
 						Name:        "server",
-						Description: "Provision server container",
-						Args:        args,
+						Description: "Provision Server Container",
+						Args:        tree.Args{configArg},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							fs.Default().StringSlice("tags", nil, "list of tags to run")
 							return flags(ctx, r, fs)
 						},
-						Execute: inst.tagmanagerServer,
+						Execute: inst.provisionServer,
+					},
+				},
+			},
+			{
+				Name:        "list",
+				Description: "List Google Tag Manager Resources",
+				Nodes: tree.Nodes{
+					{
+						Name:        "web",
+						Description: "List Web Container Resources",
+						Args: tree.Args{
+							{
+								Name:        "resource",
+								Description: "Name of the resource",
+								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+									return []goprompt.Suggest{
+										{Text: "tags"},
+										{Text: "clients"},
+										{Text: "variables"},
+									}
+								},
+							},
+							configArg,
+						},
+						Execute: inst.listWeb,
+					},
+					{
+						Name:        "server",
+						Description: "List Server Container Resources",
+						Args: tree.Args{
+							{
+								Name:        "resource",
+								Description: "Name of the resource",
+								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+									return []goprompt.Suggest{
+										{Text: "tags"},
+										{Text: "clients"},
+										{Text: "variables"},
+									}
+								},
+							},
+							configArg,
+						},
+						Execute: inst.listServer,
 					},
 				},
 			},
@@ -160,6 +203,36 @@ func (c *Command) config(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+func (c *Command) tags(ctx context.Context, r *readline.Readline) error {
+	var paths []string
+	if r.Args().HasIndex(1) {
+		paths = []string{r.Args().At(1)}
+	} else {
+		paths = c.paths(ctx)
+	}
+
+	c.l.Info("Running sesamy tags ...")
+	for _, value := range paths {
+		c.l.Info("└ " + value)
+
+		out, err := c.op.RenderFile(ctx, value)
+		if err != nil {
+			return err
+		}
+
+		if err := shell.New(ctx, c.l, "sesamy", "tags").
+			Args(r.Flags()...).
+			Args("--config", "-").
+			Args(r.AdditionalArgs()...).
+			Stdin(bytes.NewReader(out)).
+			Dir(path.Dir(value)).
+			Run(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (c *Command) typescript(ctx context.Context, r *readline.Readline) error {
 	var paths []string
 	if r.Args().HasIndex(1) {
@@ -190,7 +263,7 @@ func (c *Command) typescript(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
-func (c *Command) tagmanagerWeb(ctx context.Context, r *readline.Readline) error {
+func (c *Command) provision(ctx context.Context, r *readline.Readline, cmd string) error {
 	var paths []string
 	if r.Args().HasIndex(2) {
 		paths = []string{r.Args().At(2)}
@@ -198,7 +271,7 @@ func (c *Command) tagmanagerWeb(ctx context.Context, r *readline.Readline) error
 		paths = c.paths(ctx)
 	}
 
-	c.l.Info("Running sesamy tagmanager web ...")
+	c.l.Info("Running sesamy provision " + cmd + " ...")
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
@@ -207,7 +280,7 @@ func (c *Command) tagmanagerWeb(ctx context.Context, r *readline.Readline) error
 			return err
 		}
 
-		if err := shell.New(ctx, c.l, "sesamy", "tagmanager", "web").
+		if err := shell.New(ctx, c.l, "sesamy", "provision", cmd).
 			Args(r.Flags()...).
 			Args("--config", "-").
 			Args(r.AdditionalArgs()...).
@@ -220,15 +293,33 @@ func (c *Command) tagmanagerWeb(ctx context.Context, r *readline.Readline) error
 	return nil
 }
 
-func (c *Command) tagmanagerServer(ctx context.Context, r *readline.Readline) error {
+func (c *Command) provisionWeb(ctx context.Context, r *readline.Readline) error {
+	return c.provision(ctx, r, "web")
+}
+
+func (c *Command) provisionServer(ctx context.Context, r *readline.Readline) error {
+	return c.provision(ctx, r, "server")
+}
+
+func (c *Command) listWeb(ctx context.Context, r *readline.Readline) error {
+	return c.list(ctx, r, "web")
+}
+
+func (c *Command) listServer(ctx context.Context, r *readline.Readline) error {
+	return c.list(ctx, r, "server")
+}
+
+func (c *Command) list(ctx context.Context, r *readline.Readline, cmd string) error {
+	resource := r.Args().At(2)
+
 	var paths []string
-	if r.Args().HasIndex(2) {
-		paths = []string{r.Args().At(2)}
+	if r.Args().HasIndex(3) {
+		paths = []string{r.Args().At(3)}
 	} else {
 		paths = c.paths(ctx)
 	}
 
-	c.l.Info("Running sesamy tagmanager server ...")
+	c.l.Info("Running sesamy list " + cmd + " ...")
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
@@ -237,7 +328,7 @@ func (c *Command) tagmanagerServer(ctx context.Context, r *readline.Readline) er
 			return err
 		}
 
-		if err := shell.New(ctx, c.l, "sesamy", "tagmanager", "server").
+		if err := shell.New(ctx, c.l, "sesamy", "list", cmd, resource).
 			Args(r.Flags()...).
 			Args("--config", "-").
 			Args(r.AdditionalArgs()...).
