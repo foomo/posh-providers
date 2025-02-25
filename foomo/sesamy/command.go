@@ -108,9 +108,17 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 								Description: "Name of the resource",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return []goprompt.Suggest{
+										{Text: "built-in-variables"},
+										{Text: "folders"},
+										{Text: "gtag-config"},
+										{Text: "status"},
 										{Text: "tags"},
-										{Text: "clients"},
+										{Text: "templates"},
+										{Text: "templates-data"},
+										{Text: "transformations"},
+										{Text: "triggers"},
 										{Text: "variables"},
+										{Text: "zones"},
 									}
 								},
 							},
@@ -127,9 +135,18 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 								Description: "Name of the resource",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return []goprompt.Suggest{
-										{Text: "tags"},
+										{Text: "built-in-variables"},
 										{Text: "clients"},
+										{Text: "folders"},
+										{Text: "gtag-config"},
+										{Text: "status"},
+										{Text: "tags"},
+										{Text: "templates"},
+										{Text: "templates-data"},
+										{Text: "transformations"},
+										{Text: "triggers"},
 										{Text: "variables"},
+										{Text: "zones"},
 									}
 								},
 							},
