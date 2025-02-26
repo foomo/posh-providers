@@ -219,7 +219,6 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l, "go", "build", "-v").
 				Args(args...).
-				Args(r.AdditionalArgs().From(1)...).
 				Args("./..."). // TODO select test
 				Dir(value).
 				Run()
