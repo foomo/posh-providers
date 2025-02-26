@@ -207,14 +207,19 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 	}
 	slices.Sort(paths)
 
+	args := c.getBuildTags()
+	if r.AdditionalArgs().Len() > 1 {
+		args = r.AdditionalArgs().From(1)
+	}
+
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go build ...")
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l, "go", "build", "-v").
-				Args(c.getBuildTags()...).
-				Args(r.Flags()...).
+				Args(args...).
+				Args(r.AdditionalArgs().From(1)...).
 				Args("./..."). // TODO select test
 				Dir(value).
 				Run()
@@ -238,14 +243,18 @@ func (c *Command) test(ctx context.Context, r *readline.Readline) error {
 		envs = append(envs, "GO_TEST_TAGS="+value)
 	}
 
+	args := c.getBuildTags()
+	if r.AdditionalArgs().Len() > 1 {
+		args = r.AdditionalArgs().From(1)
+	}
+
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go test ...")
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 			return shell.New(ctx, c.l, "go", "test", "-v").
-				Args(c.getBuildTags()...).
-				Args(r.Flags()...).
+				Args(args...).
 				Args("./..."). // TODO select test
 				Env(envs...).
 				Dir(value).
@@ -264,6 +273,11 @@ func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
 	}
 	slices.Sort(paths)
 
+	var args []string
+	if r.AdditionalArgs().Len() > 1 {
+		args = r.AdditionalArgs().From(1)
+	}
+
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod tidy...")
 	for _, value := range paths {
@@ -272,7 +286,7 @@ func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
 			return shell.New(ctx, c.l,
 				"go", "mod", "tidy",
 			).
-				Args(r.AdditionalArgs()...).
+				Args(args...).
 				Dir(value).
 				Run()
 		})
@@ -289,6 +303,11 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 	}
 	slices.Sort(paths)
 
+	var args []string
+	if r.AdditionalArgs().Len() > 1 {
+		args = r.AdditionalArgs().From(1)
+	}
+
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod download...")
 	for _, value := range paths {
@@ -297,7 +316,7 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 			return shell.New(ctx, c.l,
 				"go", "mod", "download",
 			).
-				Args(r.AdditionalArgs()...).
+				Args(args...).
 				Dir(value).
 				Run()
 		})
@@ -324,7 +343,6 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 				"-u", "-m", "-json", "all",
 				"|", "go-mod-outdated", "-update", "-direct",
 			).
-				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
 		})
