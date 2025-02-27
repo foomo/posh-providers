@@ -10,7 +10,7 @@
 
 ## How to Contribute
 
-Please refer to the [CONTRIBUTING](.gihub/CONTRIBUTING.md) details, follow the [CODE_OF_CONDUCT](.gihub/CODE_OF_CONDUCT.md) and follow the [SECURITY_GUIDELINES](.github/SECURITY.md).
+Please refer to the [CONTRIBUTING](.gihub/CONTRIBUTING.md) details and follow the [CODE_OF_CONDUCT](.gihub/CODE_OF_CONDUCT.md) and [SECURITY](.github/SECURITY.md) guidelines.
 
 ## License
 
