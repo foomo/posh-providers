@@ -10,7 +10,7 @@
 
 ## How to Contribute
 
-Make a pull request...
+Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 ## License
 
