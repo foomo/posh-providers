@@ -350,7 +350,7 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
-	data := "go 1.24.0\n\nuse (\n"
+	data := "go 1.24.1\n\nuse (\n"
 	for _, value := range c.paths(ctx, "go.mod", true) {
 		data += "\t" + strings.TrimSuffix(value, "/go.mod") + "\n"
 	}

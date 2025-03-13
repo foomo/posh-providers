@@ -30,6 +30,7 @@ type (
 		op             *onepassword.OnePassword
 		name           string
 		slack          *slack.Slack
+		slackWebhookID string
 		slackChannelID string
 		cache          cache.Namespace
 		kubectl        *kubectl.Kubectl
@@ -66,6 +67,12 @@ func CommandWithName(v string) CommandOption {
 func CommandWithSlackChannelID(v string) CommandOption {
 	return func(o *Command) {
 		o.slackChannelID = v
+	}
+}
+
+func CommandWithSlackWebhookID(v string) CommandOption {
+	return func(o *Command) {
+		o.slackWebhookID = v
 	}
 }
 
@@ -479,6 +486,8 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		if ok, _ := ifs.GetBool("slack"); cfgCluster.Notify || ok {
 			if err := c.notify(ctx, cmd, cluster, fleet, squadron, tag, tags, units); err != nil {
 				c.l.Warn("failed to send notification:", err.Error())
+			} else {
+				c.l.Info("💬 sent slack notification")
 			}
 		}
 	}
@@ -512,7 +521,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 			for _, v := range strings.Split(tags, ",") {
 				str = append(str, "- "+v)
 			}
-			msg = c.slack.MarkdownSection(fmt.Sprintf("🏷️ Tag deployment to *%s* | *%s* _(%s)_\n\n%s\n", cluster, fleet, tag, strings.Join(str, "\n")))
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🏷️ Tag deployment to *%s* | *%s* _(%s)_\n\n```\n%s\n```\n", cluster, fleet, tag, strings.Join(str, "\n")))
 		} else if squadron == All {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🚢 Full deployment to *%s* | *%s* _(%s)_", cluster, fleet, tag))
 		} else if len(units) == 0 {
@@ -522,7 +531,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 			for _, v := range units {
 				str = append(str, "- "+squadron+"."+v)
 			}
-			msg = c.slack.MarkdownSection(fmt.Sprintf("🛶 Deployment to *%s* | *%s* _(%s)_\n\n%s\n", cluster, fleet, tag, strings.Join(str, "\n")))
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🛶 Deployment to *%s* | *%s* _(%s)_\n\n```\n%s\n```\n", cluster, fleet, tag, strings.Join(str, "\n")))
 		}
 	case "down":
 		if tags != "" {
@@ -530,7 +539,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 			for _, v := range strings.Split(tags, ",") {
 				str = append(str, "- "+v)
 			}
-			msg = c.slack.MarkdownSection(fmt.Sprintf("💀️ Tag uninstallation of *%s* | *%s*\n\n%s\n", cluster, fleet, strings.Join(str, "\n")))
+			msg = c.slack.MarkdownSection(fmt.Sprintf("💀️ Tag uninstallation of *%s* | *%s*\n\n```\n%s\n```\n", cluster, fleet, strings.Join(str, "\n")))
 		} else if squadron == All {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🪦 Full uninstallation of *%s* | *%s*", cluster, fleet))
 		} else if len(units) == 0 {
@@ -540,7 +549,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 			for _, unit := range units {
 				str = append(str, "- "+squadron+"."+unit)
 			}
-			msg = c.slack.MarkdownSection(fmt.Sprintf("🗑 Uninstalling from *%s* | *%s*\n\n%s\n", cluster, fleet, strings.Join(str, "\n")))
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🗑 Uninstalling from *%s* | *%s*\n\n```\n%s\n```\n", cluster, fleet, strings.Join(str, "\n")))
 		}
 	case "rollback":
 		if tags != "" {
@@ -548,7 +557,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 			for _, v := range strings.Split(tags, ",") {
 				str = append(str, "- "+v)
 			}
-			msg = c.slack.MarkdownSection(fmt.Sprintf("⏪ Tag roll back of *%s* | *%s*\n\n%s\n", cluster, fleet, strings.Join(str, "\n")))
+			msg = c.slack.MarkdownSection(fmt.Sprintf("⏪ Tag roll back of *%s* | *%s*\n\n```\n%s\n```\n", cluster, fleet, strings.Join(str, "\n")))
 		} else if squadron == "all" {
 			msg = c.slack.MarkdownSection(fmt.Sprintf("⏬ Full roll back of *%s* | *%s*", cluster, fleet))
 		} else if len(units) == 0 {
@@ -558,23 +567,30 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 			for _, unit := range units {
 				str = append(str, "- "+squadron+"."+unit)
 			}
-			msg = c.slack.MarkdownSection(fmt.Sprintf("🔙 Rollback in *%s* | *%s*\n\n%s\n", cluster, fleet, strings.Join(str, "\n")))
+			msg = c.slack.MarkdownSection(fmt.Sprintf("🔙 Rollback in *%s* | *%s*\n\n```\n%s\n```\n", cluster, fleet, strings.Join(str, "\n")))
 		}
 	default:
 		c.l.Debug("skipping notification for cmd:", cmd)
 		return nil
 	}
 
-	blockOpt := slackgo.MsgOptionBlocks(
+	blocks := []slackgo.Block{
 		msg,
 		slackgo.NewContextBlock("", slackgo.NewTextBlockObject("mrkdwn", ref+" by "+user, false, false)),
 		c.slack.DividerSection(),
-	)
-	fallbackOpt := slackgo.MsgOptionText(fmt.Sprintf("Deployment to %s | %s", cluster, fleet), false)
+	}
 
-	return c.slack.Send(
-		ctx,
-		c.slack.Channel(c.slackChannelID),
-		slackgo.MsgOptionCompose(fallbackOpt, blockOpt),
-	)
+	switch {
+	case c.slackWebhookID != "":
+		return c.slack.SendWebhook(ctx, c.slackWebhookID, blocks)
+	case c.slackChannelID != "":
+		return c.slack.Send(
+			ctx,
+			c.slack.Channel(c.slackChannelID),
+			slackgo.MsgOptionCompose(slackgo.MsgOptionBlocks(blocks...)),
+		)
+	default:
+		c.l.Debug("missing webhook or channel id")
+		return nil
+	}
 }
