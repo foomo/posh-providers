@@ -86,6 +86,14 @@ func (s *Slack) Channel(id string) string {
 	}
 }
 
+func (s *Slack) Webhook(ctx context.Context, id string) (string, error) {
+	value, ok := s.cfg.Webhooks[id]
+	if !ok {
+		return "", errors.Errorf("missing webhook configuration for %s", id)
+	}
+	return s.op.Get(ctx, value)
+}
+
 func (s *Slack) SendUserMessage(ctx context.Context, markdown, channel string, annotate bool) error {
 	ch, ok := s.cfg.Channels[channel]
 	if !ok {
@@ -131,7 +139,7 @@ func (s *Slack) SendETCDUpdateMessage(ctx context.Context, cluster string) error
 }
 
 func (s *Slack) Send(ctx context.Context, channel string, opts ...slack.MsgOption) error {
-	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	client, err := s.Client(ctx)
 	if err != nil {
@@ -139,6 +147,20 @@ func (s *Slack) Send(ctx context.Context, channel string, opts ...slack.MsgOptio
 	}
 	_, _, _, err = client.SendMessageContext(ctx, channel, opts...)
 	return err
+}
+
+func (s *Slack) SendWebhook(ctx context.Context, webhook string, blocks []slack.Block) error {
+	url, err := s.Webhook(ctx, webhook)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	return slack.PostWebhookContext(ctx, url, &slack.WebhookMessage{
+		Blocks: &slack.Blocks{
+			BlockSet: blocks,
+		},
+	})
 }
 
 func (s *Slack) MarkdownSection(text string) *slack.SectionBlock {
