@@ -2,7 +2,6 @@ package helm
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/foomo/posh-providers/kubernets/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
@@ -299,8 +298,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(args)
 
 	return shell.New(ctx, c.l, "helm").
 		Args(args...).
