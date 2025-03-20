@@ -471,7 +471,6 @@ func (c *Command) completePaths(ctx context.Context, t tree.Root, r *readline.Re
 	return suggests.List(c.paths(ctx))
 }
 
-//nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	keys := lo.Keys(c.config)
 	sort.Strings(keys)
