@@ -1,23 +1,29 @@
 package az
 
 import (
+	"sort"
+
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 )
 
 type Config struct {
-	ConfigPath     string                   `json:"configPath" yaml:"configPath"`
-	ResourceGroups map[string]ResourceGroup `json:"resourceGroups" yaml:"resourceGroups"`
+	// Config path
+	ConfigPath string `json:"configPath" yaml:"configPath"`
+	// Subscription configurations
+	Subscriptions map[string]Subscription `json:"subscriptions" yaml:"subscriptions"`
 }
 
-func (c Config) ResourceGroup(name string) (ResourceGroup, error) {
-	value, ok := c.ResourceGroups[name]
+func (c Config) Subscription(name string) (Subscription, error) {
+	value, ok := c.Subscriptions[name]
 	if !ok {
-		return ResourceGroup{}, errors.Errorf("resource group not found: %s", name)
+		return Subscription{}, errors.Errorf("resource group not found: %s", name)
 	}
 	return value, nil
 }
 
-func (c Config) ResourceGroupNames() []string {
-	return lo.Keys(c.ResourceGroups)
+func (c Config) SubscriptionNames() []string {
+	keys := lo.Keys(c.Subscriptions)
+	sort.Strings(keys)
+	return keys
 }

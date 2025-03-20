@@ -86,37 +86,46 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 				Execute:     inst.exec,
 			},
 			{
-				Name:        "acr",
-				Description: "Manage private registries with Azure Container Registries",
-				Execute:     inst.exec,
-				Nodes: tree.Nodes{
+				Name:        "artifactory",
+				Description: "Login into the artifactory",
+				Args: tree.Args{
 					{
-						Name:        "login",
-						Description: "Log in to an Azure Container Registry through the Docker CLI",
-						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-							fs.Default().String("name", "", "The name of the container registry")
-							return nil
+						Name:        "subscription",
+						Description: "Name of the subscription",
+						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+							return suggests.List(inst.az.cfg.SubscriptionNames())
 						},
-						Execute: inst.exec,
+					},
+					{
+						Name:        "artifactory",
+						Description: "Name of the artifactory",
+						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+							ret, err := inst.az.cfg.Subscription(r.Args().At(1))
+							if err != nil {
+								return nil
+							}
+							return suggests.List(ret.ArtifactoryNames())
+						},
 					},
 				},
+				Execute: inst.artifactory,
 			},
 			{
 				Name:        "kubeconfig",
 				Description: "Retrieve credentials to access remote cluster",
 				Args: tree.Args{
 					{
-						Name:        "resourcegroup",
-						Description: "Name of the resource group",
+						Name:        "subscription",
+						Description: "Name of the subscription",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-							return suggests.List(inst.az.cfg.ResourceGroupNames())
+							return suggests.List(inst.az.cfg.SubscriptionNames())
 						},
 					},
 					{
 						Name:        "cluster",
 						Description: "Name of the cluster",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-							ret, err := inst.az.cfg.ResourceGroup(r.Args().At(1))
+							ret, err := inst.az.cfg.Subscription(r.Args().At(1))
 							if err != nil {
 								return nil
 							}
@@ -165,15 +174,36 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
-	ifs := r.FlagSets().Internal()
-
-	rg, err := c.az.cfg.ResourceGroup(r.Args().At(1))
+func (c *Command) artifactory(ctx context.Context, r *readline.Readline) error {
+	sub, err := c.az.cfg.Subscription(r.Args().At(1))
 	if err != nil {
 		return errors.Errorf("failed to retrieve subscription for: %q", r.Args().At(1))
 	}
 
-	k8s, err := rg.Cluster(r.Args().At(2))
+	acr, err := sub.Artifactory(r.Args().At(2))
+	if err != nil {
+		return errors.Errorf("failed to retrieve artifactoy for: %q", r.Args().At(2))
+	}
+
+	if err := shell.New(ctx, c.l, "az", "acr", "login").
+		Args("--name", acr.Name).
+		Args("--resource-group", acr.ResourceGroup).
+		Args("--subscription", sub.Name).
+		Run(); err != nil {
+		return err
+	}
+
+	return nil
+}
+func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
+	ifs := r.FlagSets().Internal()
+
+	sub, err := c.az.cfg.Subscription(r.Args().At(1))
+	if err != nil {
+		return errors.Errorf("failed to retrieve subscription for: %q", r.Args().At(1))
+	}
+
+	k8s, err := sub.Cluster(r.Args().At(2))
 	if err != nil {
 		return errors.Errorf("failed to retrieve cluster for: %q", r.Args().At(2))
 	}
@@ -190,8 +220,8 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 
 	if err := shell.New(ctx, c.l, "az", "aks", "get-credentials").
 		Args("--name", k8s.Name).
-		Args("--resource-group", rg.Name).
-		Args("--subscription", rg.Subscription).
+		Args("--resource-group", k8s.ResourceGroup).
+		Args("--subscription", sub.Name).
 		Args("--overwrite-existing").
 		Env(kubectlCluster.Env(profile)).
 		Run(); err != nil {

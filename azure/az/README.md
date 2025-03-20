@@ -53,13 +53,15 @@ func New(l log.Logger) (plugin.Plugin, error) {
 ## az
 az:
   configPath: .posh/config/azure
-  resourceGroups:
-    prod:
-      name: rg-my-prod
-      subscription: xxxxx
+  subscriptions:
+    production:
+      name: my-subscription
       clusters:
-        prod:
+        default:
           name: aks-my-prod
+      artifactories:
+        default:
+          name: acr-my-prod
 ```
 
 ### Ownbrew
