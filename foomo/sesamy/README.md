@@ -28,6 +28,15 @@ func New(l log.Logger) (plugin.Plugin, error) {
 }
 ```
 
+### Config
+
+```yaml
+sesamy:
+  default:
+    - path/to/sesamy.base.yaml
+    - path/to/sesamy.base.override.yaml
+```
+
 ### Ownbrew
 
 To install binary locally, add:

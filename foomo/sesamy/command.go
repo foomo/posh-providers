@@ -3,40 +3,80 @@ package sesamy
 import (
 	"bytes"
 	"context"
-	"path"
+	"sort"
 
 	"github.com/foomo/posh-providers/onepassword"
-	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
-	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/v2"
+	"github.com/pkg/errors"
+	"github.com/pterm/pterm"
+	"github.com/samber/lo"
+	"github.com/spf13/viper"
 )
 
-type Command struct {
-	l           log.Logger
-	op          *onepassword.OnePassword
-	cache       cache.Namespace
-	commandTree tree.Root
+type (
+	Command struct {
+		l           log.Logger
+		name        string
+		op          *onepassword.OnePassword
+		config      Config
+		configKey   string
+		commandTree tree.Root
+	}
+	CommandOption func(*Command)
+)
+
+// ------------------------------------------------------------------------------------------------
+// ~ Options
+// ------------------------------------------------------------------------------------------------
+
+func CommandWithName(v string) CommandOption {
+	return func(o *Command) {
+		o.name = v
+	}
+}
+
+func CommandWithConfigKey(v string) CommandOption {
+	return func(o *Command) {
+		o.configKey = v
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *Command {
+func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
-		l:  l.Named("sesamy"),
-		op: op,
-
-		cache: cache.Get("sesamy"),
+		l:         l.Named("sesamy"),
+		op:        op,
+		name:      "sesamy",
+		configKey: "sesamy",
 	}
 
+	for _, opt := range opts {
+		if opt != nil {
+			opt(inst)
+		}
+	}
+
+	if err := viper.UnmarshalKey(inst.configKey, &inst.config); err != nil {
+		return nil, err
+	}
+
+	// if err := os.Setenv("SESAMY_SCOPE", inst.name); err != nil {
+	// 	return nil, err
+	// }
+
 	configArg := &tree.Arg{
-		Name:     "path",
+		Name:     "config",
 		Optional: true,
 		Suggest:  inst.completePaths,
 	}
@@ -46,14 +86,14 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
-		Name:        "sesamy",
+		Name:        inst.name,
 		Description: "Run sesamy",
 		Nodes: tree.Nodes{
 			{
 				Name:        "config",
 				Description: "Dump config",
 				Args:        tree.Args{configArg},
-				Execute:     inst.config,
+				Execute:     inst.conf,
 			},
 			{
 				Name:        "tags",
@@ -73,6 +113,16 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 				Name:        "provision",
 				Description: "Provision Google Tag Manager",
 				Nodes: tree.Nodes{
+					{
+						Name:        "all",
+						Description: "Provision Web & Server Container",
+						Args:        tree.Args{configArg},
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().StringSlice("tags", nil, "list of tags to run")
+							return flags(ctx, r, fs)
+						},
+						Execute: inst.provisionAll,
+					},
 					{
 						Name:        "web",
 						Description: "Provision Web Container",
@@ -109,6 +159,7 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return []goprompt.Suggest{
 										{Text: "built-in-variables"},
+										{Text: "environments"},
 										{Text: "folders"},
 										{Text: "gtag-config"},
 										{Text: "status"},
@@ -118,6 +169,7 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 										{Text: "transformations"},
 										{Text: "triggers"},
 										{Text: "variables"},
+										{Text: "workspaces"},
 										{Text: "zones"},
 									}
 								},
@@ -136,6 +188,7 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return []goprompt.Suggest{
 										{Text: "built-in-variables"},
+										{Text: "environments"},
 										{Text: "clients"},
 										{Text: "folders"},
 										{Text: "gtag-config"},
@@ -146,6 +199,7 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 										{Text: "transformations"},
 										{Text: "triggers"},
 										{Text: "variables"},
+										{Text: "workspaces"},
 										{Text: "zones"},
 									}
 								},
@@ -159,7 +213,7 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache) *C
 		},
 	})
 
-	return inst
+	return inst, nil
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -190,7 +244,27 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) config(ctx context.Context, r *readline.Readline) error {
+func (c *Command) merge(ctx context.Context, path string) ([]byte, error) {
+	filenames, ok := c.config[path]
+	if !ok {
+		return nil, errors.New("invalid config key: " + path)
+	}
+
+	var conf = koanf.Conf{
+		Delim: "/",
+	}
+	var k = koanf.NewWithConf(conf)
+
+	for _, filename := range filenames {
+		if err := k.Load(file.Provider(filename), yaml.Parser()); err != nil {
+			return nil, errors.Wrap(err, "error loading config file: "+filename)
+		}
+	}
+
+	return k.Marshal(yaml.Parser())
+}
+
+func (c *Command) conf(ctx context.Context, r *readline.Readline) error {
 	var paths []string
 	if r.Args().HasIndex(1) {
 		paths = []string{r.Args().At(1)}
@@ -202,9 +276,15 @@ func (c *Command) config(ctx context.Context, r *readline.Readline) error {
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
-		out, err := c.op.RenderFile(ctx, value)
+		b, err := c.merge(ctx, value)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to merge config")
+		}
+
+		out, err := c.op.Render(ctx, string(b))
+		if err != nil {
+			pterm.Error.Println(string(b))
+			return errors.Wrap(err, "failed to render secrets")
 		}
 
 		if err := shell.New(ctx, c.l, "sesamy", "config").
@@ -212,7 +292,6 @@ func (c *Command) config(ctx context.Context, r *readline.Readline) error {
 			Args("--config", "-").
 			Args(r.AdditionalArgs()...).
 			Stdin(bytes.NewReader(out)).
-			Dir(path.Dir(value)).
 			Run(); err != nil {
 			return err
 		}
@@ -232,9 +311,15 @@ func (c *Command) tags(ctx context.Context, r *readline.Readline) error {
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
-		out, err := c.op.RenderFile(ctx, value)
+		b, err := c.merge(ctx, value)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to merge config")
+		}
+
+		out, err := c.op.Render(ctx, string(b))
+		if err != nil {
+			pterm.Error.Println(string(b))
+			return errors.Wrap(err, "failed to render secrets")
 		}
 
 		if err := shell.New(ctx, c.l, "sesamy", "tags").
@@ -242,7 +327,6 @@ func (c *Command) tags(ctx context.Context, r *readline.Readline) error {
 			Args("--config", "-").
 			Args(r.AdditionalArgs()...).
 			Stdin(bytes.NewReader(out)).
-			Dir(path.Dir(value)).
 			Run(); err != nil {
 			return err
 		}
@@ -262,9 +346,15 @@ func (c *Command) typescript(ctx context.Context, r *readline.Readline) error {
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
-		out, err := c.op.RenderFile(ctx, value)
+		b, err := c.merge(ctx, value)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to merge config")
+		}
+
+		out, err := c.op.Render(ctx, string(b))
+		if err != nil {
+			pterm.Error.Println(string(b))
+			return errors.Wrap(err, "failed to render secrets")
 		}
 
 		if err := shell.New(ctx, c.l, "sesamy", "typescript").
@@ -272,7 +362,6 @@ func (c *Command) typescript(ctx context.Context, r *readline.Readline) error {
 			Args("--config", "-").
 			Args(r.AdditionalArgs()...).
 			Stdin(bytes.NewReader(out)).
-			Dir(path.Dir(value)).
 			Run(); err != nil {
 			return err
 		}
@@ -292,9 +381,15 @@ func (c *Command) provision(ctx context.Context, r *readline.Readline, cmd strin
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
-		out, err := c.op.RenderFile(ctx, value)
+		b, err := c.merge(ctx, value)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to merge config")
+		}
+
+		out, err := c.op.Render(ctx, string(b))
+		if err != nil {
+			pterm.Error.Println(string(b))
+			return errors.Wrap(err, "failed to render secrets")
 		}
 
 		if err := shell.New(ctx, c.l, "sesamy", "provision", cmd).
@@ -302,10 +397,19 @@ func (c *Command) provision(ctx context.Context, r *readline.Readline, cmd strin
 			Args("--config", "-").
 			Args(r.AdditionalArgs()...).
 			Stdin(bytes.NewReader(out)).
-			Dir(path.Dir(value)).
 			Run(); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (c *Command) provisionAll(ctx context.Context, r *readline.Readline) error {
+	if err := c.provision(ctx, r, "web"); err != nil {
+		return err
+	}
+	if err := c.provision(ctx, r, "server"); err != nil {
+		return err
 	}
 	return nil
 }
@@ -340,9 +444,15 @@ func (c *Command) list(ctx context.Context, r *readline.Readline, cmd string) er
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
-		out, err := c.op.RenderFile(ctx, value)
+		b, err := c.merge(ctx, value)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to merge config")
+		}
+
+		out, err := c.op.Render(ctx, string(b))
+		if err != nil {
+			pterm.Error.Println(string(b))
+			return errors.Wrap(err, "failed to render secrets")
 		}
 
 		if err := shell.New(ctx, c.l, "sesamy", "list", cmd, resource).
@@ -350,7 +460,6 @@ func (c *Command) list(ctx context.Context, r *readline.Readline, cmd string) er
 			Args("--config", "-").
 			Args(r.AdditionalArgs()...).
 			Stdin(bytes.NewReader(out)).
-			Dir(path.Dir(value)).
 			Run(); err != nil {
 			return err
 		}
@@ -364,12 +473,7 @@ func (c *Command) completePaths(ctx context.Context, t tree.Root, r *readline.Re
 
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
-	return c.cache.Get("paths", func() any {
-		if value, err := files.Find(ctx, ".", "sesamy*.yml"); err != nil {
-			c.l.Debug("failed to walk files", err.Error())
-			return nil
-		} else {
-			return value
-		}
-	}).([]string)
+	keys := lo.Keys(c.config)
+	sort.Strings(keys)
+	return keys
 }
