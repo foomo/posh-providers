@@ -486,8 +486,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		if ok, _ := ifs.GetBool("slack"); cfgCluster.Notify || ok {
 			if err := c.notify(ctx, cmd, cluster, fleet, squadron, tag, tags, units); err != nil {
 				c.l.Warn("failed to send notification:", err.Error())
-			} else {
-				c.l.Info("💬 sent slack notification")
 			}
 		}
 	}
@@ -582,8 +580,10 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 
 	switch {
 	case c.slackWebhookID != "":
+		c.l.Info("💌 sending slack notification")
 		return c.slack.SendWebhook(ctx, c.slackWebhookID, blocks)
 	case c.slackChannelID != "":
+		c.l.Info("💌 sending slack notification")
 		return c.slack.Send(
 			ctx,
 			c.slack.Channel(c.slackChannelID),
