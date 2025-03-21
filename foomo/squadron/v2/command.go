@@ -580,10 +580,8 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 
 	switch {
 	case c.slackWebhookID != "":
-		c.l.Info("💌 sending slack notification")
 		return c.slack.SendWebhook(ctx, c.slackWebhookID, blocks)
 	case c.slackChannelID != "":
-		c.l.Info("💌 sending slack notification")
 		return c.slack.Send(
 			ctx,
 			c.slack.Channel(c.slackChannelID),

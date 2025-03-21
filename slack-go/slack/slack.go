@@ -132,10 +132,16 @@ func (s *Slack) SendETCDUpdateMessage(ctx context.Context, cluster string) error
 	)
 	fallbackOpt := slack.MsgOptionText(fmt.Sprintf("ETCD config update on %s", cluster), false)
 
-	return s.Send(ctx,
+	if err := s.Send(ctx,
 		s.cfg.Channels["releases"],
 		slack.MsgOptionCompose(fallbackOpt, blockOpt),
-	)
+	); err != nil {
+		return err
+	}
+
+	s.l.Info("💌 sent slack notification")
+
+	return nil
 }
 
 func (s *Slack) Send(ctx context.Context, channel string, opts ...slack.MsgOption) error {
@@ -145,8 +151,13 @@ func (s *Slack) Send(ctx context.Context, channel string, opts ...slack.MsgOptio
 	if err != nil {
 		return err
 	}
-	_, _, _, err = client.SendMessageContext(ctx, channel, opts...)
-	return err
+
+	if _, _, _, err = client.SendMessageContext(ctx, channel, opts...); err != nil {
+		return err
+	}
+
+	s.l.Info("💌 sent slack notification")
+	return nil
 }
 
 func (s *Slack) SendWebhook(ctx context.Context, webhook string, blocks []slack.Block) error {
@@ -156,11 +167,18 @@ func (s *Slack) SendWebhook(ctx context.Context, webhook string, blocks []slack.
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	return slack.PostWebhookContext(ctx, url, &slack.WebhookMessage{
+
+	if err := slack.PostWebhookContext(ctx, url, &slack.WebhookMessage{
 		Blocks: &slack.Blocks{
 			BlockSet: blocks,
 		},
-	})
+	}); err != nil {
+		return err
+	}
+
+	s.l.Info("💌 sent slack notification")
+
+	return nil
 }
 
 func (s *Slack) MarkdownSection(text string) *slack.SectionBlock {
