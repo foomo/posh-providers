@@ -145,7 +145,7 @@ func (s *Slack) SendETCDUpdateMessage(ctx context.Context, cluster string) error
 }
 
 func (s *Slack) Send(ctx context.Context, channel string, opts ...slack.MsgOption) error {
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	client, err := s.Client(ctx)
 	if err != nil {
