@@ -139,7 +139,6 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 	}
 	commonFlags := func(fs *readline.FlagSets) {
 		fs.Internal().Bool("no-override", false, "ignore override files")
-		fs.Default().Bool("verbose", inst.l.IsLevel(log.LevelDebug), "set verbose level")
 		fs.Default().Bool("debug", inst.l.IsLevel(log.LevelTrace), "set debug level")
 	}
 
