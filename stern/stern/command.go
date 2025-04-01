@@ -76,14 +76,22 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().Bool("only-log-lines", false, "Print only log lines")
+							fs.Default().Int("tail", -1, "The number of lines from the end of the logs to show")
 							fs.Default().String("all-namespaces", "", "If present, tail across all namespaces")
 							fs.Default().String("namespace", "", "Kubernetes namespace to use")
 							fs.Default().String("container", "", "Container name when multiple containers in pod (default \".*\")")
 							fs.Default().String("exclude", "", "Regex of log lines to exclude")
 							fs.Default().String("exclude-container", "", "Exclude a Container name")
 							fs.Default().String("include", "", "Regex of log lines to include")
+							fs.Default().String("output", "default", "Specify predefined template")
 							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query.")
+							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
+							fs.Default().String("template", "default", "Template to use for log lines")
 							fs.Internal().String("profile", "", "Profile to use.")
+							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
+								return err
+							}
 							if r.Args().HasIndex(0) {
 								if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 									return err
@@ -114,12 +122,20 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().Bool("only-log-lines", false, "Print only log lines")
+							fs.Default().Int("tail", -1, "The number of lines from the end of the logs to show")
 							fs.Default().String("container", "", "Container name when multiple containers in pod (default \".*\")")
 							fs.Default().String("exclude", "", "Regex of log lines to exclude")
 							fs.Default().String("exclude-container", "", "Exclude a Container name")
 							fs.Default().String("include", "", "Regex of log lines to include")
+							fs.Default().String("output", "default", "Specify predefined template")
 							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query.")
-							fs.Internal().String("profile", "", "Profile to use.")
+							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
+							fs.Default().String("template", "default", "Template to use for log lines")
+							fs.Internal().String("profile", "", "Profile to use")
+							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
+								return err
+							}
 							if r.Args().HasIndex(0) {
 								if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 									return err
@@ -178,12 +194,6 @@ func (c *Command) tail(ctx context.Context, r *readline.Readline, args ...string
 	return shell.New(ctx, c.l, "stern").
 		Env(c.kubectl.Cluster(cluster).Env(profile)).
 		Args(args...).
-		Args(
-			// "--output", "ppextjson",
-			// "--template", `'{{with $msg := .Message | parseJSON}}[{{levelColor $msg.level}}]  {{prettyJSON $msg}}{{end}}{{"\n"}}'`,
-			"--template", `'{{ .Message | prettyJSON | color .PodColor }}{{"\n"}}'`,
-			"--tail", "3",
-		).
 		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
 		Run()
