@@ -9,7 +9,7 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
-	github.com/digitalocean/godo v1.139.0
+	github.com/digitalocean/godo v1.142.0
 	github.com/foomo/posh v0.10.1
 	github.com/goccy/go-json v0.10.5
 	github.com/golang-migrate/migrate/v4 v4.18.2
