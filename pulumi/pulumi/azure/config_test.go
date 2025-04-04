@@ -8,7 +8,7 @@ import (
 
 	testingx "github.com/foomo/go/testing"
 	tagx "github.com/foomo/go/testing/tag"
-	"github.com/foomo/posh-providers/pulumi/pulumi/azure"
+	pulumi "github.com/foomo/posh-providers/pulumi/pulumi/azure"
 	"github.com/invopop/jsonschema"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
