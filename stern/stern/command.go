@@ -12,11 +12,16 @@ import (
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 type (
 	Command struct {
 		l           log.Logger
+		name        string
+		cfg         Config
+		configKey   string
 		kubectl     *kubectl.Kubectl
 		squadron    squadron.Squadron
 		commandTree tree.Root
@@ -30,6 +35,18 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+func CommandWithName(v string) CommandOption {
+	return func(o *Command) {
+		o.name = v
+	}
+}
+
+func CommandWithConfigKey(v string) CommandOption {
+	return func(o *Command) {
+		o.configKey = v
+	}
+}
+
 func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
 	return func(o *Command) {
 		o.namespaceFn = v
@@ -40,11 +57,13 @@ func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadron, opts ...CommandOption) *Command {
+func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadron, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
-		l:        l.Named("stern"),
-		kubectl:  kubectl,
-		squadron: squadron,
+		l:         l.Named("stern"),
+		name:      "stern",
+		configKey: "stern",
+		kubectl:   kubectl,
+		squadron:  squadron,
 		namespaceFn: func(cluster, fleet, squadron string) string {
 			if fleet == "default" {
 				return squadron
@@ -58,6 +77,11 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 			opt(inst)
 		}
 	}
+
+	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
+		return nil, err
+	}
+
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "stern",
 		Description: "Tail your logs with stern",
@@ -72,13 +96,17 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 						Description: "Tail by query",
 						Args: tree.Args{
 							{
-								Name: "query",
+								Name:   "name",
+								Repeat: true,
+								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+									return suggests.List(inst.cfg.QueryNames(r.Args().From(2)...))
+								},
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							fs.Default().Bool("only-log-lines", false, "Print only log lines")
 							fs.Default().Int("tail", -1, "The number of lines from the end of the logs to show")
-							fs.Default().String("all-namespaces", "", "If present, tail across all namespaces")
+							fs.Default().Bool("all-namespaces", false, "If present, tail across all namespaces")
 							fs.Default().String("namespace", "", "Kubernetes namespace to use")
 							fs.Default().String("container", "", "Container name when multiple containers in pod (default \".*\")")
 							fs.Default().String("exclude", "", "Regex of log lines to exclude")
@@ -103,6 +131,43 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							return nil
 						},
 						Execute: inst.tailQuery,
+					},
+					{
+						Name:        "raw",
+						Description: "Tail by raw query",
+						Args: tree.Args{
+							{
+								Name: "query",
+							},
+						},
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().Bool("only-log-lines", false, "Print only log lines")
+							fs.Default().Int("tail", -1, "The number of lines from the end of the logs to show")
+							fs.Default().Bool("all-namespaces", false, "If present, tail across all namespaces")
+							fs.Default().String("namespace", "", "Kubernetes namespace to use")
+							fs.Default().String("container", "", "Container name when multiple containers in pod (default \".*\")")
+							fs.Default().String("exclude", "", "Regex of log lines to exclude")
+							fs.Default().String("exclude-container", "", "Exclude a Container name")
+							fs.Default().String("include", "", "Regex of log lines to include")
+							fs.Default().String("output", "default", "Specify predefined template")
+							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query.")
+							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
+							fs.Default().String("template", "default", "Template to use for log lines")
+							fs.Internal().String("profile", "", "Profile to use.")
+							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
+								return err
+							}
+							if r.Args().HasIndex(0) {
+								if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
+									return err
+								}
+								if err := fs.Default().SetValues("namespace", inst.kubectl.Cluster(r.Args().At(0)).Namespaces(ctx, "")...); err != nil {
+									return err
+								}
+							}
+							return nil
+						},
+						Execute: inst.tailRaw,
 					},
 					{
 						Name:        "squadron",
@@ -150,7 +215,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 		},
 	})
 
-	return inst
+	return inst, nil
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -191,15 +256,28 @@ func (c *Command) tail(ctx context.Context, r *readline.Readline, args ...string
 		return err
 	}
 
-	return shell.New(ctx, c.l, "stern").
+	cmd := shell.New(ctx, c.l, "stern").
 		Env(c.kubectl.Cluster(cluster).Env(profile)).
 		Args(args...).
 		Args(fs.Visited().Args()...).
-		Args(r.AdditionalArgs()...).
-		Run()
+		Args(r.AdditionalArgs()...)
+
+	return cmd.Run()
 }
 
 func (c *Command) tailQuery(ctx context.Context, r *readline.Readline) error {
+	queries := c.cfg.FindQueries(r.Args().From(2)...)
+	if queries == nil {
+		return errors.New("query not found")
+	}
+	var args []string
+	for _, query := range queries {
+		args = append(args, query.Query...)
+	}
+	return c.tail(ctx, r, args...)
+}
+
+func (c *Command) tailRaw(ctx context.Context, r *readline.Readline) error {
 	return c.tail(ctx, r, r.Args().At(2))
 }
 
