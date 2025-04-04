@@ -8,7 +8,7 @@ import (
 )
 
 type Workspace struct {
-	Packages []string `yaml:"packages"`
+	Packages []string `json:"packages" yaml:"packages"`
 }
 
 func LoadWorkspace(filename string) (*Workspace, error) {

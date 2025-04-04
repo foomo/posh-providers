@@ -1,6 +1,6 @@
 package beam
 
 type Database struct {
-	Port     int    `yaml:"port"`
-	Hostname string `yaml:"hostname"`
+	Port     int    `json:"port" yaml:"port"`
+	Hostname string `json:"hostname" yaml:"hostname"`
 }
