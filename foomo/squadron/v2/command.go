@@ -12,6 +12,7 @@ import (
 	"github.com/foomo/posh-providers/slack-go/slack"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
+	env2 "github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
@@ -19,6 +20,7 @@ import (
 	"github.com/foomo/posh/pkg/util/git"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
+	"github.com/pterm/pterm"
 	slackgo "github.com/slack-go/slack"
 )
 
@@ -441,11 +443,20 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		if tag != "" {
 			env = append(env, fmt.Sprintf("TAG=%q", tag))
 		}
-		env = append(env, c.kubectl.Cluster(cluster).Env(profile))
+		env = append(env,
+			c.kubectl.Cluster(cluster).Env(profile),
+			fmt.Sprintf("GIT_DIR=%s", env2.ProjectRoot()),
+		)
 	}
 
-	c.l.Infof("Fleet:    %s", fleet)
-	c.l.Infof("Cluster:  %s", cluster)
+	if cmd == "up" && cfgCluster.Confirm {
+		result, err := pterm.DefaultInteractiveConfirm.Show(fmt.Sprintf("⚠︎ Are you sure you want to deploy to: '%s:%s'?", cluster, fleet))
+		if err != nil {
+			return err
+		} else if !result {
+			return nil
+		}
+	}
 
 	sh := shell.New(ctx, c.l, "squadron", cmd).
 		Args("--file", strings.Join(c.squadron.GetFiles("", cluster, fleet, !noOverride), ",")).
