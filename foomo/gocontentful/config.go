@@ -1,8 +1,8 @@
 package gocontentful
 
 type Config struct {
-	SpaceID      string   `yaml:"spaceId"`
-	CMAKey       string   `yaml:"cmaKey"`
-	Environment  string   `yaml:"environment,omitempty"`
-	ContentTypes []string `yaml:"contentTypes"`
+	SpaceID      string   `json:"spaceId" yaml:"spaceId"`
+	CMAKey       string   `json:"cmaKey" yaml:"cmaKey"`
+	Environment  string   `json:"environment,omitempty" yaml:"environment,omitempty"`
+	ContentTypes []string `json:"contentTypes" yaml:"contentTypes"`
 }

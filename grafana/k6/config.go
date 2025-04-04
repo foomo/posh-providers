@@ -10,8 +10,8 @@ import (
 )
 
 type Config struct {
-	Path string         `yaml:"path"`
-	Envs map[string]Env `yaml:"envs"`
+	Path string         `json:"path" yaml:"path"`
+	Envs map[string]Env `json:"envs" yaml:"envs"`
 }
 
 func (c Config) Env(name string) Env {

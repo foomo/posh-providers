@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/k3d-io/k3d/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "charts": {
+          "$ref": "#/$defs/ConfigCharts"
+        },
+        "registry": {
+          "$ref": "#/$defs/ConfigRegistry"
+        },
+        "clusters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ConfigCluster"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "charts",
+        "registry",
+        "clusters"
+      ]
+    },
+    "ConfigCharts": {
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "path",
+        "prefix"
+      ]
+    },
+    "ConfigCluster": {
+      "properties": {
+        "alias": {
+          "type": "string",
+          "description": "K3d cluster name"
+        },
+        "image": {
+          "type": "string",
+          "description": "Docker image to use"
+        },
+        "port": {
+          "type": "string",
+          "description": "Port to bind to"
+        },
+        "enableTraefikRouter": {
+          "type": "boolean",
+          "description": "EnableTraefikRouter allows to create the cluster with the default traefik router"
+        },
+        "args": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Additional arguments"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "alias",
+        "image",
+        "port",
+        "enableTraefikRouter",
+        "args"
+      ]
+    },
+    "ConfigRegistry": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "port": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "port"
+      ]
+    }
+  }
+}

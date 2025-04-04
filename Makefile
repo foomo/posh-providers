@@ -1,4 +1,7 @@
 .DEFAULT_GOAL:=help
+-include .makerc
+
+export CGO_ENABLED=0
 
 ## === Tasks ===
 
@@ -12,6 +15,46 @@ tidy:
 lint:
 	@golangci-lint run
 
+.PHONY: schema
+## Run linter
+schema:
+	@jsonschema bundle config.schema.base.json \
+		--resolve ./arbitrary/open/config.schema.json \
+		--resolve ./arbitrary/zip/config.schema.json \
+		--resolve ./azure/az/config.schema.json \
+		--resolve ./cloudflare/cloudflared/config.schema.json \
+		--resolve ./digitalocean/doctl/config.schema.json \
+		--resolve ./etcd-io/etcd/config.schema.json \
+		--resolve ./facebook/docusaurus/config.schema.json \
+		--resolve ./filosottile/mkcert/config.schema.json \
+		--resolve ./foomo/beam/config.schema.json \
+		--resolve ./foomo/gocontentful/config.schema.json \
+		--resolve ./foomo/sesamy/config.schema.json \
+		--resolve ./foomo/squadron/config.schema.json \
+		--resolve ./goharbor/harbor/config.schema.json \
+		--resolve ./golang-migrate/migrate/config.schema.json \
+		--resolve ./google/gcloud/config.schema.json \
+		--resolve ./grafana/k6/config.schema.json \
+		--resolve ./gravitational/teleport/config.schema.json \
+		--resolve ./gruntwork-io/terragrunt/config.schema.json \
+		--resolve ./hashicorp/cdktf/config.schema.json \
+		--resolve ./jondot/hygen/config.schema.json \
+		--resolve ./k3d-io/k3d/config.schema.json \
+		--resolve ./kubernets/kubectl/config.schema.json \
+		--resolve ./onepassword/config.schema.json \
+		--resolve ./pivotal/licensefinder/config.schema.json \
+		--resolve ./pulumi/pulumi/azure/config.schema.json \
+		--resolve ./pulumi/pulumi/gcloud/config.schema.json \
+		--resolve ./rclone/rclone/config.schema.json \
+		--resolve ./slack-go/slack/config.schema.json \
+		--resolve ./sqlc-dev/sqlc/config.schema.json \
+		--resolve ./stackitcloud/stackit/config.schema.json \
+		--resolve ./stern/stern/config.schema.json \
+		--resolve ./usebruno/bruno/config.schema.json \
+		--resolve ./webdriverio/webdriverio/config.schema.json \
+		--without-id \
+		> config.schema.json
+
 .PHONY: outdated
 ## Show outdated direct dependencies
 outdated:
@@ -20,7 +63,7 @@ outdated:
 .PHONY: test
 ## Run tests
 test:
-	@go test -coverprofile=coverage.out -race -json ./... | gotestfmt
+	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -race -json ./... | gotestfmt
 
 .PHONY: lint.fix
 ## Fix lint violations

@@ -1,5 +1,5 @@
 package hygen
 
 type Config struct {
-	TemplatePath string `yaml:"templatePath"`
+	TemplatePath string `json:"templatePath" yaml:"templatePath"`
 }

@@ -5,7 +5,7 @@ import (
 )
 
 type Cluster struct {
-	Port       int                `yaml:"port"`
-	Hostname   string             `yaml:"hostname"`
-	Kubeconfig onepassword.Secret `yaml:"kubeconfig"`
+	Port       int                `json:"port" yaml:"port"`
+	Hostname   string             `json:"hostname" yaml:"hostname"`
+	Kubeconfig onepassword.Secret `json:"kubeconfig" yaml:"kubeconfig"`
 }

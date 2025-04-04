@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-provider",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]\\.[0-9]$",
+          "description": "Version of the schema"
+        },
+				"rclone": {
+					"$ref": "https://github.com/foomo/posh-providers/rclone/rclone/config"
+				},
+				"cdktf": {
+					"$ref": "https://github.com/foomo/posh-providers/hashicorp/cdktf/config"
+				},
+				"az": {
+					"$ref": "https://github.com/foomo/posh-providers/azure/az/config"
+				},
+				"gcloud": {
+					"$ref": "https://github.com/foomo/posh-providers/google/gcloud/config"
+				},
+				"terragrunt": {
+					"$ref": "https://github.com/foomo/posh-providers/gruntwork-io/terragrunt/config"
+				},
+				"doctl": {
+					"$ref": "https://github.com/foomo/posh-providers/digitalocean/doctl/config"
+				},
+				"onepassword": {
+					"$ref": "https://github.com/foomo/posh-providers/onepassword/config"
+				},
+				"cloudflared": {
+					"$ref": "https://github.com/foomo/posh-providers/cloudflare/cloudflared/config"
+				},
+				"zip": {
+					"$ref": "https://github.com/foomo/posh-providers/arbitrary/zip/config"
+				},
+				"open": {
+					"$ref": "https://github.com/foomo/posh-providers/arbitrary/open/config"
+				},
+				"stern": {
+					"$ref": "https://github.com/foomo/posh-providers/stern/stern/config"
+				},
+				"k6": {
+					"$ref": "https://github.com/foomo/posh-providers/grafana/k6/config"
+				},
+				"k3d": {
+					"$ref": "https://github.com/foomo/posh-providers/k3d-io/k3d/config"
+				},
+				"etcd": {
+					"$ref": "https://github.com/foomo/posh-providers/etcd-io/etcd/config"
+				},
+				"hygen": {
+					"$ref": "https://github.com/foomo/posh-providers/jondot/hygen/config"
+				},
+				"sqlc": {
+					"$ref": "https://github.com/foomo/posh-providers/sqlc-dev/sqlc/config"
+				},
+				"mkcert": {
+					"$ref": "https://github.com/foomo/posh-providers/filosottile/mkcert/config"
+				},
+				"licensefinder": {
+					"$ref": "https://github.com/foomo/posh-providers/pivotal/licensefinder/config"
+				},
+				"docusaurus": {
+					"$ref": "https://github.com/foomo/posh-providers/facebook/docusaurus/config"
+				},
+				"stackit": {
+					"$ref": "https://github.com/foomo/posh-providers/stackitcloud/stackit/config"
+				},
+				"slack": {
+					"$ref": "https://github.com/foomo/posh-providers/slack-go/slack/config"
+				},
+				"teleport": {
+					"$ref": "https://github.com/foomo/posh-providers/gravitational/teleport/config"
+				},
+				"kubectl": {
+					"$ref": "https://github.com/foomo/posh-providers/kubernets/kubectl/config"
+				},
+				"pulumi-gcloud": {
+					"$ref": "https://github.com/foomo/posh-providers/pulumi/pulumi/gcloud/config"
+				},
+				"pulumi-azure": {
+					"$ref": "https://github.com/foomo/posh-providers/pulumi/pulumi/azure/config"
+				},
+				"gocontentful": {
+					"$ref": "https://github.com/foomo/posh-providers/foomo/gocontentful/config"
+				},
+				"beam": {
+					"$ref": "https://github.com/foomo/posh-providers/foomo/beam/config"
+				},
+				"sesamy": {
+					"$ref": "https://github.com/foomo/posh-providers/foomo/sesamy/config"
+				},
+				"squadron": {
+					"$ref": "https://github.com/foomo/posh-providers/foomo/squadron/config"
+				},
+				"webdriverio": {
+					"$ref": "https://github.com/foomo/posh-providers/webdriverio/webdriverio/config"
+				},
+				"migrate": {
+					"$ref": "https://github.com/foomo/posh-providers/golang-migrate/migrate/config"
+				},
+				"bruno": {
+					"$ref": "https://github.com/foomo/posh-providers/usebruno/bruno/config"
+				},
+				"harbor": {
+					"$ref": "https://github.com/foomo/posh-providers/goharbor/harbor/config"
+				}
+			},
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "version"
+      ]
+    }
+  }
+}

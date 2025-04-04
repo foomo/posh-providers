@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/arbitrary/zip/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "credentials": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Secret"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "credentials"
+      ]
+    },
+    "Secret": {
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "vault": {
+          "type": "string"
+        },
+        "item": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "account",
+        "vault",
+        "item",
+        "field"
+      ]
+    }
+  }
+}

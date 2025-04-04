@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/webdriverio/webdriverio/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "dirs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "modes": {
+          "$ref": "#/$defs/ConfigModes"
+        },
+        "sites": {
+          "$ref": "#/$defs/ConfigSites"
+        },
+        "secrets": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Secret"
+          },
+          "type": "object"
+        },
+        "browserStack": {
+          "$ref": "#/$defs/Secret"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "dirs",
+        "modes",
+        "sites",
+        "secrets",
+        "browserStack"
+      ]
+    },
+    "ConfigEnv": {
+      "properties": {
+        "auth": {
+          "$ref": "#/$defs/Secret"
+        },
+        "domain": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "auth",
+        "domain"
+      ]
+    },
+    "ConfigEnvs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConfigEnv"
+      },
+      "type": "object"
+    },
+    "ConfigMode": {
+      "properties": {
+        "port": {
+          "type": "string"
+        },
+        "hostPrefix": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "port",
+        "hostPrefix"
+      ]
+    },
+    "ConfigModes": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConfigMode"
+      },
+      "type": "object"
+    },
+    "ConfigSites": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConfigEnvs"
+      },
+      "type": "object"
+    },
+    "Secret": {
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "vault": {
+          "type": "string"
+        },
+        "item": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "account",
+        "vault",
+        "item",
+        "field"
+      ]
+    }
+  }
+}

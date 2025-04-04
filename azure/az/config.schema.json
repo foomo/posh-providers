@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/azure/az/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Artifactory": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "resourceGroup": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "resourceGroup"
+      ]
+    },
+    "Cluster": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Cluster"
+        },
+        "resourceGroup": {
+          "type": "string",
+          "description": "Cluster resource group name"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "resourceGroup"
+      ]
+    },
+    "Config": {
+      "properties": {
+        "configPath": {
+          "type": "string",
+          "description": "Config path"
+        },
+        "subscriptions": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Subscription"
+          },
+          "type": "object",
+          "description": "Subscription configurations"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "configPath",
+        "subscriptions"
+      ]
+    },
+    "Subscription": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "clusters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Cluster"
+          },
+          "type": "object"
+        },
+        "artifactories": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Artifactory"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "clusters",
+        "artifactories"
+      ]
+    }
+  }
+}

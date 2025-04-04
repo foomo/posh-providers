@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/cloudflare/cloudflared/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Access": {
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "type",
+        "hostname",
+        "port"
+      ]
+    },
+    "Config": {
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "access": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Access"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "path",
+        "access"
+      ]
+    }
+  }
+}

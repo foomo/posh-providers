@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/filosottile/mkcert/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Certificate": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "names": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "names"
+      ]
+    },
+    "Config": {
+      "properties": {
+        "certificatePath": {
+          "type": "string"
+        },
+        "certificates": {
+          "items": {
+            "$ref": "#/$defs/Certificate"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "certificatePath",
+        "certificates"
+      ]
+    }
+  }
+}

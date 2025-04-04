@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/arbitrary/open/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConfigRouter"
+      },
+      "type": "object"
+    },
+    "ConfigRoute": {
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Route path"
+        },
+        "description": {
+          "type": "string",
+          "description": "Route description"
+        },
+        "routes": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ConfigRoute"
+          },
+          "type": "object",
+          "description": "Child routes"
+        },
+        "basicAuth": {
+          "$ref": "#/$defs/Secret",
+          "description": "Basic authentication secret"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "path",
+        "description",
+        "routes",
+        "basicAuth"
+      ]
+    },
+    "ConfigRouter": {
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "Router base url"
+        },
+        "routes": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ConfigRoute"
+          },
+          "type": "object",
+          "description": "Router Child routes"
+        },
+        "description": {
+          "type": "string",
+          "description": "Router descriotion"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "url",
+        "routes",
+        "description"
+      ]
+    },
+    "Secret": {
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "vault": {
+          "type": "string"
+        },
+        "item": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "account",
+        "vault",
+        "item",
+        "field"
+      ]
+    }
+  }
+}

@@ -8,21 +8,21 @@ type (
 	Config       map[string]ConfigRouter
 	ConfigRouter struct {
 		// Router base url
-		URL string `yaml:"url"`
+		URL string `json:"url" yaml:"url"`
 		// Router Child routes
-		Routes map[string]ConfigRoute `yaml:"routes"`
+		Routes map[string]ConfigRoute `json:"routes" yaml:"routes"`
 		// Router descriotion
-		Description string `yaml:"description"`
+		Description string `json:"description" yaml:"description"`
 	}
 	ConfigRoute struct {
 		// Route path
-		Path string `yaml:"path"`
+		Path string `json:"path" yaml:"path"`
 		// Route description
-		Description string `yaml:"description"`
+		Description string `json:"description" yaml:"description"`
 		// Child routes
-		Routes map[string]ConfigRoute `yaml:"routes"`
+		Routes map[string]ConfigRoute `json:"routes" yaml:"routes"`
 		// Basic authentication secret
-		BasicAuth *onepassword.Secret `yaml:"basicAuth"`
+		BasicAuth *onepassword.Secret `json:"basicAuth" yaml:"basicAuth"`
 	}
 )
 

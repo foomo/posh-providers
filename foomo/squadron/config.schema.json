@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/foomo/squadron/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Cluster": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Cluser name"
+        },
+        "notify": {
+          "type": "boolean",
+          "description": "Enable notification by default"
+        },
+        "confirm": {
+          "type": "boolean",
+          "description": "Enable confirmation"
+        },
+        "fleets": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Cluster fleet names"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "notify",
+        "confirm",
+        "fleets"
+      ]
+    },
+    "Config": {
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the squadron root"
+        },
+        "clusters": {
+          "items": {
+            "$ref": "#/$defs/Cluster"
+          },
+          "type": "array",
+          "description": "Cluster configurations"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "path",
+        "clusters"
+      ]
+    }
+  }
+}
