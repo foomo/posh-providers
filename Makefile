@@ -1,8 +1,6 @@
 .DEFAULT_GOAL:=help
 -include .makerc
 
-export CGO_ENABLED=0
-
 ## === Tasks ===
 
 .PHONY: tidy
@@ -63,7 +61,8 @@ outdated:
 .PHONY: test
 ## Run tests
 test:
-	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -race -json ./... | gotestfmt
+	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -race -json
+	#@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -race -json ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
 .PHONY: lint.fix
 ## Fix lint violations

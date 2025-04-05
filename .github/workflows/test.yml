@@ -23,9 +23,9 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - uses: gotesttools/gotestfmt-action@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      #- uses: gotesttools/gotestfmt-action@v2
+      #  with:
+      #    token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: golangci/golangci-lint-action@v7
         with:
@@ -34,10 +34,10 @@ jobs:
       - name: Run test
         run: make test
 
-      #- name: Generate schema
-      #  run: |
-      #    make schema
-      #    git diff --exit-code
+      - name: Generate schema
+        run: |
+          make schema
+          git diff --exit-code
 
       - uses: coverallsapp/github-action@v2
         with:
