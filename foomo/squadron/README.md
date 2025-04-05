@@ -58,6 +58,8 @@ squadron:
   path: squadrons
   clusters:
     - name: prod
+      notify: true
+      confirm: true
       fleets: ["default"]
     - name: dev
       fleets: ["default"]

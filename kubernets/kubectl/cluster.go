@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -88,6 +89,8 @@ func (c *Cluster) Profiles(ctx context.Context) []string {
 //nolint:forcetypeassert
 func (c *Cluster) Namespaces(ctx context.Context, profile string) []string {
 	return c.kubectl.cache.Get(profile+"-"+c.name+"-namespaces", func() any {
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
 		if sh, err := c.shell(ctx, profile,
 			"get", "namespaces",
 			"-o", "jsonpath='{.items[*].metadata.name}'",
@@ -106,6 +109,8 @@ func (c *Cluster) Namespaces(ctx context.Context, profile string) []string {
 //nolint:forcetypeassert
 func (c *Cluster) Pods(ctx context.Context, profile, namespace string) []string {
 	return c.kubectl.cache.Get(profile+"-"+c.name+"-"+namespace+"-pods", func() any {
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
 		if sh, err := c.shell(ctx, profile,
 			"get", "pods",
 			"-n", namespace,

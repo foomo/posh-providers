@@ -73,7 +73,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	dir, args := r.Args().Shift()
 	if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
-		c.cache.Delete("")
+		c.cache.Delete()
 		c.l.Info("bootstrapping a new zeus:", dir)
 		return shell.New(ctx, c.l, "zeus", "bootstrap").
 			Args(args...).

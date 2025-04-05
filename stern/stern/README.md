@@ -36,12 +36,28 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
   // ...
 
-  inst.commands.Add(stern.NewCommand(l, inst.kubectl, inst.squadron))
+  inst.commands.MustAdd(stern.NewCommand(l, inst.kubectl, inst.squadron))
 
   // ...
 
   return inst, nil
 }
+```
+
+### Config
+
+```yaml
+stern:
+  queries:
+    all:
+      query: ['.*', '--all-namespaces']
+      queries:
+        panic:
+          query: ['--include', 'panic']
+        fatal:
+          query: ['--include', '"\"level\":\"fatal\""']
+        errors:
+          query: ['--include', '"\"level\":\"error\""']
 ```
 
 ### Ownbrew

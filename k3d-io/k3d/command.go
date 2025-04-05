@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -20,6 +21,7 @@ type (
 		l           log.Logger
 		k3d         *K3d
 		name        string
+		cache       cache.Cache
 		kubectl     *kubectl.Kubectl
 		commandTree tree.Root
 	}
@@ -41,10 +43,11 @@ func CommandWithName(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, k3d *K3d, kubectl *kubectl.Kubectl, opts ...CommandOption) (*Command, error) {
+func NewCommand(l log.Logger, k3d *K3d, cache cache.Cache, kubectl *kubectl.Kubectl, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:       l.Named("k3d"),
 		k3d:     k3d,
+		cache:   cache,
 		kubectl: kubectl,
 		name:    "k3d",
 	}
@@ -347,12 +350,18 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 	}
 
 	// delete cluster
-	return shell.New(ctx, c.l, "k3d", "kubeconfig", "get", clusterCfg.AliasName()).
+	if err := shell.New(ctx, c.l, "k3d", "kubeconfig", "get", clusterCfg.AliasName()).
 		Args(">", c.kubectl.Cluster(name).Config("")).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
-		Run()
+		Run(); err != nil {
+		return err
+	}
+
+	c.cache.Clear()
+
+	return nil
 }
 
 /*

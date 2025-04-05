@@ -15,24 +15,32 @@ jobs:
     name: test
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
 
-      - uses: gotesttools/gotestfmt-action@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: sourcemeta/jsonschema@v7.3.0
+
+      #- uses: gotesttools/gotestfmt-action@v2
+      #  with:
+      #    token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: golangci/golangci-lint-action@v7
         with:
           version: latest
 
-      - run: make test
+      - name: Run test
+        run: make test
 
-      # TODO enable once we have tests
-      # - uses: coverallsapp/github-action@v2
-      #   with:
-      #     file: coverage.out
+      - name: Generate schema
+        run: |
+          make schema
+          git diff --exit-code
+
+      - uses: coverallsapp/github-action@v2
+        with:
+          file: coverage.out
 

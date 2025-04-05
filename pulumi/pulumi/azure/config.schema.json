@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/pulumi/pulumi/azure/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Backend": {
+      "properties": {
+        "location": {
+          "type": "string"
+        },
+        "container": {
+          "type": "string"
+        },
+        "subscription": {
+          "type": "string"
+        },
+        "resourceGroup": {
+          "type": "string"
+        },
+        "storageAccount": {
+          "type": "string"
+        },
+        "passphrase": {
+          "$ref": "#/$defs/Secret"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "location",
+        "container",
+        "subscription",
+        "resourceGroup",
+        "storageAccount",
+        "passphrase"
+      ]
+    },
+    "Config": {
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "configPath": {
+          "type": "string"
+        },
+        "backends": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Backend"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "path",
+        "configPath",
+        "backends"
+      ]
+    },
+    "Secret": {
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "vault": {
+          "type": "string"
+        },
+        "item": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "account",
+        "vault",
+        "item",
+        "field"
+      ]
+    }
+  }
+}

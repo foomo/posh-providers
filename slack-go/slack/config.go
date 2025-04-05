@@ -5,7 +5,7 @@ import (
 )
 
 type Config struct {
-	Token    onepassword.Secret            `yaml:"token"`
-	Channels map[string]string             `yaml:"channels"`
-	Webhooks map[string]onepassword.Secret `yaml:"webhooks"`
+	Token    onepassword.Secret            `json:"token" yaml:"token"`
+	Channels map[string]string             `json:"channels" yaml:"channels"`
+	Webhooks map[string]onepassword.Secret `json:"webhooks" yaml:"webhooks"`
 }

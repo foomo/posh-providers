@@ -1,6 +1,6 @@
 package mkcert
 
 type Config struct {
-	CertificatePath string        `yaml:"certificatePath"`
-	Certificates    []Certificate `yaml:"certificates"`
+	CertificatePath string        `json:"certificatePath" yaml:"certificatePath"`
+	Certificates    []Certificate `json:"certificates" yaml:"certificates"`
 }

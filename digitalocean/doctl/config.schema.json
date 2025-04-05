@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/digitalocean/doctl/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Cluster": {
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name"
+      ]
+    },
+    "Config": {
+      "properties": {
+        "configPath": {
+          "type": "string"
+        },
+        "clusters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Cluster"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "configPath",
+        "clusters"
+      ]
+    }
+  }
+}

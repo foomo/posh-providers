@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/foomo/beam/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Cluster": {
+      "properties": {
+        "port": {
+          "type": "integer"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "kubeconfig": {
+          "$ref": "#/$defs/Secret"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "port",
+        "hostname",
+        "kubeconfig"
+      ]
+    },
+    "Config": {
+      "properties": {
+        "clusters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Cluster"
+          },
+          "type": "object"
+        },
+        "databases": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Database"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "clusters",
+        "databases"
+      ]
+    },
+    "Database": {
+      "properties": {
+        "port": {
+          "type": "integer"
+        },
+        "hostname": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "port",
+        "hostname"
+      ]
+    },
+    "Secret": {
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "vault": {
+          "type": "string"
+        },
+        "item": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "account",
+        "vault",
+        "item",
+        "field"
+      ]
+    }
+  }
+}

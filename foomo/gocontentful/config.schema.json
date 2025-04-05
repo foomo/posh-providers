@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/foomo/gocontentful/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "spaceId": {
+          "type": "string"
+        },
+        "cmaKey": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        },
+        "contentTypes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "spaceId",
+        "cmaKey",
+        "contentTypes"
+      ]
+    }
+  }
+}

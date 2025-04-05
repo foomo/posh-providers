@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-	Clusters  map[string]Cluster  `yaml:"clusters"`
-	Databases map[string]Database `yaml:"databases"`
+	Clusters  map[string]Cluster  `json:"clusters" yaml:"clusters"`
+	Databases map[string]Database `json:"databases" yaml:"databases"`
 }
 
 func (c Config) GetDatabase(name string) Database {

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/facebook/docusaurus/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "localPort": {
+          "type": "string"
+        },
+        "nodeTag": {
+          "type": "string"
+        },
+        "imageTag": {
+          "type": "string"
+        },
+        "imageName": {
+          "type": "string"
+        },
+        "volumes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "sourcePath",
+        "localPort",
+        "nodeTag",
+        "imageTag",
+        "imageName",
+        "volumes"
+      ]
+    }
+  }
+}

@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-	Path   string            `yaml:"path"`
-	Access map[string]Access `yaml:"access"`
+	Path   string            `json:"path" yaml:"path"`
+	Access map[string]Access `json:"access" yaml:"access"`
 }
 
 func (c Config) AccessNames() []string {

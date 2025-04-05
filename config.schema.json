@@ -1,0 +1,1732 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "type": "object",
+      "required": [
+        "version"
+      ],
+      "properties": {
+        "az": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1azure~1az~1config"
+        },
+        "beam": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1beam~1config"
+        },
+        "bruno": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1usebruno~1bruno~1config"
+        },
+        "cdktf": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1hashicorp~1cdktf~1config"
+        },
+        "cloudflared": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1cloudflare~1cloudflared~1config"
+        },
+        "doctl": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1digitalocean~1doctl~1config"
+        },
+        "docusaurus": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1facebook~1docusaurus~1config"
+        },
+        "etcd": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1etcd-io~1etcd~1config"
+        },
+        "gcloud": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1google~1gcloud~1config"
+        },
+        "gocontentful": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1gocontentful~1config"
+        },
+        "harbor": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1goharbor~1harbor~1config"
+        },
+        "hygen": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1jondot~1hygen~1config"
+        },
+        "k3d": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d~1config"
+        },
+        "k6": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1grafana~1k6~1config"
+        },
+        "kubectl": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1kubernets~1kubectl~1config"
+        },
+        "licensefinder": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pivotal~1licensefinder~1config"
+        },
+        "migrate": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1golang-migrate~1migrate~1config"
+        },
+        "mkcert": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1filosottile~1mkcert~1config"
+        },
+        "onepassword": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1onepassword~1config"
+        },
+        "open": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1open~1config"
+        },
+        "pulumi-azure": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1azure~1config"
+        },
+        "pulumi-gcloud": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1gcloud~1config"
+        },
+        "rclone": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1rclone~1rclone~1config"
+        },
+        "sesamy": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1sesamy~1config"
+        },
+        "slack": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1slack-go~1slack~1config"
+        },
+        "sqlc": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1sqlc-dev~1sqlc~1config"
+        },
+        "squadron": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1squadron~1config"
+        },
+        "stackit": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1stackitcloud~1stackit~1config"
+        },
+        "stern": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1stern~1stern~1config"
+        },
+        "teleport": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1gravitational~1teleport~1config"
+        },
+        "terragrunt": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1gruntwork-io~1terragrunt~1config"
+        },
+        "version": {
+          "description": "Version of the schema",
+          "type": "string",
+          "pattern": "^[0-9]\\.[0-9]$"
+        },
+        "webdriverio": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config"
+        },
+        "zip": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1zip~1config"
+        }
+      },
+      "additionalProperties": false
+    },
+    "https://github.com/foomo/posh-providers/arbitrary/open/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1open~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1open~1config/$defs/ConfigRouter"
+          }
+        },
+        "ConfigRoute": {
+          "type": "object",
+          "required": [
+            "path",
+            "description",
+            "routes",
+            "basicAuth"
+          ],
+          "properties": {
+            "description": {
+              "description": "Route description",
+              "type": "string"
+            },
+            "basicAuth": {
+              "description": "Basic authentication secret",
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1open~1config/$defs/Secret"
+            },
+            "path": {
+              "description": "Route path",
+              "type": "string"
+            },
+            "routes": {
+              "description": "Child routes",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1open~1config/$defs/ConfigRoute"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "ConfigRouter": {
+          "type": "object",
+          "required": [
+            "url",
+            "routes",
+            "description"
+          ],
+          "properties": {
+            "description": {
+              "description": "Router descriotion",
+              "type": "string"
+            },
+            "routes": {
+              "description": "Router Child routes",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1open~1config/$defs/ConfigRoute"
+              }
+            },
+            "url": {
+              "description": "Router base url",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "type": "object",
+          "required": [
+            "account",
+            "vault",
+            "item",
+            "field"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "item": {
+              "type": "string"
+            },
+            "vault": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/arbitrary/zip/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1zip~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "credentials"
+          ],
+          "properties": {
+            "credentials": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1zip~1config/$defs/Secret"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "type": "object",
+          "required": [
+            "account",
+            "vault",
+            "item",
+            "field"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "item": {
+              "type": "string"
+            },
+            "vault": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/azure/az/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1azure~1az~1config/$defs/Config",
+      "$defs": {
+        "Artifactory": {
+          "type": "object",
+          "required": [
+            "name",
+            "resourceGroup"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "resourceGroup": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Cluster": {
+          "type": "object",
+          "required": [
+            "name",
+            "resourceGroup"
+          ],
+          "properties": {
+            "name": {
+              "description": "Cluster",
+              "type": "string"
+            },
+            "resourceGroup": {
+              "description": "Cluster resource group name",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "configPath",
+            "subscriptions"
+          ],
+          "properties": {
+            "configPath": {
+              "description": "Config path",
+              "type": "string"
+            },
+            "subscriptions": {
+              "description": "Subscription configurations",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1azure~1az~1config/$defs/Subscription"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Subscription": {
+          "type": "object",
+          "required": [
+            "name",
+            "clusters",
+            "artifactories"
+          ],
+          "properties": {
+            "artifactories": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1azure~1az~1config/$defs/Artifactory"
+              }
+            },
+            "clusters": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1azure~1az~1config/$defs/Cluster"
+              }
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/cloudflare/cloudflared/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1cloudflare~1cloudflared~1config/$defs/Config",
+      "$defs": {
+        "Access": {
+          "type": "object",
+          "required": [
+            "type",
+            "hostname",
+            "port"
+          ],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "hostname": {
+              "type": "string"
+            },
+            "port": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "path",
+            "access"
+          ],
+          "properties": {
+            "access": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1cloudflare~1cloudflared~1config/$defs/Access"
+              }
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/digitalocean/doctl/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1digitalocean~1doctl~1config/$defs/Config",
+      "$defs": {
+        "Cluster": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "configPath",
+            "clusters"
+          ],
+          "properties": {
+            "clusters": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1digitalocean~1doctl~1config/$defs/Cluster"
+              }
+            },
+            "configPath": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/etcd-io/etcd/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1etcd-io~1etcd~1config/$defs/Config",
+      "$defs": {
+        "Cluster": {
+          "type": "object",
+          "required": [
+            "name",
+            "podName",
+            "namespace",
+            "paths"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "namespace": {
+              "type": "string"
+            },
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "podName": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "configPath",
+            "clusters"
+          ],
+          "properties": {
+            "clusters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1etcd-io~1etcd~1config/$defs/Cluster"
+              }
+            },
+            "configPath": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/facebook/docusaurus/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1facebook~1docusaurus~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "sourcePath",
+            "localPort",
+            "nodeTag",
+            "imageTag",
+            "imageName",
+            "volumes"
+          ],
+          "properties": {
+            "imageName": {
+              "type": "string"
+            },
+            "imageTag": {
+              "type": "string"
+            },
+            "localPort": {
+              "type": "string"
+            },
+            "nodeTag": {
+              "type": "string"
+            },
+            "sourcePath": {
+              "type": "string"
+            },
+            "volumes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/filosottile/mkcert/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1filosottile~1mkcert~1config/$defs/Config",
+      "$defs": {
+        "Certificate": {
+          "type": "object",
+          "required": [
+            "name",
+            "names"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "names": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "certificatePath",
+            "certificates"
+          ],
+          "properties": {
+            "certificatePath": {
+              "type": "string"
+            },
+            "certificates": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1filosottile~1mkcert~1config/$defs/Certificate"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/foomo/beam/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1beam~1config/$defs/Config",
+      "$defs": {
+        "Cluster": {
+          "type": "object",
+          "required": [
+            "port",
+            "hostname",
+            "kubeconfig"
+          ],
+          "properties": {
+            "hostname": {
+              "type": "string"
+            },
+            "kubeconfig": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1beam~1config/$defs/Secret"
+            },
+            "port": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "clusters",
+            "databases"
+          ],
+          "properties": {
+            "clusters": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1beam~1config/$defs/Cluster"
+              }
+            },
+            "databases": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1beam~1config/$defs/Database"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Database": {
+          "type": "object",
+          "required": [
+            "port",
+            "hostname"
+          ],
+          "properties": {
+            "hostname": {
+              "type": "string"
+            },
+            "port": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "type": "object",
+          "required": [
+            "account",
+            "vault",
+            "item",
+            "field"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "item": {
+              "type": "string"
+            },
+            "vault": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/foomo/gocontentful/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1gocontentful~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "spaceId",
+            "cmaKey",
+            "contentTypes"
+          ],
+          "properties": {
+            "cmaKey": {
+              "type": "string"
+            },
+            "contentTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "environment": {
+              "type": "string"
+            },
+            "spaceId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/foomo/sesamy/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1sesamy~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/foomo/squadron/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1squadron~1config/$defs/Config",
+      "$defs": {
+        "Cluster": {
+          "type": "object",
+          "required": [
+            "name",
+            "notify",
+            "confirm",
+            "fleets"
+          ],
+          "properties": {
+            "confirm": {
+              "description": "Enable confirmation",
+              "type": "boolean"
+            },
+            "fleets": {
+              "description": "Cluster fleet names",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name": {
+              "description": "Cluser name",
+              "type": "string"
+            },
+            "notify": {
+              "description": "Enable notification by default",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "path",
+            "clusters"
+          ],
+          "properties": {
+            "clusters": {
+              "description": "Cluster configurations",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1foomo~1squadron~1config/$defs/Cluster"
+              }
+            },
+            "path": {
+              "description": "Path to the squadron root",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/goharbor/harbor/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1goharbor~1harbor~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "url",
+            "authUrl",
+            "project"
+          ],
+          "properties": {
+            "authUrl": {
+              "type": "string"
+            },
+            "project": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/golang-migrate/migrate/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1golang-migrate~1migrate~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "sources",
+            "databases"
+          ],
+          "properties": {
+            "databases": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "sources": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/google/gcloud/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1google~1gcloud~1config/$defs/Config",
+      "$defs": {
+        "Account": {
+          "type": "object",
+          "required": [
+            "name",
+            "email",
+            "key"
+          ],
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "key": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1google~1gcloud~1config/$defs/Secret"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Cluster": {
+          "type": "object",
+          "required": [
+            "name",
+            "project",
+            "region",
+            "account"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "project": {
+              "type": "string"
+            },
+            "region": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "configPath",
+            "accounts",
+            "clusters"
+          ],
+          "properties": {
+            "accounts": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1google~1gcloud~1config/$defs/Account"
+              }
+            },
+            "clusters": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1google~1gcloud~1config/$defs/Cluster"
+              }
+            },
+            "configPath": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "type": "object",
+          "required": [
+            "account",
+            "vault",
+            "item",
+            "field"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "item": {
+              "type": "string"
+            },
+            "vault": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/grafana/k6/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1grafana~1k6~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "path",
+            "envs"
+          ],
+          "properties": {
+            "envs": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1grafana~1k6~1config/$defs/Env"
+              }
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/gravitational/teleport/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1gravitational~1teleport~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "path",
+            "labels",
+            "hostname",
+            "kubernetes",
+            "apps",
+            "database"
+          ],
+          "properties": {
+            "apps": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "database": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1gravitational~1teleport~1config/$defs/Database"
+            },
+            "hostname": {
+              "type": "string"
+            },
+            "kubernetes": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1gravitational~1teleport~1config/$defs/Kubernetes"
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Database": {
+          "type": "object",
+          "required": [
+            "user"
+          ],
+          "properties": {
+            "user": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Kubernetes": {
+          "type": "object",
+          "required": [
+            "aliases"
+          ],
+          "properties": {
+            "aliases": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/gruntwork-io/terragrunt/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1gruntwork-io~1terragrunt~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "path",
+            "cachePath"
+          ],
+          "properties": {
+            "cachePath": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/hashicorp/cdktf/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1hashicorp~1cdktf~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "path",
+            "outPath"
+          ],
+          "properties": {
+            "outPath": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/jondot/hygen/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1jondot~1hygen~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "templatePath"
+          ],
+          "properties": {
+            "templatePath": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/k3d-io/k3d/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "charts",
+            "registry",
+            "clusters"
+          ],
+          "properties": {
+            "charts": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d~1config/$defs/ConfigCharts"
+            },
+            "clusters": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d~1config/$defs/ConfigCluster"
+              }
+            },
+            "registry": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d~1config/$defs/ConfigRegistry"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ConfigCharts": {
+          "type": "object",
+          "required": [
+            "path",
+            "prefix"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "prefix": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ConfigCluster": {
+          "type": "object",
+          "required": [
+            "alias",
+            "image",
+            "port",
+            "enableTraefikRouter",
+            "args"
+          ],
+          "properties": {
+            "alias": {
+              "description": "K3d cluster name",
+              "type": "string"
+            },
+            "args": {
+              "description": "Additional arguments",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "enableTraefikRouter": {
+              "description": "EnableTraefikRouter allows to create the cluster with the default traefik router",
+              "type": "boolean"
+            },
+            "image": {
+              "description": "Docker image to use",
+              "type": "string"
+            },
+            "port": {
+              "description": "Port to bind to",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ConfigRegistry": {
+          "type": "object",
+          "required": [
+            "name",
+            "port"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "port": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/kubernets/kubectl/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1kubernets~1kubectl~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "configPath"
+          ],
+          "properties": {
+            "configPath": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/onepassword/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1onepassword~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "account",
+            "tokenFilename"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "tokenFilename": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/pivotal/licensefinder/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pivotal~1licensefinder~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "logPath",
+            "decisionsPath",
+            "sources"
+          ],
+          "properties": {
+            "decisionsPath": {
+              "type": "string"
+            },
+            "logPath": {
+              "type": "string"
+            },
+            "sources": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/pulumi/pulumi/azure/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1azure~1config/$defs/Config",
+      "$defs": {
+        "Backend": {
+          "type": "object",
+          "required": [
+            "location",
+            "container",
+            "subscription",
+            "resourceGroup",
+            "storageAccount",
+            "passphrase"
+          ],
+          "properties": {
+            "container": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "passphrase": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1azure~1config/$defs/Secret"
+            },
+            "resourceGroup": {
+              "type": "string"
+            },
+            "storageAccount": {
+              "type": "string"
+            },
+            "subscription": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "path",
+            "configPath",
+            "backends"
+          ],
+          "properties": {
+            "backends": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1azure~1config/$defs/Backend"
+              }
+            },
+            "configPath": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "type": "object",
+          "required": [
+            "account",
+            "vault",
+            "item",
+            "field"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "item": {
+              "type": "string"
+            },
+            "vault": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/pulumi/pulumi/gcloud/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1gcloud~1config/$defs/Config",
+      "$defs": {
+        "Backend": {
+          "type": "object",
+          "required": [
+            "location",
+            "bucket",
+            "project",
+            "passphrase"
+          ],
+          "properties": {
+            "bucket": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "passphrase": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1gcloud~1config/$defs/Secret"
+            },
+            "project": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "path",
+            "configPath",
+            "backends"
+          ],
+          "properties": {
+            "backends": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1gcloud~1config/$defs/Backend"
+              }
+            },
+            "configPath": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "type": "object",
+          "required": [
+            "account",
+            "vault",
+            "item",
+            "field"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "item": {
+              "type": "string"
+            },
+            "vault": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/rclone/rclone/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1rclone~1rclone~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "path",
+            "config"
+          ],
+          "properties": {
+            "config": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/slack-go/slack/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1slack-go~1slack~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "token",
+            "channels",
+            "webhooks"
+          ],
+          "properties": {
+            "channels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "token": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1slack-go~1slack~1config/$defs/Secret"
+            },
+            "webhooks": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1slack-go~1slack~1config/$defs/Secret"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "type": "object",
+          "required": [
+            "account",
+            "vault",
+            "item",
+            "field"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "item": {
+              "type": "string"
+            },
+            "vault": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/sqlc-dev/sqlc/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1sqlc-dev~1sqlc~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "tempDir",
+            "cacheDir"
+          ],
+          "properties": {
+            "cacheDir": {
+              "type": "string"
+            },
+            "tempDir": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/stackitcloud/stackit/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1stackitcloud~1stackit~1config/$defs/Config",
+      "$defs": {
+        "Cluster": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "required": [
+            "projects"
+          ],
+          "properties": {
+            "projects": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1stackitcloud~1stackit~1config/$defs/Project"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Project": {
+          "type": "object",
+          "required": [
+            "id",
+            "clusters"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "clusters": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1stackitcloud~1stackit~1config/$defs/Cluster"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/stern/stern/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1stern~1stern~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "queries"
+          ],
+          "properties": {
+            "queries": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1stern~1stern~1config/$defs/Query"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Query": {
+          "type": "object",
+          "required": [
+            "query",
+            "queries"
+          ],
+          "properties": {
+            "queries": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1stern~1stern~1config/$defs/Query"
+              }
+            },
+            "query": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/usebruno/bruno/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1usebruno~1bruno~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "path"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/webdriverio/webdriverio/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "required": [
+            "dirs",
+            "modes",
+            "sites",
+            "secrets",
+            "browserStack"
+          ],
+          "properties": {
+            "browserStack": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/Secret"
+            },
+            "dirs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "modes": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/ConfigModes"
+            },
+            "secrets": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/Secret"
+              }
+            },
+            "sites": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/ConfigSites"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ConfigEnv": {
+          "type": "object",
+          "required": [
+            "auth",
+            "domain"
+          ],
+          "properties": {
+            "auth": {
+              "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/Secret"
+            },
+            "domain": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ConfigEnvs": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/ConfigEnv"
+          }
+        },
+        "ConfigMode": {
+          "type": "object",
+          "required": [
+            "port",
+            "hostPrefix"
+          ],
+          "properties": {
+            "hostPrefix": {
+              "type": "string"
+            },
+            "port": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ConfigModes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/ConfigMode"
+          }
+        },
+        "ConfigSites": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/ConfigEnvs"
+          }
+        },
+        "Secret": {
+          "type": "object",
+          "required": [
+            "account",
+            "vault",
+            "item",
+            "field"
+          ],
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "item": {
+              "type": "string"
+            },
+            "vault": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}
