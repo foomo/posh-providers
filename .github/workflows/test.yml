@@ -15,13 +15,14 @@ jobs:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
 
-      - uses: sourcemeta/jsonschema@v7.3.0
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+
+      - uses: sourcemeta/jsonschema@v7.3.0
 
       #- uses: gotesttools/gotestfmt-action@v2
       #  with:
