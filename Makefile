@@ -39,6 +39,7 @@ schema:
 		--resolve ./jondot/hygen/config.schema.json \
 		--resolve ./k3d-io/k3d/config.schema.json \
 		--resolve ./kubernets/kubectl/config.schema.json \
+		--resolve ./kubernets/kubeforward/config.schema.json \
 		--resolve ./onepassword/config.schema.json \
 		--resolve ./pivotal/licensefinder/config.schema.json \
 		--resolve ./pulumi/pulumi/azure/config.schema.json \

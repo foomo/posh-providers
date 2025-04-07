@@ -53,6 +53,9 @@
         "kubectl": {
           "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1kubernets~1kubectl~1config"
         },
+        "kubeforward": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1kubernets~1kubeforward~1config"
+        },
         "licensefinder": {
           "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1pivotal~1licensefinder~1config"
         },
@@ -1181,6 +1184,51 @@
           ],
           "properties": {
             "configPath": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/kubernets/kubeforward/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1kubernets~1kubeforward~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1kubernets~1kubeforward~1config/$defs/PortForward"
+          }
+        },
+        "PortForward": {
+          "type": "object",
+          "required": [
+            "cluster",
+            "namespace",
+            "description",
+            "target",
+            "port"
+          ],
+          "properties": {
+            "description": {
+              "description": "Optional description",
+              "type": "string"
+            },
+            "cluster": {
+              "description": "Target cluster",
+              "type": "string"
+            },
+            "namespace": {
+              "description": "Target namespace",
+              "type": "string"
+            },
+            "port": {
+              "description": "Target and host port mapping",
+              "type": "string"
+            },
+            "target": {
+              "description": "Target name",
               "type": "string"
             }
           },

@@ -108,6 +108,9 @@
 				},
 				"harbor": {
 					"$ref": "https://github.com/foomo/posh-providers/goharbor/harbor/config"
+				},
+				"kubeforward": {
+					"$ref": "https://github.com/foomo/posh-providers/kubernets/kubeforward/config"
 				}
 			},
       "additionalProperties": false,

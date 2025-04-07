@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/kubernets/kubeforward/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "additionalProperties": {
+        "$ref": "#/$defs/PortForward"
+      },
+      "type": "object"
+    },
+    "PortForward": {
+      "properties": {
+        "cluster": {
+          "type": "string",
+          "description": "Target cluster"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Target namespace"
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional description"
+        },
+        "target": {
+          "type": "string",
+          "description": "Target name"
+        },
+        "port": {
+          "type": "string",
+          "description": "Target and host port mapping"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "cluster",
+        "namespace",
+        "description",
+        "target",
+        "port"
+      ]
+    }
+  }
+}
