@@ -8,12 +8,12 @@ import (
 )
 
 func AuthChecker(p *OnePassword) check.Checker {
-	return func(ctx context.Context, l log.Logger) check.Info {
+	return func(ctx context.Context, l log.Logger) []check.Info {
 		name := "1Password"
 		if ok, _ := p.IsAuthenticated(ctx); ok {
-			return check.NewSuccessInfo(name, "Authenticated")
+			return []check.Info{check.NewSuccessInfo(name, "Authenticated")}
 		} else {
-			return check.NewFailureInfo(name, "Run `op auth` to sign into 1password")
+			return []check.Info{check.NewFailureInfo(name, "Run `op auth` to sign into 1password")}
 		}
 	}
 }

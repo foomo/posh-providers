@@ -8,12 +8,12 @@ import (
 )
 
 func AuthChecker(h *Harbor) check.Checker {
-	return func(ctx context.Context, l log.Logger) check.Info {
+	return func(ctx context.Context, l log.Logger) []check.Info {
 		name := "Harbor"
 		if h.IsAuthenticated(ctx) {
-			return check.NewSuccessInfo(name, "Authenticated")
+			return []check.Info{check.NewSuccessInfo(name, "Authenticated")}
 		} else {
-			return check.NewFailureInfo(name, "Run `harbor auth` to sign into docker")
+			return []check.Info{check.NewFailureInfo(name, "Run `harbor auth` to sign into docker")}
 		}
 	}
 }

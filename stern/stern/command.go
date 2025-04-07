@@ -113,10 +113,10 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							fs.Default().String("exclude-container", "", "Exclude a Container name")
 							fs.Default().String("include", "", "Regex of log lines to include")
 							fs.Default().String("output", "default", "Specify predefined template")
-							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query.")
+							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query")
 							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
 							fs.Default().String("template", "default", "Template to use for log lines")
-							fs.Internal().String("profile", "", "Profile to use.")
+							fs.Internal().String("profile", "", "Profile to use")
 							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
 								return err
 							}
@@ -150,10 +150,10 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							fs.Default().String("exclude-container", "", "Exclude a Container name")
 							fs.Default().String("include", "", "Regex of log lines to include")
 							fs.Default().String("output", "default", "Specify predefined template")
-							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query.")
+							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query")
 							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
 							fs.Default().String("template", "default", "Template to use for log lines")
-							fs.Internal().String("profile", "", "Profile to use.")
+							fs.Internal().String("profile", "", "Profile to use")
 							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
 								return err
 							}
@@ -194,7 +194,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							fs.Default().String("exclude-container", "", "Exclude a Container name")
 							fs.Default().String("include", "", "Regex of log lines to include")
 							fs.Default().String("output", "default", "Specify predefined template")
-							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query.")
+							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query")
 							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
 							fs.Default().String("template", "default", "Template to use for log lines")
 							fs.Internal().String("profile", "", "Profile to use")

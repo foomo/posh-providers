@@ -10,7 +10,7 @@ import (
 )
 
 func ClusterChecker(cf *cloudflared.Cloudflared, cluster Cluster) check.Checker {
-	return func(ctx context.Context, l log.Logger) check.Info {
+	return func(ctx context.Context, l log.Logger) []check.Info {
 		name := "Beam Cluster"
 		title := fmt.Sprintf("%s => :%d", cluster.Hostname, cluster.Port)
 
@@ -19,15 +19,15 @@ func ClusterChecker(cf *cloudflared.Cloudflared, cluster Cluster) check.Checker 
 			Hostname: cluster.Hostname,
 			Port:     cluster.Port,
 		}) {
-			return check.NewSuccessInfo(name, title)
+			return []check.Info{check.NewSuccessInfo(name, title)}
 		}
 
-		return check.NewNoteInfo(name, title)
+		return []check.Info{check.NewNoteInfo(name, title)}
 	}
 }
 
 func DatabaseChecker(cf *cloudflared.Cloudflared, database Database) check.Checker {
-	return func(ctx context.Context, l log.Logger) check.Info {
+	return func(ctx context.Context, l log.Logger) []check.Info {
 		name := "Beam Database"
 		title := fmt.Sprintf("%s => :%d", database.Hostname, database.Port)
 
@@ -36,9 +36,9 @@ func DatabaseChecker(cf *cloudflared.Cloudflared, database Database) check.Check
 			Hostname: database.Hostname,
 			Port:     database.Port,
 		}) {
-			return check.NewSuccessInfo(name, title)
+			return []check.Info{check.NewSuccessInfo(name, title)}
 		}
 
-		return check.NewNoteInfo(name, title)
+		return []check.Info{check.NewNoteInfo(name, title)}
 	}
 }

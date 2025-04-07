@@ -9,12 +9,12 @@ import (
 )
 
 func AuthChecker(p *GCloud) check.Checker {
-	return func(ctx context.Context, l log.Logger) check.Info {
+	return func(ctx context.Context, l log.Logger) []check.Info {
 		name := "GCloud"
 		if account, err := p.ActiveAccount(ctx, l); err != nil {
-			return check.NewFailureInfo(name, "Error: "+err.Error())
+			return []check.Info{check.NewFailureInfo(name, "Error: "+err.Error())}
 		} else {
-			return check.NewSuccessInfo(name, fmt.Sprintf("Authenticated (%s)", account))
+			return []check.Info{check.NewSuccessInfo(name, fmt.Sprintf("Authenticated (%s)", account))}
 		}
 	}
 }

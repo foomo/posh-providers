@@ -88,8 +88,11 @@ func (t *Cloudflared) Connect(ctx context.Context, access Access) error {
 		return errors.Errorf("connection already exists: %s", access.Hostname)
 	}
 
-	cmd := exec.CommandContext(ctx, "cloudflared", "access", access.Type)
-	cmd.Args = append(cmd.Args, "--hostname", access.Hostname, "--url", fmt.Sprintf("127.0.0.1:%d", access.Port))
+	cmd := exec.CommandContext(ctx, "cloudflared",
+		"access", access.Type,
+		"--hostname", access.Hostname,
+		"--url", fmt.Sprintf("127.0.0.1:%d", access.Port),
+	)
 	cmd.Env = append(os.Environ(), "HOME="+t.Config().Path)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,

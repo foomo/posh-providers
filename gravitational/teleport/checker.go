@@ -8,12 +8,12 @@ import (
 )
 
 func AuthChecker(p *Teleport) check.Checker {
-	return func(ctx context.Context, l log.Logger) check.Info {
+	return func(ctx context.Context, l log.Logger) []check.Info {
 		name := "Teleport"
 		if p.IsAuthenticated(ctx) {
-			return check.NewSuccessInfo(name, "Authenticated")
+			return []check.Info{check.NewSuccessInfo(name, "Authenticated")}
 		} else {
-			return check.NewFailureInfo(name, "Run `teleport auth` to sign into teleport")
+			return []check.Info{check.NewFailureInfo(name, "Run `teleport auth` to sign into teleport")}
 		}
 	}
 }
