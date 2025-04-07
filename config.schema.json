@@ -4,9 +4,7 @@
   "$defs": {
     "Config": {
       "type": "object",
-      "required": [
-        "version"
-      ],
+      "required": [ "version" ],
       "properties": {
         "az": {
           "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1azure~1az~1config"
@@ -130,12 +128,7 @@
         },
         "ConfigRoute": {
           "type": "object",
-          "required": [
-            "path",
-            "description",
-            "routes",
-            "basicAuth"
-          ],
+          "required": [ "path", "description", "routes", "basicAuth" ],
           "properties": {
             "description": {
               "description": "Route description",
@@ -161,11 +154,7 @@
         },
         "ConfigRouter": {
           "type": "object",
-          "required": [
-            "url",
-            "routes",
-            "description"
-          ],
+          "required": [ "url", "routes", "description" ],
           "properties": {
             "description": {
               "description": "Router descriotion",
@@ -187,12 +176,7 @@
         },
         "Secret": {
           "type": "object",
-          "required": [
-            "account",
-            "vault",
-            "item",
-            "field"
-          ],
+          "required": [ "account", "vault", "item", "field" ],
           "properties": {
             "account": {
               "type": "string"
@@ -217,9 +201,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "credentials"
-          ],
+          "required": [ "credentials" ],
           "properties": {
             "credentials": {
               "type": "object",
@@ -232,12 +214,7 @@
         },
         "Secret": {
           "type": "object",
-          "required": [
-            "account",
-            "vault",
-            "item",
-            "field"
-          ],
+          "required": [ "account", "vault", "item", "field" ],
           "properties": {
             "account": {
               "type": "string"
@@ -262,10 +239,7 @@
       "$defs": {
         "Artifactory": {
           "type": "object",
-          "required": [
-            "name",
-            "resourceGroup"
-          ],
+          "required": [ "name", "resourceGroup" ],
           "properties": {
             "name": {
               "type": "string"
@@ -278,10 +252,7 @@
         },
         "Cluster": {
           "type": "object",
-          "required": [
-            "name",
-            "resourceGroup"
-          ],
+          "required": [ "name", "resourceGroup" ],
           "properties": {
             "name": {
               "description": "Cluster",
@@ -296,10 +267,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "configPath",
-            "subscriptions"
-          ],
+          "required": [ "configPath", "subscriptions" ],
           "properties": {
             "configPath": {
               "description": "Config path",
@@ -317,11 +285,7 @@
         },
         "Subscription": {
           "type": "object",
-          "required": [
-            "name",
-            "clusters",
-            "artifactories"
-          ],
+          "required": [ "name", "clusters", "artifactories" ],
           "properties": {
             "artifactories": {
               "type": "object",
@@ -349,11 +313,7 @@
       "$defs": {
         "Access": {
           "type": "object",
-          "required": [
-            "type",
-            "hostname",
-            "port"
-          ],
+          "required": [ "type", "hostname", "port" ],
           "properties": {
             "type": {
               "type": "string"
@@ -369,10 +329,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "path",
-            "access"
-          ],
+          "required": [ "path", "access" ],
           "properties": {
             "access": {
               "type": "object",
@@ -394,9 +351,7 @@
       "$defs": {
         "Cluster": {
           "type": "object",
-          "required": [
-            "name"
-          ],
+          "required": [ "name" ],
           "properties": {
             "name": {
               "type": "string"
@@ -406,10 +361,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "configPath",
-            "clusters"
-          ],
+          "required": [ "configPath", "clusters" ],
           "properties": {
             "clusters": {
               "type": "object",
@@ -431,12 +383,7 @@
       "$defs": {
         "Cluster": {
           "type": "object",
-          "required": [
-            "name",
-            "podName",
-            "namespace",
-            "paths"
-          ],
+          "required": [ "name", "podName", "namespace", "paths" ],
           "properties": {
             "name": {
               "type": "string"
@@ -458,10 +405,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "configPath",
-            "clusters"
-          ],
+          "required": [ "configPath", "clusters" ],
           "properties": {
             "clusters": {
               "type": "array",
@@ -524,10 +468,7 @@
       "$defs": {
         "Certificate": {
           "type": "object",
-          "required": [
-            "name",
-            "names"
-          ],
+          "required": [ "name", "names" ],
           "properties": {
             "name": {
               "type": "string"
@@ -543,10 +484,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "certificatePath",
-            "certificates"
-          ],
+          "required": [ "certificatePath", "certificates" ],
           "properties": {
             "certificatePath": {
               "type": "string"
@@ -568,11 +506,7 @@
       "$defs": {
         "Cluster": {
           "type": "object",
-          "required": [
-            "port",
-            "hostname",
-            "kubeconfig"
-          ],
+          "required": [ "port", "hostname", "kubeconfig" ],
           "properties": {
             "hostname": {
               "type": "string"
@@ -588,10 +522,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "clusters",
-            "databases"
-          ],
+          "required": [ "clusters", "databases" ],
           "properties": {
             "clusters": {
               "type": "object",
@@ -610,10 +541,7 @@
         },
         "Database": {
           "type": "object",
-          "required": [
-            "port",
-            "hostname"
-          ],
+          "required": [ "port", "hostname" ],
           "properties": {
             "hostname": {
               "type": "string"
@@ -626,12 +554,7 @@
         },
         "Secret": {
           "type": "object",
-          "required": [
-            "account",
-            "vault",
-            "item",
-            "field"
-          ],
+          "required": [ "account", "vault", "item", "field" ],
           "properties": {
             "account": {
               "type": "string"
@@ -656,11 +579,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "spaceId",
-            "cmaKey",
-            "contentTypes"
-          ],
+          "required": [ "spaceId", "cmaKey", "contentTypes" ],
           "properties": {
             "cmaKey": {
               "type": "string"
@@ -703,12 +622,7 @@
       "$defs": {
         "Cluster": {
           "type": "object",
-          "required": [
-            "name",
-            "notify",
-            "confirm",
-            "fleets"
-          ],
+          "required": [ "name", "notify", "confirm", "fleets" ],
           "properties": {
             "confirm": {
               "description": "Enable confirmation",
@@ -734,10 +648,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "path",
-            "clusters"
-          ],
+          "required": [ "path", "clusters" ],
           "properties": {
             "clusters": {
               "description": "Cluster configurations",
@@ -761,11 +672,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "url",
-            "authUrl",
-            "project"
-          ],
+          "required": [ "url", "authUrl", "project" ],
           "properties": {
             "authUrl": {
               "type": "string"
@@ -787,10 +694,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "sources",
-            "databases"
-          ],
+          "required": [ "sources", "databases" ],
           "properties": {
             "databases": {
               "type": "object",
@@ -815,11 +719,7 @@
       "$defs": {
         "Account": {
           "type": "object",
-          "required": [
-            "name",
-            "email",
-            "key"
-          ],
+          "required": [ "name", "email", "key" ],
           "properties": {
             "email": {
               "type": "string"
@@ -835,12 +735,7 @@
         },
         "Cluster": {
           "type": "object",
-          "required": [
-            "name",
-            "project",
-            "region",
-            "account"
-          ],
+          "required": [ "name", "project", "region", "account" ],
           "properties": {
             "account": {
               "type": "string"
@@ -859,11 +754,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "configPath",
-            "accounts",
-            "clusters"
-          ],
+          "required": [ "configPath", "accounts", "clusters" ],
           "properties": {
             "accounts": {
               "type": "object",
@@ -885,12 +776,7 @@
         },
         "Secret": {
           "type": "object",
-          "required": [
-            "account",
-            "vault",
-            "item",
-            "field"
-          ],
+          "required": [ "account", "vault", "item", "field" ],
           "properties": {
             "account": {
               "type": "string"
@@ -915,10 +801,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "path",
-            "envs"
-          ],
+          "required": [ "path", "envs" ],
           "properties": {
             "envs": {
               "type": "object",
@@ -946,14 +829,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "path",
-            "labels",
-            "hostname",
-            "kubernetes",
-            "apps",
-            "database"
-          ],
+          "required": [ "path", "labels", "hostname", "kubernetes", "apps", "database" ],
           "properties": {
             "apps": {
               "type": "object",
@@ -987,9 +863,7 @@
         },
         "Database": {
           "type": "object",
-          "required": [
-            "user"
-          ],
+          "required": [ "user" ],
           "properties": {
             "user": {
               "type": "string"
@@ -999,9 +873,7 @@
         },
         "Kubernetes": {
           "type": "object",
-          "required": [
-            "aliases"
-          ],
+          "required": [ "aliases" ],
           "properties": {
             "aliases": {
               "type": "object",
@@ -1020,10 +892,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "path",
-            "cachePath"
-          ],
+          "required": [ "path", "cachePath" ],
           "properties": {
             "cachePath": {
               "type": "string"
@@ -1042,10 +911,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "path",
-            "outPath"
-          ],
+          "required": [ "path", "outPath" ],
           "properties": {
             "outPath": {
               "type": "string"
@@ -1064,9 +930,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "templatePath"
-          ],
+          "required": [ "templatePath" ],
           "properties": {
             "templatePath": {
               "type": "string"
@@ -1082,11 +946,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "charts",
-            "registry",
-            "clusters"
-          ],
+          "required": [ "charts", "registry", "clusters" ],
           "properties": {
             "charts": {
               "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d~1config/$defs/ConfigCharts"
@@ -1105,10 +965,7 @@
         },
         "ConfigCharts": {
           "type": "object",
-          "required": [
-            "path",
-            "prefix"
-          ],
+          "required": [ "path", "prefix" ],
           "properties": {
             "path": {
               "type": "string"
@@ -1121,13 +978,7 @@
         },
         "ConfigCluster": {
           "type": "object",
-          "required": [
-            "alias",
-            "image",
-            "port",
-            "enableTraefikRouter",
-            "args"
-          ],
+          "required": [ "alias", "image", "port", "enableTraefikRouter", "args" ],
           "properties": {
             "alias": {
               "description": "K3d cluster name",
@@ -1157,10 +1008,7 @@
         },
         "ConfigRegistry": {
           "type": "object",
-          "required": [
-            "name",
-            "port"
-          ],
+          "required": [ "name", "port" ],
           "properties": {
             "name": {
               "type": "string"
@@ -1179,9 +1027,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "configPath"
-          ],
+          "required": [ "configPath" ],
           "properties": {
             "configPath": {
               "type": "string"
@@ -1203,13 +1049,7 @@
         },
         "PortForward": {
           "type": "object",
-          "required": [
-            "cluster",
-            "namespace",
-            "description",
-            "target",
-            "port"
-          ],
+          "required": [ "cluster", "namespace", "description", "target", "port" ],
           "properties": {
             "description": {
               "description": "Optional description",
@@ -1242,10 +1082,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "account",
-            "tokenFilename"
-          ],
+          "required": [ "account", "tokenFilename" ],
           "properties": {
             "account": {
               "type": "string"
@@ -1264,11 +1101,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "logPath",
-            "decisionsPath",
-            "sources"
-          ],
+          "required": [ "logPath", "decisionsPath", "sources" ],
           "properties": {
             "decisionsPath": {
               "type": "string"
@@ -1325,11 +1158,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "path",
-            "configPath",
-            "backends"
-          ],
+          "required": [ "path", "configPath", "backends" ],
           "properties": {
             "backends": {
               "type": "object",
@@ -1348,12 +1177,7 @@
         },
         "Secret": {
           "type": "object",
-          "required": [
-            "account",
-            "vault",
-            "item",
-            "field"
-          ],
+          "required": [ "account", "vault", "item", "field" ],
           "properties": {
             "account": {
               "type": "string"
@@ -1378,12 +1202,7 @@
       "$defs": {
         "Backend": {
           "type": "object",
-          "required": [
-            "location",
-            "bucket",
-            "project",
-            "passphrase"
-          ],
+          "required": [ "location", "bucket", "project", "passphrase" ],
           "properties": {
             "bucket": {
               "type": "string"
@@ -1402,11 +1221,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "path",
-            "configPath",
-            "backends"
-          ],
+          "required": [ "path", "configPath", "backends" ],
           "properties": {
             "backends": {
               "type": "object",
@@ -1425,12 +1240,7 @@
         },
         "Secret": {
           "type": "object",
-          "required": [
-            "account",
-            "vault",
-            "item",
-            "field"
-          ],
+          "required": [ "account", "vault", "item", "field" ],
           "properties": {
             "account": {
               "type": "string"
@@ -1455,10 +1265,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "path",
-            "config"
-          ],
+          "required": [ "path", "config" ],
           "properties": {
             "config": {
               "type": "string"
@@ -1477,11 +1284,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "token",
-            "channels",
-            "webhooks"
-          ],
+          "required": [ "token", "channels", "webhooks" ],
           "properties": {
             "channels": {
               "type": "object",
@@ -1503,12 +1306,7 @@
         },
         "Secret": {
           "type": "object",
-          "required": [
-            "account",
-            "vault",
-            "item",
-            "field"
-          ],
+          "required": [ "account", "vault", "item", "field" ],
           "properties": {
             "account": {
               "type": "string"
@@ -1533,10 +1331,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "tempDir",
-            "cacheDir"
-          ],
+          "required": [ "tempDir", "cacheDir" ],
           "properties": {
             "cacheDir": {
               "type": "string"
@@ -1555,9 +1350,7 @@
       "$defs": {
         "Cluster": {
           "type": "object",
-          "required": [
-            "name"
-          ],
+          "required": [ "name" ],
           "properties": {
             "name": {
               "type": "string"
@@ -1567,9 +1360,7 @@
         },
         "Config": {
           "type": "object",
-          "required": [
-            "projects"
-          ],
+          "required": [ "projects" ],
           "properties": {
             "projects": {
               "type": "object",
@@ -1582,10 +1373,7 @@
         },
         "Project": {
           "type": "object",
-          "required": [
-            "id",
-            "clusters"
-          ],
+          "required": [ "id", "clusters" ],
           "properties": {
             "id": {
               "type": "string"
@@ -1607,9 +1395,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "queries"
-          ],
+          "required": [ "queries" ],
           "properties": {
             "queries": {
               "type": "object",
@@ -1622,10 +1408,7 @@
         },
         "Query": {
           "type": "object",
-          "required": [
-            "query",
-            "queries"
-          ],
+          "required": [ "query", "queries" ],
           "properties": {
             "queries": {
               "type": "object",
@@ -1650,9 +1433,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "path"
-          ],
+          "required": [ "path" ],
           "properties": {
             "path": {
               "type": "string"
@@ -1668,13 +1449,7 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "required": [
-            "dirs",
-            "modes",
-            "sites",
-            "secrets",
-            "browserStack"
-          ],
+          "required": [ "dirs", "modes", "sites", "secrets", "browserStack" ],
           "properties": {
             "browserStack": {
               "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/Secret"
@@ -1702,10 +1477,7 @@
         },
         "ConfigEnv": {
           "type": "object",
-          "required": [
-            "auth",
-            "domain"
-          ],
+          "required": [ "auth", "domain" ],
           "properties": {
             "auth": {
               "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio~1config/$defs/Secret"
@@ -1724,10 +1496,7 @@
         },
         "ConfigMode": {
           "type": "object",
-          "required": [
-            "port",
-            "hostPrefix"
-          ],
+          "required": [ "port", "hostPrefix" ],
           "properties": {
             "hostPrefix": {
               "type": "string"
@@ -1752,12 +1521,7 @@
         },
         "Secret": {
           "type": "object",
-          "required": [
-            "account",
-            "vault",
-            "item",
-            "field"
-          ],
+          "required": [ "account", "vault", "item", "field" ],
           "properties": {
             "account": {
               "type": "string"
