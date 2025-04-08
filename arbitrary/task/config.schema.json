@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/arbitrary/task/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Task"
+      },
+      "type": "object"
+    },
+    "Task": {
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "description": "Prompt string to confirm execution"
+        },
+        "deps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Dependencies to run"
+        },
+        "cmds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Commands to execute"
+        },
+        "hidden": {
+          "type": "boolean",
+          "description": "Don't show in the completion list"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "prompt",
+        "deps",
+        "cmds",
+        "hidden"
+      ]
+    }
+  }
+}
