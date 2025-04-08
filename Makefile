@@ -18,6 +18,7 @@ lint:
 schema:
 	@jsonschema bundle config.schema.base.json \
 		--resolve ./arbitrary/open/config.schema.json \
+		--resolve ./arbitrary/task/config.schema.json \
 		--resolve ./arbitrary/zip/config.schema.json \
 		--resolve ./azure/az/config.schema.json \
 		--resolve ./cloudflare/cloudflared/config.schema.json \

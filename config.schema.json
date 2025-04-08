@@ -96,6 +96,9 @@
         "stern": {
           "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1stern~1stern~1config"
         },
+        "task": {
+          "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1task~1config"
+        },
         "teleport": {
           "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1gravitational~1teleport~1config"
         },
@@ -188,6 +191,47 @@
               "type": "string"
             },
             "vault": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/arbitrary/task/config": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1task~1config/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/https%3A~1~1github.com~1foomo~1posh-providers~1arbitrary~1task~1config/$defs/Task"
+          }
+        },
+        "Task": {
+          "type": "object",
+          "required": [ "prompt", "deps", "cmds", "hidden" ],
+          "properties": {
+            "cmds": {
+              "description": "Commands to execute",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "deps": {
+              "description": "Dependencies to run",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "hidden": {
+              "description": "Don't show in the completion list",
+              "type": "boolean"
+            },
+            "prompt": {
+              "description": "Prompt string to confirm execution",
               "type": "string"
             }
           },
