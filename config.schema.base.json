@@ -111,6 +111,9 @@
 				},
 				"kubeforward": {
 					"$ref": "https://github.com/foomo/posh-providers/kubernets/kubeforward/config"
+				},
+				"task": {
+					"$ref": "https://github.com/foomo/posh-providers/arbitrary/task/config"
 				}
 			},
       "additionalProperties": false,

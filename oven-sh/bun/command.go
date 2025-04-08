@@ -223,6 +223,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 				Args: tree.Args{
 					{
 						Name:        "package",
+						Optional:    true,
 						Description: "Package name",
 					},
 				},
