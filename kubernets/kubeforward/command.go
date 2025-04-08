@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
 
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
 	"github.com/foomo/gokazi/pkg/gokazi"
@@ -13,9 +14,11 @@ import (
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
+	ptermx "github.com/foomo/posh/pkg/pterm"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
+	"github.com/pterm/pterm"
 	"github.com/spf13/viper"
 )
 
@@ -108,6 +111,7 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, kubectl *kubectl.Kubectl, opts 
 				},
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					fs.Internal().String("profile", "", "Profile to use")
+					fs.Internal().Bool("debug", false, "Debug mode")
 					return nil
 				},
 				Execute: inst.connect,
@@ -186,6 +190,11 @@ func (c *Command) connect(ctx context.Context, r *readline.Readline) error {
 	fs := r.FlagSets().Default()
 	ifs := r.FlagSets().Internal()
 
+	debug, err := ifs.GetBool("debug")
+	if err != nil {
+		return err
+	}
+
 	profile, err := ifs.GetString("profile")
 	if err != nil {
 		return err
@@ -207,10 +216,26 @@ func (c *Command) connect(ctx context.Context, r *readline.Readline) error {
 		cmd.Args = append(cmd.Args, r.AdditionalArgs()...)
 		cmd.Env = append(os.Environ(), c.kubectl.Cluster(pf.Cluster).Env(profile))
 
+		if debug {
+			cmd.Stderr = ptermx.NewWriter(pterm.Error)
+			cmd.Stdout = ptermx.NewWriter(pterm.Info)
+			if err := cmd.Run(); err != nil {
+				return err
+			}
+			return nil
+		}
+
 		if err := c.gk.Start(context.WithoutCancel(ctx), "kubeforward."+value, cmd); errors.Is(err, gokazi.ErrAlreadyRunning) {
 			c.l.Warn("Task: kubeforward." + value + " already running")
 		} else if err != nil {
 			return err
+		}
+
+		time.Sleep(time.Second)
+		if t, err := c.gk.Find(ctx, "kubeforward."+value); err != nil {
+			return err
+		} else if !t.Running {
+			return errors.Errorf("port forward %s not running", value)
 		}
 	}
 
