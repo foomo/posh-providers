@@ -165,7 +165,7 @@ func (s *Slack) SendWebhook(ctx context.Context, webhook string, blocks []slack.
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	if err := slack.PostWebhookContext(ctx, url, &slack.WebhookMessage{
