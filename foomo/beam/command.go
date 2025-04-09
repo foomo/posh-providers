@@ -70,55 +70,82 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 				Description: "Manage cluster connection",
 				Nodes: tree.Nodes{
 					{
-						Name:        "name",
-						Description: "Cluster name",
-						Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
-							return suggests.List(inst.beam.cfg.ClusterNames())
-						},
-						Nodes: tree.Nodes{
+						Name:        "connect",
+						Description: "Connect to cluster",
+						Args: tree.Args{
 							{
-								Name:        "connect",
-								Description: "Connect to cluster",
-								Execute:     inst.clusterConnect,
-							},
-							{
-								Name:        "kubeconfig",
-								Description: "Download kubeconfig",
-								Execute:     inst.clusterKubeconfig,
-							},
-							{
-								Name:        "disconnect",
-								Description: "Disconnect to cluster",
-								Execute:     inst.clusterDisconnect,
+								Name:        "cluster",
+								Description: "Cluster name",
+								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+									return suggests.List(inst.beam.cfg.ClusterNames())
+								},
 							},
 						},
-						Execute: nil,
+						Execute: inst.clusterConnect,
+					},
+					{
+						Name:        "kubeconfig",
+						Description: "Download kubeconfig",
+						Args: tree.Args{
+							{
+								Name:        "cluster",
+								Description: "Cluster name",
+								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+									return suggests.List(inst.beam.cfg.ClusterNames())
+								},
+							},
+						},
+						Execute: inst.clusterKubeconfig,
+					},
+					{
+						Name:        "disconnect",
+						Description: "Disconnect to cluster",
+						Args: tree.Args{
+							{
+								Name:        "cluster",
+								Description: "Cluster name",
+								Optional:    true,
+								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+									return suggests.List(inst.beam.cfg.ClusterNames())
+								},
+							},
+						},
+						Execute: inst.clusterDisconnect,
 					},
 				},
 			},
 			{
 				Name:        "database",
-				Description: "Manage cluster connection",
+				Description: "Manage database connection",
 				Nodes: tree.Nodes{
 					{
-						Name:        "name",
-						Description: "Cluster name",
-						Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
-							return suggests.List(inst.beam.cfg.DatabaseNames())
-						},
-						Nodes: tree.Nodes{
+						Name:        "connect",
+						Description: "Connect to database",
+						Args: tree.Args{
 							{
-								Name:        "connect",
-								Description: "Connect to database",
-								Execute:     inst.databaseConnect,
-							},
-							{
-								Name:        "disconnect",
-								Description: "Disconnect to database",
-								Execute:     inst.databaseDisconnect,
+								Name:        "database",
+								Description: "Database name",
+								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+									return suggests.List(inst.beam.cfg.DatabaseNames())
+								},
 							},
 						},
-						Execute: nil,
+						Execute: inst.databaseConnect,
+					},
+					{
+						Name:        "disconnect",
+						Description: "Disconnect to database",
+						Args: tree.Args{
+							{
+								Name:        "database",
+								Description: "Database name",
+								Optional:    true,
+								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+									return suggests.List(inst.beam.cfg.DatabaseNames())
+								},
+							},
+						},
+						Execute: inst.databaseDisconnect,
 					},
 				},
 			},
@@ -174,7 +201,7 @@ func (c *Command) status(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) clusterKubeconfig(ctx context.Context, r *readline.Readline) error {
-	clusterName := r.Args().At(1)
+	clusterName := r.Args().At(2)
 	clusterConfig := c.beam.Config().GetCluster(clusterName)
 	kubectlCluster := c.kubectl.Cluster(clusterName)
 
@@ -190,9 +217,10 @@ func (c *Command) clusterKubeconfig(ctx context.Context, r *readline.Readline) e
 }
 
 func (c *Command) clusterConnect(ctx context.Context, r *readline.Readline) error {
-	clusterName := r.Args().At(1)
-	clusterConfig := c.beam.Config().GetCluster(clusterName)
+	name := r.Args().At(2)
+	clusterConfig := c.beam.Config().GetCluster(name)
 
+	c.l.Info("Connecting to cluster: " + name)
 	return c.cloudflared.Connect(ctx, cloudflared.Access{
 		Type:     "tcp",
 		Hostname: clusterConfig.Hostname,
@@ -201,20 +229,31 @@ func (c *Command) clusterConnect(ctx context.Context, r *readline.Readline) erro
 }
 
 func (c *Command) clusterDisconnect(ctx context.Context, r *readline.Readline) error {
-	clusterName := r.Args().At(1)
-	clusterConfig := c.beam.Config().GetCluster(clusterName)
-
-	return c.cloudflared.Disonnect(ctx, cloudflared.Access{
-		Type:     "tcp",
-		Hostname: clusterConfig.Hostname,
-		Port:     clusterConfig.Port,
-	})
+	var names []string
+	if r.Args().LenGt(2) {
+		names = r.Args().From(2)
+	} else {
+		names = c.beam.cfg.ClusterNames()
+	}
+	for _, name := range names {
+		c.l.Info("Disconnecting from cluster: " + name)
+		clusterConfig := c.beam.Config().GetCluster(name)
+		if err := c.cloudflared.Disonnect(ctx, cloudflared.Access{
+			Type:     "tcp",
+			Hostname: clusterConfig.Hostname,
+			Port:     clusterConfig.Port,
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Command) databaseConnect(ctx context.Context, r *readline.Readline) error {
-	databaseName := r.Args().At(1)
-	databaseConfig := c.beam.Config().GetDatabase(databaseName)
+	name := r.Args().At(2)
+	databaseConfig := c.beam.Config().GetDatabase(name)
 
+	c.l.Info("Connecting to database: " + name)
 	return c.cloudflared.Connect(ctx, cloudflared.Access{
 		Type:     "tcp",
 		Hostname: databaseConfig.Hostname,
@@ -223,12 +262,22 @@ func (c *Command) databaseConnect(ctx context.Context, r *readline.Readline) err
 }
 
 func (c *Command) databaseDisconnect(ctx context.Context, r *readline.Readline) error {
-	databaseName := r.Args().At(1)
-	databaseConfig := c.beam.Config().GetDatabase(databaseName)
-
-	return c.cloudflared.Disonnect(ctx, cloudflared.Access{
-		Type:     "tcp",
-		Hostname: databaseConfig.Hostname,
-		Port:     databaseConfig.Port,
-	})
+	var names []string
+	if r.Args().LenGt(2) {
+		names = r.Args().From(2)
+	} else {
+		names = c.beam.cfg.DatabaseNames()
+	}
+	for _, name := range names {
+		c.l.Info("Disconnecting from database: " + name)
+		databaseConfig := c.beam.Config().GetDatabase(name)
+		if err := c.cloudflared.Disonnect(ctx, cloudflared.Access{
+			Type:     "tcp",
+			Hostname: databaseConfig.Hostname,
+			Port:     databaseConfig.Port,
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }

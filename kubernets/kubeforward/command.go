@@ -125,7 +125,7 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, kubectl *kubectl.Kubectl, opts 
 						Name:        "name",
 						Description: "Port forward name",
 						Repeat:      true,
-						Optional:    false,
+						Optional:    true,
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.cfg.Names())
 						},
@@ -168,18 +168,22 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) disconnect(ctx context.Context, r *readline.Readline) error {
-	for _, value := range r.Args().From(1) {
-		pf, ok := c.cfg[value]
+	names := c.cfg.Names()
+	if r.Args().LenGt(1) {
+		names = r.Args().From(1)
+	}
+	for _, name := range names {
+		pf, ok := c.cfg[name]
 		if !ok {
-			return errors.Errorf("port forward %s not found", value)
+			return errors.Errorf("port forward %s not found", name)
 		}
 
 		c.l.Infof("Stopping port forward %s.%s [%s]", pf.Cluster, pf.Target, pf.Port)
 
-		if err := c.gk.Stop(ctx, "kubeforward."+value); errors.Is(err, gokazi.ErrNotRunning) {
-			c.l.Warn("Task: kubeforward." + value + " not running")
+		if err := c.gk.Stop(ctx, "kubeforward."+name); errors.Is(err, gokazi.ErrNotRunning) || errors.Is(err, gokazi.ErrNotFound) {
+			c.l.Warn("Task: kubeforward." + name + " not running")
 		} else if err != nil {
-			return err
+			return errors.Wrap(err, "failed to stop port forward: "+name)
 		}
 	}
 
