@@ -13,7 +13,7 @@ require (
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/digitalocean/godo v1.142.0
 	github.com/foomo/go v0.0.3
-	github.com/foomo/gokazi v0.1.4
+	github.com/foomo/gokazi v0.1.5
 	github.com/foomo/posh v0.12.0
 	github.com/goccy/go-json v0.10.5
 	github.com/golang-migrate/migrate/v4 v4.18.2
@@ -31,6 +31,7 @@ require (
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/slack-go/slack v0.16.0
 	github.com/spf13/viper v1.20.1
+	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.29.0

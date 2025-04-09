@@ -52,7 +52,7 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 	connectionFlags := func(fs *readline.FlagSets) {
 		fs.Default().String("port", "", "database server port number")
 		fs.Default().String("host", "", "database server host or socket directory")
-		fs.Default().String("dbname", "", "database to dump")
+		fs.Default().String("dbname", "", "connect to database name")
 		fs.Default().String("username", "", "connect as specified database user")
 	}
 
@@ -133,6 +133,7 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 					// Options controlling the output content:
 					fs.Default().Bool("data-only", false, "restore only the data, no schema")
 					fs.Default().Bool("clean", false, "clean (drop) database objects before recreating")
+					fs.Default().Bool("create", false, "create the target database")
 					fs.Default().Bool("exit-on-error", false, "exit on error, default is to continue")
 					fs.Default().Bool("schema-only", false, "restore only the schema, no data")
 					fs.Default().Bool("no-owner", false, "skip restoration of object ownership")
@@ -229,6 +230,7 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 		filename += ".sql"
 	}
 
+	c.l.Info("Creating database dump: " + filename)
 	if out, err := shell.New(ctx, c.l, "pg_dump").
 		Args(fs.Visited().Args()...).
 		Args(r.AdditionalFlags()...).
@@ -240,12 +242,14 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 	}
 
 	if log.MustGet(ifs.GetBool("zip"))(c.l) {
+		c.l.Info("Compressing database dump...")
 		if err := c.zip.Create(ctx, filename); err != nil {
 			return err
 		}
 	}
 
 	if cred := log.MustGet(ifs.GetString("zip-cred"))(c.l); cred != "" {
+		c.l.Info("Securing database dump...")
 		if err := c.zip.CreateWithPassword(ctx, filename, cred); err != nil {
 			return err
 		}
@@ -258,6 +262,7 @@ func (c *Command) restore(ctx context.Context, r *readline.Readline) error {
 	flags := r.Flags()
 	filename := r.Args().At(1)
 
+	c.l.Info("Restoring database dump: " + filename)
 	if out, err := shell.New(ctx, c.l, "pg_restore").
 		Args(flags...).
 		Args(r.AdditionalFlags()...).
