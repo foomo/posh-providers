@@ -2,12 +2,14 @@ package task
 
 import (
 	"context"
+	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
-	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
@@ -106,31 +108,59 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
-	return c.executeTask(ctx, r.Args().At(0))
+	if err := c.executeTask(ctx, r.Args().At(0)); err != nil {
+		return err
+	}
+	c.l.Info("🖖done")
+	return nil
 }
 
 func (c *Command) executeTask(ctx context.Context, taskID string) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	task, ok := c.cfg[taskID]
 	if !ok {
 		return errors.Errorf("task not found: %s", taskID)
 	}
 
 	if task.Prompt != "" {
-		if result, err := pterm.DefaultInteractiveConfirm.Show(task.Prompt); err != nil {
+		if result, err := pterm.DefaultInteractiveConfirm.WithOnInterruptFunc(func() {
+			cancel()
+		}).Show(task.Prompt); err != nil {
 			return err
+		} else if ctx.Err() != nil {
+			return ctx.Err()
 		} else if !result {
 			return nil
 		}
 	}
 
 	for _, dep := range task.Deps {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		if err := c.executeTask(ctx, dep); err != nil {
 			return err
 		}
 	}
 
-	for _, cmd := range task.Cmds {
-		if err := shell.New(ctx, c.l, cmd).Debug().Run(); err != nil {
+	for i, cmd := range task.Cmds {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		var sh *exec.Cmd
+		if strings.HasPrefix(cmd, "sudo ") {
+			sh = exec.CommandContext(ctx, "sudo", "sh", "-c", strings.TrimPrefix(cmd, "sudo "))
+		} else {
+			sh = exec.CommandContext(ctx, "sh", "-c", cmd)
+		}
+		sh.Stdin = os.Stdin
+		sh.Stdout = os.Stdout
+		sh.Stderr = os.Stderr
+		sh.Env = os.Environ()
+		c.l.Infof("[%d|%d] %s: %s", i+1, len(task.Cmds), taskID, cmd)
+		if err := sh.Run(); err != nil {
 			return err
 		}
 	}
