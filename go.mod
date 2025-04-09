@@ -31,7 +31,6 @@ require (
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/slack-go/slack v0.16.0
 	github.com/spf13/viper v1.20.1
-	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.29.0
