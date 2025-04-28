@@ -43,6 +43,10 @@
           "type": "string",
           "description": "Config path"
         },
+        "tenantId": {
+          "type": "string",
+          "description": "Tenant id"
+        },
         "subscriptions": {
           "additionalProperties": {
             "$ref": "#/$defs/Subscription"
@@ -55,6 +59,7 @@
       "type": "object",
       "required": [
         "configPath",
+        "tenantId",
         "subscriptions"
       ]
     },

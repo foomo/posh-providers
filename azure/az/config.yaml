@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=config.schema.json
+configPath: .posh/config/azure
+tenantId: xxxx-xx-xx-xx-xxxx
+subscriptions:
+  development:
+    name: xxxx-xx-xx-xx-xxxx
+    clusters:
+      dev:
+        name: my-cluster
+        resourceGroup: my-resource-group
+    artifactories:
+      dev:
+        name: my-artifactory
+        resourceGroup: my-resource-group

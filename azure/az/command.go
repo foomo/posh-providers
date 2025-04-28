@@ -69,11 +69,7 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 			{
 				Name:        "login",
 				Description: "Log in to Azure",
-				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-					fs.Default().String("tenant", "", "The Microsoft Entra tenant")
-					return nil
-				},
-				Execute: inst.exec,
+				Execute:     inst.login,
 			},
 			{
 				Name:        "logout",
@@ -237,6 +233,18 @@ func (c *Command) exec(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "az").
 		Args(r.Args()...).
 		Args(r.Flags()...).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
+		Run()
+}
+
+func (c *Command) login(ctx context.Context, r *readline.Readline) error {
+	fs := r.FlagSets().Default()
+	return shell.New(ctx, c.l, "az", "login",
+		"--allow-no-subscriptions",
+		"--tenant", c.az.Config().TenantID,
+	).
+		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()
