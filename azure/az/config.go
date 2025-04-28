@@ -10,6 +10,8 @@ import (
 type Config struct {
 	// Config path
 	ConfigPath string `json:"configPath" yaml:"configPath"`
+	// Tenant id
+	TenantID string `json:"tenantId" yaml:"tenantId"`
 	// Subscription configurations
 	Subscriptions map[string]Subscription `json:"subscriptions" yaml:"subscriptions"`
 }

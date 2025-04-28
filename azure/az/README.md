@@ -7,72 +7,54 @@ This provider requires `az` to be installed on your system.
 ### Plugin
 
 ```go
-package main
-
-type Plugin struct {
-  l        log.Logger
-  az        *az.AZ
-  cache    cache.Cache
-  kubectl  *kubectl.Kubectl
-  commands command.Commands
-}
-
-func New(l log.Logger) (plugin.Plugin, error) {
-  var err error
-  inst := &Plugin{
-    l:        l,
-    cache:    &cache.MemoryCache{},
-    commands: command.Commands{},
-  }
-
-  // ...
-
-  inst.kubectl, err = kubectl.New(l, inst.cache)
-  if err != nil {
-    return nil, errors.Wrap(err, "failed to create kubectl")
-  }
-
-  inst.az, err = az.New(l, inst.cache)
-  if err != nil {
-    return nil, errors.Wrap(err, "failed to create az")
-  }
-
-  // ...
-
-  inst.commands.Add(az.NewCommand(l, inst.az, inst.kubectl))
-
-  // ...
-
-  return inst, nil
-}
+inst.commands.Add(az.NewCommand(l, inst.az, inst.kubectl))
 ```
 
 ### Config
 
 ```yaml
-## az
 az:
   configPath: .posh/config/azure
+  tenantId: xxxx-xx-xx-xx-xxxx
   subscriptions:
-    production:
-      name: my-subscription
+    development:
+      name: xxxx-xx-xx-xx-xxxx
       clusters:
-        default:
-          name: aks-my-prod
+        dev:
+          name: my-cluster
+          resourceGroup: my-resource-group
       artifactories:
-        default:
-          name: acr-my-prod
+        dev:
+          name: my-artifactory
+          resourceGroup: my-resource-group
 ```
 
-### Ownbrew
+### Commands
 
-To install binary locally, add:
+```shell
+> help az
+Manage azure resources
 
-```yaml
-ownbrew:
-  packages:
-    ## https://github.com/Azure/kubelogin/releases
-    - name: kubelogin
-      tap: foomo/tap/azure/kubelogin
-      version: 0.1.0
+Usage:
+      az [command]
+
+Available Commands:
+      login                         Log in to Azure
+      logout                        Log out to remove access to Azure subscriptions
+      configure                     Manage Azure CLI configuration
+      artifactory                   Login into the artifactory
+      kubeconfig                    Retrieve credentials to access remote cluster
+```
+
+#### Examples
+
+```shell
+# Log into azure tenant
+> az login
+
+# Authorize artifactory
+> az artifactory <SUBSCRIPTION> <ARTIFACTORY>
+
+# Retrieve cluster kubeconfig
+> az kubeconfig <SUBSCRIPTION> <CLUSTER>
 ```
