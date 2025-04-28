@@ -2,7 +2,6 @@ package az
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/foomo/posh/pkg/log"
@@ -18,5 +17,5 @@ func AuthChecker(ctx context.Context, l log.Logger) []check.Info {
 	} else if strings.Contains(string(out), "az login") {
 		return []check.Info{check.NewNoteInfo(name, "Unauthenticated")}
 	}
-	return []check.Info{check.NewSuccessInfo(name, fmt.Sprintf("Authenticated"))}
+	return []check.Info{check.NewSuccessInfo(name, "Authenticated")}
 }
