@@ -6,7 +6,6 @@ import (
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
 	"github.com/foomo/gokazi/pkg/gokazi"
 	"github.com/foomo/posh-providers/onepassword"
-	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/spf13/viper"
 )
@@ -60,7 +59,6 @@ func New(l log.Logger, op *onepassword.OnePassword, gk *gokazi.Gokazi, opts ...O
 		inst.gk.Add("beam.cluster."+key, gokaziconfig.Task{
 			Name:        "cloudflared",
 			Description: fmt.Sprintf("Cloudflare tunnel to cluster: '%s' [:%d]", key, value.Port),
-			Cwd:         env.ProjectRoot(),
 			Args: []string{
 				"access", "tcp",
 				"--hostname", value.Hostname,
@@ -72,7 +70,6 @@ func New(l log.Logger, op *onepassword.OnePassword, gk *gokazi.Gokazi, opts ...O
 		inst.gk.Add("beam.database."+key, gokaziconfig.Task{
 			Name:        "cloudflared",
 			Description: fmt.Sprintf("Cloudflare tunnel to database: '%s' [:%d]", key, value.Port),
-			Cwd:         env.ProjectRoot(),
 			Args: []string{
 				"access", "tcp",
 				"--hostname", value.Hostname,
