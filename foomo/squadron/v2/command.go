@@ -449,8 +449,8 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		)
 	}
 
-	if cmd == "up" && cfgCluster.Confirm {
-		result, err := pterm.DefaultInteractiveConfirm.Show(fmt.Sprintf("⚠︎ Are you sure you want to deploy to: '%s:%s'?", cluster, fleet))
+	if slices.Contains([]string{"up", "down"}, cmd) && cfgCluster.Confirm {
+		result, err := pterm.DefaultInteractiveConfirm.Show(fmt.Sprintf("Are you sure you want to run the command against: '%s:%s'?", cluster, fleet))
 		if err != nil {
 			return err
 		} else if !result {
