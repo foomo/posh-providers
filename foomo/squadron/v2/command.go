@@ -207,6 +207,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
 											fs.Default().Bool("no-render", false, "don't render the config template")
+											fs.Default().Bool("raw", false, "print raw output without highlighting")
 											fs.Default().String("tags", "", "list of tags to include or exclude")
 											return nil
 										},
@@ -220,6 +221,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
 											fs.Default().String("tags", "", "list of tags to include or exclude")
+											fs.Default().Bool("raw", false, "print raw output without highlighting")
 											fs.Internal().String("tag", "", "image tag")
 											if err := profileFlag(ctx, r, fs); err != nil {
 												return err
@@ -251,6 +253,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											fs.Default().Bool("with-tags", false, "include tags")
 											fs.Default().Bool("with-charts", false, "include charts")
+											fs.Default().Bool("with-priorty", false, "include priorities")
 											fs.Default().Bool("with-builds", false, "include builds")
 											fs.Default().String("tags", "", "list of tags to include or exclude")
 											return nil
@@ -263,6 +266,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Args:        tree.Args{unitsArg},
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
+											fs.Default().Bool("raw", false, "print raw output without highlighting")
 											fs.Default().String("tags", "", "list of tags to include or exclude")
 											fs.Default().String("output", "", "output json file")
 											return nil
@@ -324,6 +328,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										Args:        tree.Args{unitsArg},
 										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 											commonFlags(fs)
+											fs.Default().Bool("raw", false, "print raw output without highlighting")
 											fs.Default().Int64("parallel", 1, "number of parallel processes")
 											fs.Default().String("tags", "", "list of tags to include or exclude")
 											fs.Internal().String("tag", "", "image tag")
