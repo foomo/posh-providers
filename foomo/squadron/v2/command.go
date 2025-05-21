@@ -253,7 +253,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 											commonFlags(fs)
 											fs.Default().Bool("with-tags", false, "include tags")
 											fs.Default().Bool("with-charts", false, "include charts")
-											fs.Default().Bool("with-priorty", false, "include priorities")
+											fs.Default().Bool("with-priority", false, "include priorities")
 											fs.Default().Bool("with-builds", false, "include builds")
 											fs.Default().String("tags", "", "list of tags to include or exclude")
 											return nil
