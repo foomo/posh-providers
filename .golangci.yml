@@ -1,8 +1,9 @@
+# https://golangci-lint.run/usage/configuration/
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
 version: "2"
 run:
   go: 1.24.1
-  build-tags:
-    - safe
+  build-tags: [safe]
   modules-download-mode: readonly
 linters:
   default: none
