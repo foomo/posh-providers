@@ -110,6 +110,25 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 				Execute:     inst.typescript,
 			},
 			{
+				Name:        "open",
+				Description: "Open links in the browser",
+				Args: tree.Args{
+					{
+						Name:        "name",
+						Description: "Name of the target",
+						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+							return []goprompt.Suggest{
+								{Text: "ga"},
+								{Text: "gtm-web"},
+								{Text: "gtm-server"},
+							}
+						},
+					},
+					configArg,
+				},
+				Execute: inst.open,
+			},
+			{
 				Name:        "provision",
 				Description: "Provision Google Tag Manager",
 				Nodes: tree.Nodes{
@@ -162,7 +181,6 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 										{Text: "environments"},
 										{Text: "folders"},
 										{Text: "gtag-config"},
-										{Text: "status"},
 										{Text: "tags"},
 										{Text: "templates"},
 										{Text: "templates-data"},
@@ -175,6 +193,10 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 								},
 							},
 							configArg,
+						},
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().Bool("raw", false, "print raw output")
+							return nil
 						},
 						Execute: inst.listWeb,
 					},
@@ -206,7 +228,37 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 							},
 							configArg,
 						},
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().Bool("raw", false, "print raw output")
+							return nil
+						},
 						Execute: inst.listServer,
+					},
+				},
+			},
+			{
+				Name:        "diff",
+				Description: "Print Google Tag Manager Status diff",
+				Nodes: tree.Nodes{
+					{
+						Name:        "web",
+						Description: "Print Web Container Status diff",
+						Args:        tree.Args{configArg},
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().Bool("raw", false, "print raw output")
+							return nil
+						},
+						Execute: inst.diffWeb,
+					},
+					{
+						Name:        "server",
+						Description: "Print Server Container Status diff",
+						Args:        tree.Args{configArg},
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().Bool("raw", false, "print raw output")
+							return nil
+						},
+						Execute: inst.diffServer,
 					},
 				},
 			},
@@ -334,6 +386,41 @@ func (c *Command) tags(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+func (c *Command) open(ctx context.Context, r *readline.Readline) error {
+	var paths []string
+	if r.Args().HasIndex(2) {
+		paths = []string{r.Args().At(2)}
+	} else {
+		paths = c.paths(ctx)
+	}
+
+	c.l.Info("Running sesamy open ...")
+	for _, value := range paths {
+		c.l.Info("└ " + value)
+
+		b, err := c.merge(ctx, value)
+		if err != nil {
+			return errors.Wrap(err, "failed to merge config")
+		}
+
+		out, err := c.op.Render(ctx, string(b))
+		if err != nil {
+			pterm.Error.Println(string(b))
+			return errors.Wrap(err, "failed to render secrets")
+		}
+
+		if err := shell.New(ctx, c.l, "sesamy", "open", r.Args().At(1)).
+			Args(r.Flags()...).
+			Args("--config", "-").
+			Args(r.AdditionalArgs()...).
+			Stdin(bytes.NewReader(out)).
+			Run(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (c *Command) typescript(ctx context.Context, r *readline.Readline) error {
 	var paths []string
 	if r.Args().HasIndex(1) {
@@ -431,6 +518,7 @@ func (c *Command) listServer(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) list(ctx context.Context, r *readline.Readline, cmd string) error {
+	fs := r.FlagSets().Default()
 	resource := r.Args().At(2)
 
 	var paths []string
@@ -456,7 +544,52 @@ func (c *Command) list(ctx context.Context, r *readline.Readline, cmd string) er
 		}
 
 		if err := shell.New(ctx, c.l, "sesamy", "list", cmd, resource).
-			Args(r.Flags()...).
+			Args(fs.Visited().Args()...).
+			Args("--config", "-").
+			Args(r.AdditionalArgs()...).
+			Stdin(bytes.NewReader(out)).
+			Run(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Command) diffWeb(ctx context.Context, r *readline.Readline) error {
+	return c.diff(ctx, r, "web")
+}
+
+func (c *Command) diffServer(ctx context.Context, r *readline.Readline) error {
+	return c.diff(ctx, r, "server")
+}
+
+func (c *Command) diff(ctx context.Context, r *readline.Readline, cmd string) error {
+	fs := r.FlagSets().Default()
+
+	var paths []string
+	if r.Args().HasIndex(2) {
+		paths = []string{r.Args().At(2)}
+	} else {
+		paths = c.paths(ctx)
+	}
+
+	c.l.Info("Running sesamy diff " + cmd + " ...")
+	for _, value := range paths {
+		c.l.Info("└ " + value)
+
+		b, err := c.merge(ctx, value)
+		if err != nil {
+			return errors.Wrap(err, "failed to merge config")
+		}
+
+		out, err := c.op.Render(ctx, string(b))
+		if err != nil {
+			pterm.Error.Println(string(b))
+			return errors.Wrap(err, "failed to render secrets")
+		}
+
+		if err := shell.New(ctx, c.l, "sesamy", "diff", cmd).
+			Args(fs.Visited().Args()...).
 			Args("--config", "-").
 			Args(r.AdditionalArgs()...).
 			Stdin(bytes.NewReader(out)).
