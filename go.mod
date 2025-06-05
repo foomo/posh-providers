@@ -11,7 +11,7 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
-	github.com/digitalocean/godo v1.148.0
+	github.com/digitalocean/godo v1.150.0
 	github.com/foomo/go v0.0.3
 	github.com/foomo/gokazi v0.1.5
 	github.com/foomo/posh v0.12.0
@@ -29,7 +29,7 @@ require (
 	github.com/pterm/pterm v0.12.80
 	github.com/samber/lo v1.50.0
 	github.com/shirou/gopsutil/v3 v3.24.5
-	github.com/slack-go/slack v0.16.0
+	github.com/slack-go/slack v0.17.0
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
@@ -53,7 +53,6 @@ require (
 	github.com/ebitengine/purego v0.8.3 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
-	github.com/go-test/deep v1.1.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gookit/color v1.5.4 // indirect
