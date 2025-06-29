@@ -11,7 +11,7 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
-	github.com/digitalocean/godo v1.150.0
+	github.com/digitalocean/godo v1.155.0
 	github.com/foomo/go v0.0.3
 	github.com/foomo/gokazi v0.1.5
 	github.com/foomo/posh v0.12.0
@@ -20,21 +20,21 @@ require (
 	github.com/google/go-github/v47 v47.1.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/joho/godotenv v1.5.1
-	github.com/knadh/koanf/parsers/yaml v1.0.0
+	github.com/knadh/koanf/parsers/yaml v1.1.0
 	github.com/knadh/koanf/providers/file v1.2.0
-	github.com/knadh/koanf/v2 v2.2.0
+	github.com/knadh/koanf/v2 v2.2.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/muesli/go-app-paths v0.2.2
 	github.com/pkg/errors v0.9.1
-	github.com/pterm/pterm v0.12.80
-	github.com/samber/lo v1.50.0
+	github.com/pterm/pterm v0.12.81
+	github.com/samber/lo v1.51.0
 	github.com/shirou/gopsutil/v3 v3.24.5
-	github.com/slack-go/slack v0.17.0
+	github.com/slack-go/slack v0.17.1
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.30.0
-	golang.org/x/sync v0.14.0
+	golang.org/x/sync v0.15.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20250502105355-0f33e8f1c979
 )
@@ -97,10 +97,11 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.3 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/term v0.32.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
