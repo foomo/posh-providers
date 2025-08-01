@@ -31,6 +31,7 @@ type (
 		l              log.Logger
 		op             *onepassword.OnePassword
 		name           string
+		bake           bool
 		slack          *slack.Slack
 		slackWebhookID string
 		slackChannelID string
@@ -63,6 +64,12 @@ func CommandWithSlack(v *slack.Slack) CommandOption {
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
+	}
+}
+
+func CommandWithBake(v bool) CommandOption {
+	return func(o *Command) {
+		o.bake = v
 	}
 }
 
@@ -154,6 +161,207 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 		return suggests.List(ret)
 	}
 
+	squadronCmds := tree.Nodes{
+		{
+			Name:        "config",
+			Description: "View generated squadron config",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				commonFlags(fs)
+				fs.Default().Bool("no-render", false, "don't render the config template")
+				fs.Default().Bool("raw", false, "print raw output without highlighting")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				return nil
+			},
+			Execute: inst.execute,
+		},
+		{
+			Name:        "diff",
+			Description: "Shows the diff between the installed and local chart",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				commonFlags(fs)
+				fs.Default().Int64("parallel", 1, "number of parallel processes")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				fs.Default().Bool("raw", false, "print raw output without highlighting")
+				fs.Internal().String("tag", "", "image tag")
+				if err := profileFlag(ctx, r, fs); err != nil {
+					return err
+				}
+				return nil
+			},
+			Execute: inst.execute,
+		},
+		{
+			Name:        "down",
+			Description: "Uninstalls the squadron chart",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				slackFlag(fs)
+				commonFlags(fs)
+				fs.Default().Int64("parallel", 1, "number of parallel processes")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				if err := profileFlag(ctx, r, fs); err != nil {
+					return err
+				}
+				return nil
+			},
+			Execute: inst.execute,
+		},
+		{
+			Name:        "list",
+			Description: "List squadron units",
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				commonFlags(fs)
+				fs.Default().Bool("with-tags", false, "include tags")
+				fs.Default().Bool("with-charts", false, "include charts")
+				fs.Default().Bool("with-priority", false, "include priorities")
+				fs.Default().Bool("with-builds", false, "include builds")
+				fs.Default().Bool("with-bakes", false, "include bakes")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				return nil
+			},
+			Execute: inst.execute,
+		},
+		{
+			Name:        "schema",
+			Description: "Generate json schema",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				commonFlags(fs)
+				fs.Default().Bool("raw", false, "print raw output without highlighting")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				fs.Default().String("output", "", "output json file")
+				return nil
+			},
+			Execute: inst.execute,
+		},
+		{
+			Name:        "push",
+			Description: "Push squadron units",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				commonFlags(fs)
+				fs.Default().Int64("parallel", 1, "number of parallel processes")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				// build args
+				fs.Internal().Bool("build", false, "build image")
+				fs.Internal().String("tag", "", "image tag")
+				fs.Internal().StringSlice("push-args", nil, "additional docker push args")
+				fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
+				return nil
+			},
+			Execute: inst.execute,
+		},
+		{
+			Name:        "rollback",
+			Description: "Roll back the squadron chart",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				slackFlag(fs)
+				commonFlags(fs)
+				fs.Default().Int64("parallel", 1, "number of parallel processes")
+				fs.Default().String("revision", "", "revision number to rollback to")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				if err := profileFlag(ctx, r, fs); err != nil {
+					return err
+				}
+				return nil
+			},
+			Execute: inst.execute,
+		},
+		{
+			Name:        "status",
+			Description: "Display the status of the units",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				commonFlags(fs)
+				fs.Default().Int64("parallel", 1, "number of parallel processes")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				if err := profileFlag(ctx, r, fs); err != nil {
+					return err
+				}
+				return nil
+			},
+			Execute: inst.execute,
+		},
+		{
+			Name:        "template",
+			Description: "Render chart templates locally and display the output",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				commonFlags(fs)
+				fs.Default().Bool("raw", false, "print raw output without highlighting")
+				fs.Default().Int64("parallel", 1, "number of parallel processes")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				fs.Internal().String("tag", "", "image tag")
+				return nil
+			},
+			Execute: inst.execute,
+		},
+		{
+			Name:        "up",
+			Description: "Installs a squadron chart",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				slackFlag(fs)
+				commonFlags(fs)
+				if err := profileFlag(ctx, r, fs); err != nil {
+					return err
+				}
+				fs.Default().Bool("push", false, "push image")
+				fs.Default().Int64("parallel", 1, "number of parallel processes")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				// internal
+				fs.Internal().Bool("build", false, "build image")
+				fs.Internal().String("tag", "", "image tag")
+				fs.Internal().StringSlice("push-args", nil, "additional docker push args")
+				fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
+				fs.Internal().Bool("create-namespace", false, "create namespace if not exist")
+				return nil
+			},
+			Execute: inst.execute,
+		},
+	}
+
+	if inst.bake {
+		squadronCmds = append(squadronCmds, &tree.Node{
+			Name:        "build",
+			Description: "Bake or rebake squadron units",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				commonFlags(fs)
+				fs.Default().Bool("push", false, "push image")
+				fs.Default().Int64("parallel", 1, "number of parallel processes")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				// bake args
+				fs.Internal().StringSlice("push-args", nil, "additional docker push args")
+				fs.Internal().StringSlice("build-args", nil, "additional docker buildx bake args")
+				fs.Internal().String("tag", "", "image tag")
+				return nil
+			},
+			Execute: inst.execute,
+		})
+	} else {
+		squadronCmds = append(squadronCmds, &tree.Node{
+			Name:        "build",
+			Description: "Build or rebuild squadron units",
+			Args:        tree.Args{unitsArg},
+			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+				commonFlags(fs)
+				fs.Default().Bool("push", false, "push image")
+				fs.Default().Int64("parallel", 1, "number of parallel processes")
+				fs.Default().String("tags", "", "list of tags to include or exclude")
+				// build args
+				fs.Internal().StringSlice("push-args", nil, "additional docker push args")
+				fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
+				fs.Internal().String("tag", "", "image tag")
+				return nil
+			},
+			Execute: inst.execute,
+		})
+	}
+
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
 		Description: "Manage your squadron",
@@ -182,184 +390,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 										return suggests.List(append(value, All))
 									}
 								},
-								Nodes: tree.Nodes{
-									{
-										Name:        "build",
-										Description: "Build or rebuild squadron units",
-										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											commonFlags(fs)
-											fs.Default().Bool("push", false, "push image")
-											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											// build args
-											fs.Internal().StringSlice("push-args", nil, "additional docker push args")
-											fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
-											fs.Internal().String("tag", "", "image tag")
-											return nil
-										},
-										Execute: inst.execute,
-									},
-									{
-										Name:        "config",
-										Description: "View generated squadron config",
-										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											commonFlags(fs)
-											fs.Default().Bool("no-render", false, "don't render the config template")
-											fs.Default().Bool("raw", false, "print raw output without highlighting")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											return nil
-										},
-										Execute: inst.execute,
-									},
-									{
-										Name:        "diff",
-										Description: "Shows the diff between the installed and local chart",
-										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											commonFlags(fs)
-											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											fs.Default().Bool("raw", false, "print raw output without highlighting")
-											fs.Internal().String("tag", "", "image tag")
-											if err := profileFlag(ctx, r, fs); err != nil {
-												return err
-											}
-											return nil
-										},
-										Execute: inst.execute,
-									},
-									{
-										Name:        "down",
-										Description: "Uninstalls the squadron chart",
-										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											slackFlag(fs)
-											commonFlags(fs)
-											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											if err := profileFlag(ctx, r, fs); err != nil {
-												return err
-											}
-											return nil
-										},
-										Execute: inst.execute,
-									},
-									{
-										Name:        "list",
-										Description: "List squadron units",
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											commonFlags(fs)
-											fs.Default().Bool("with-tags", false, "include tags")
-											fs.Default().Bool("with-charts", false, "include charts")
-											fs.Default().Bool("with-priority", false, "include priorities")
-											fs.Default().Bool("with-builds", false, "include builds")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											return nil
-										},
-										Execute: inst.execute,
-									},
-									{
-										Name:        "schema",
-										Description: "Generate json schema",
-										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											commonFlags(fs)
-											fs.Default().Bool("raw", false, "print raw output without highlighting")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											fs.Default().String("output", "", "output json file")
-											return nil
-										},
-										Execute: inst.execute,
-									},
-									{
-										Name:        "push",
-										Description: "Push squadron units",
-										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											commonFlags(fs)
-											fs.Default().Bool("build", false, "build image")
-											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											// build args
-											fs.Internal().String("tag", "", "image tag")
-											fs.Internal().StringSlice("push-args", nil, "additional docker push args")
-											fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
-											return nil
-										},
-										Execute: inst.execute,
-									},
-									{
-										Name:        "rollback",
-										Description: "Roll back the squadron chart",
-										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											slackFlag(fs)
-											commonFlags(fs)
-											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().String("revision", "", "revision number to rollback to")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											if err := profileFlag(ctx, r, fs); err != nil {
-												return err
-											}
-											return nil
-										},
-										Execute: inst.execute,
-									},
-									{
-										Name:        "status",
-										Description: "Display the status of the units",
-										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											commonFlags(fs)
-											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											if err := profileFlag(ctx, r, fs); err != nil {
-												return err
-											}
-											return nil
-										},
-										Execute: inst.execute,
-									},
-									{
-										Name:        "template",
-										Description: "Render chart templates locally and display the output",
-										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											commonFlags(fs)
-											fs.Default().Bool("raw", false, "print raw output without highlighting")
-											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											fs.Internal().String("tag", "", "image tag")
-											return nil
-										},
-										Execute: inst.execute,
-									},
-									{
-										Name:        "up",
-										Description: "Installs a squadron chart",
-										Args:        tree.Args{unitsArg},
-										Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-											slackFlag(fs)
-											commonFlags(fs)
-											if err := profileFlag(ctx, r, fs); err != nil {
-												return err
-											}
-											fs.Default().Bool("push", false, "push image")
-											fs.Default().Bool("build", false, "build image")
-											fs.Default().Int64("parallel", 1, "number of parallel processes")
-											fs.Default().String("tags", "", "list of tags to include or exclude")
-											// internal
-											fs.Internal().String("tag", "", "image tag")
-											fs.Internal().StringSlice("push-args", nil, "additional docker push args")
-											fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
-											fs.Internal().Bool("create-namespace", false, "create namespace if not exist")
-											return nil
-										},
-										Execute: inst.execute,
-									},
-								},
+								Nodes: squadronCmds,
 							},
 						},
 					},
@@ -416,10 +447,15 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	noOverride := log.MustGet(ifs.GetBool("no-override"))(c.l)
 
 	pushArgs, _ := ifs.GetStringSlice("push-args")
+	withBuild, _ := ifs.GetBool("build")
 	buildArgs, _ := ifs.GetStringSlice("build-args")
 
 	// try retrieve profile
 	profile, _ := ifs.GetString("profile")
+
+	if cmd == "build" && c.bake {
+		cmd = "bake"
+	}
 
 	{ // handle 1password
 		if c.op != nil {
@@ -481,8 +517,20 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		flags = append(flags, "--push-args", strconv.Quote(arg))
 	}
 
+	if withBuild {
+		if c.bake {
+			flags = append(flags, "--bake")
+		} else {
+			flags = append(flags, "--build")
+		}
+	}
+
 	for _, arg := range buildArgs {
-		flags = append(flags, "--build-args", strconv.Quote(arg))
+		if c.bake {
+			flags = append(flags, "--bake-args", strconv.Quote(arg))
+		} else {
+			flags = append(flags, "--build-args", strconv.Quote(arg))
+		}
 	}
 
 	if r.AdditionalArgs().Len() > 1 {
