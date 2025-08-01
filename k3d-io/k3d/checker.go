@@ -56,14 +56,14 @@ func RegistryChecker(inst *K3d) check.Checker {
 
 		for _, registry := range registries {
 			if registry.Name == fmt.Sprintf("k3d-%s", inst.cfg.Registry.Name) {
-				ips, err := net.LookupIP(registry.Name)
+				ips, err := net.DefaultResolver.LookupIPAddr(ctx, registry.Name)
 				if err != nil {
 					return []check.Info{check.NewFailureInfo(title, fmt.Sprintf("Failed to lookup registry IP (%s)", err.Error()))}
 				}
 
 				var configured bool
 				for _, ip := range ips {
-					if ip.String() == "127.0.0.1" {
+					if ip.IP.String() == "127.0.0.1" {
 						configured = true
 						break
 					}

@@ -182,7 +182,7 @@ func (c *Command) edit(ctx context.Context, r *readline.Readline) error {
 		if value := os.Getenv("EDITOR"); value != "" {
 			d = value
 		}
-		editor := exec.Command(d, filename)
+		editor := exec.CommandContext(ctx, d, filename)
 		editor.Stdin = os.Stdin
 		editor.Stdout = os.Stdout
 		editor.Stderr = os.Stderr
