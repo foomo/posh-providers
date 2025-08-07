@@ -70,26 +70,61 @@ func NewCommand(l log.Logger, cache cache.Cache, doctl *Doctl, kubectl *kubectl.
 		Description: "Manage digital ocean resources",
 		Nodes: tree.Nodes{
 			{
-				Name:    "auth",
-				Execute: inst.auth,
-			},
-			{
-				Name:        "kubeconfig",
-				Description: "Retrieve credentials to access remote cluster.",
-				Args: tree.Args{
+				Name:        "auth",
+				Description: "Manage authentication",
+				Nodes: tree.Nodes{
 					{
-						Name:        "cluster",
-						Description: "Name of the cluster.",
-						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-							return suggests.List(inst.doctl.cfg.ClusterNames())
-						},
+						Name:        "init",
+						Description: "Initialize doctl to use a specific account",
+						Execute:     inst.exec,
 					},
 				},
-				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-					fs.Internal().String("profile", "", "Store credentials in given profile.")
-					return fs.Internal().SetValues("profile", "digitalocean")
+				Execute: inst.exec,
+			},
+			{
+				Name:        "registry",
+				Description: "Manage container registries",
+				Nodes: tree.Nodes{
+					{
+						Name:        "login",
+						Description: "Log in Docker to a container registry",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Default().Bool("never-expire", false, "Never expire the credentials")
+							return nil
+						},
+						Execute: inst.exec,
+					},
+					{
+						Name:        "logout",
+						Description: "Log out Docker from a container registry",
+						Execute:     inst.exec,
+					},
 				},
-				Execute: inst.kubeconfig,
+				Execute: inst.exec,
+			},
+			{
+				Name:        "kubernetes",
+				Description: "Manage Kubernetes clusters",
+				Nodes: tree.Nodes{
+					{
+						Name:        "kubeconfig",
+						Description: "Retrieve credentials to access remote cluster.",
+						Args: tree.Args{
+							{
+								Name:        "cluster",
+								Description: "Name of the cluster.",
+								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+									return suggests.List(inst.doctl.cfg.ClusterNames())
+								},
+							},
+						},
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Internal().String("profile", "", "Store credentials in given profile.")
+							return fs.Internal().SetValues("profile", "digitalocean")
+						},
+						Execute: inst.kubeconfig,
+					},
+				},
 			},
 		},
 	})
@@ -152,10 +187,10 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 		Run()
 }
 
-func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
-	return shell.New(ctx, c.l, "doctl", "auth", "init").
+func (c *Command) exec(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "doctl").
+		Args(r.Args()...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
-		Args(r.AdditionalFlags()...).
 		Run()
 }
