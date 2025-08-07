@@ -111,7 +111,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	if err := c.executeTask(ctx, r.Args().At(0)); err != nil {
 		return err
 	}
-	c.l.Info("🖖done")
+	c.l.Success("🔧 | done")
 	return nil
 }
 
@@ -159,7 +159,7 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		sh.Stdout = os.Stdout
 		sh.Stderr = os.Stderr
 		sh.Env = os.Environ()
-		c.l.Infof("[%d|%d] %s: %s", i+1, len(task.Cmds), taskID, cmd)
+		c.l.Infof("🔧 | [%d|%d] %s: %s", i+1, len(task.Cmds), taskID, cmd)
 		if err := sh.Run(); err != nil {
 			return err
 		}
