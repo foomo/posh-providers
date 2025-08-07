@@ -1,6 +1,11 @@
 # yaml-language-server: $schema=config.schema.json
 configPath: .posh/config/azure
 tenantId: xxxx-xx-xx-xx-xxxx
+servicePrincipals:
+  dev:
+    tenantId: xxxx-xx-xx-xx-xxxx
+    clientId: xxxx-xx-xx-xx-xxxx
+    clientSecret: xxxx-xx-xx-xx-xxxx
 subscriptions:
   development:
     name: xxxx-xx-xx-xx-xxxx

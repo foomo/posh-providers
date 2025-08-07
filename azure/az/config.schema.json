@@ -53,6 +53,13 @@
           },
           "type": "object",
           "description": "Subscription configurations"
+        },
+        "servicePrincipals": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ServicePrincipal"
+          },
+          "type": "object",
+          "description": "Authentication service principals"
         }
       },
       "additionalProperties": false,
@@ -60,7 +67,31 @@
       "required": [
         "configPath",
         "tenantId",
-        "subscriptions"
+        "subscriptions",
+        "servicePrincipals"
+      ]
+    },
+    "ServicePrincipal": {
+      "properties": {
+        "tenantId": {
+          "type": "string",
+          "description": "Tenant id"
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Application client id"
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "Application password"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "tenantId",
+        "clientId",
+        "clientSecret"
       ]
     },
     "Subscription": {

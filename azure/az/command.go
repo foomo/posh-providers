@@ -69,7 +69,14 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 			{
 				Name:        "login",
 				Description: "Log in to Azure",
-				Execute:     inst.login,
+				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+					fs.Internal().String("service-principal", "", "Service principal to use for authentication")
+					if err := fs.Internal().SetValues("service-principal", inst.az.Config().ServicePrincipalNames()...); err != nil {
+						return err
+					}
+					return nil
+				},
+				Execute: inst.login,
 			},
 			{
 				Name:        "logout",
@@ -240,10 +247,34 @@ func (c *Command) exec(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) login(ctx context.Context, r *readline.Readline) error {
 	fs := r.FlagSets().Default()
-	return shell.New(ctx, c.l, "az", "login",
-		"--allow-no-subscriptions",
-		"--tenant", c.az.Config().TenantID,
-	).
+	ifs := r.FlagSets().Internal()
+
+	servicePricipal, err := ifs.GetString("service-principal")
+	if err != nil {
+		return err
+	}
+
+	var args []string
+	if servicePricipal != "" {
+		sp, err := c.az.cfg.ServicePrincipal(servicePricipal)
+		if err != nil {
+			return err
+		}
+		args = append(args,
+			"--service-principal",
+			"--username", sp.ClientID,
+			"--password", sp.ClientSecret,
+			"--tenant", sp.TenantID,
+		)
+	} else {
+		args = append(args,
+			"--allow-no-subscriptions",
+			"--tenant", c.az.Config().TenantID,
+		)
+	}
+
+	return shell.New(ctx, c.l, "az", "login").
+		Args(args...).
 		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
