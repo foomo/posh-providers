@@ -163,7 +163,7 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 	var args []string
 	ifs := r.FlagSets().Internal()
-	clusterName := r.Args().At(1)
+	clusterName := r.Args().At(2)
 
 	cluster, err := c.doctl.cfg.Cluster(clusterName)
 	if err != nil {
