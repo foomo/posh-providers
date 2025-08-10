@@ -11,7 +11,7 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
-	github.com/digitalocean/godo v1.161.0
+	github.com/digitalocean/godo v1.162.0
 	github.com/foomo/go v0.0.3
 	github.com/foomo/gokazi v0.1.5
 	github.com/foomo/posh v0.13.0
