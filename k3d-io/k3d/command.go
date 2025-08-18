@@ -230,6 +230,7 @@ func (c *Command) up(ctx context.Context, r *readline.Readline) error {
 	).
 		Env(c.kubectl.Cluster(name).Env("")).
 		Args(args...).
+		Args(clusterCfg.Args...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()
