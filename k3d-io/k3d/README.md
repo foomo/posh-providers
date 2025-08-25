@@ -55,6 +55,9 @@ k3d:
       alias: foomo
       enableTraefikRouter: false
       image: rancher/k3s:v1.28.2-k3s1
+      args:
+        - "--port"
+        - "80:80@loadbalancer"
 ```
 
 ### Ownbrew
