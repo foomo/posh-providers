@@ -104,7 +104,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									return nil
 								},
 								Execute: func(ctx context.Context, r *readline.Readline) error {
-									be, err := inst.cfg.Backend(r.Args().At(0))
+									backend, err := inst.cfg.Backend(r.Args().At(0))
 									if err != nil {
 										return err
 									}
@@ -123,11 +123,11 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									storageArgs = strings.Trim(strings.Trim(storageArgs, "\""), "'")
 
 									// Create a new resource group
-									inst.l.Info("creating resource group:", be.ResourceGroup)
+									inst.l.Info("creating resource group:", backend.ResourceGroup)
 									if err := shell.New(ctx, inst.l, "az", "group", "create").
-										Args("--resource-group", be.ResourceGroup).
-										Args("--subscription", be.Subscription).
-										Args("--location", be.Location).
+										Args("--resource-group", backend.ResourceGroup).
+										Args("--subscription", backend.Subscription).
+										Args("--location", backend.Location).
 										Args(strings.Split(groupArgs, " ")...).
 										Args(r.FlagSets().Default().Visited().Args()...).
 										Run(); err != nil {
@@ -135,12 +135,12 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									}
 
 									// Create a new resource group
-									inst.l.Info("creating storage account:", be.StorageAccount)
+									inst.l.Info("creating storage account:", backend.StorageAccount)
 									if err := shell.New(ctx, inst.l, "az", "storage", "account", "create").
-										Args("--name", be.StorageAccount).
-										Args("--resource-group", be.ResourceGroup).
-										Args("--subscription", be.Subscription).
-										Args("--location", be.Location).
+										Args("--name", backend.StorageAccount).
+										Args("--resource-group", backend.ResourceGroup).
+										Args("--subscription", backend.Subscription).
+										Args("--location", backend.Location).
 										Args(strings.Split(storageArgs, " ")...).
 										Args(r.FlagSets().Default().Visited().Args()...).
 										Run(); err != nil {
@@ -148,23 +148,16 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									}
 
 									// retrieve storage key
-									inst.l.Info("retrieving storage key")
-									sk, err := shell.New(ctx, inst.l, "az", "storage", "account", "keys", "list").
-										Args("--resource-group", be.ResourceGroup).
-										Args("--subscription", be.Subscription).
-										Args("--account-name", be.StorageAccount).
-										Args("-o", "tsv", "--query", "'[0].value'").
-										Output()
+									storageAccountKey, err := inst.getStorageAccountKey(ctx, backend)
 									if err != nil {
 										return err
 									}
-									sks := strings.ReplaceAll(strings.TrimSpace(string(sk)), "\n", "")
 
-									inst.l.Info("creating storage container:", be.Container)
+									inst.l.Info("creating storage container:", backend.Container)
 									return shell.New(ctx, inst.l, "az", "storage", "container", "create").
-										Args("--account-name", be.StorageAccount).
-										Args("--account-key", sks).
-										Args("--name", be.Container).
+										Args("--account-name", backend.StorageAccount).
+										Args("--account-key", storageAccountKey).
+										Args("--name", backend.Container).
 										Run()
 								},
 							},
@@ -172,15 +165,21 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 								Name:        "login",
 								Description: "Log into your object storage backend",
 								Execute: func(ctx context.Context, r *readline.Readline) error {
-									be, sks, err := inst.backendKey(ctx, r.Args().At(0))
+									backend, err := inst.cfg.Backend(r.Args().At(0))
 									if err != nil {
 										return err
 									}
 
-									return shell.New(ctx, inst.l, "pulumi", "login", fmt.Sprintf("azblob://%s", be.Container)).
-										Env("AZURE_STORAGE_ACCOUNT=" + be.StorageAccount).
-										Env("AZURE_STORAGE_KEY=" + sks).
-										Env("ARM_SUBSCRIPTION_ID=" + be.Subscription).
+									storageAccountKey, err := inst.getStorageAccountKey(ctx, backend)
+									if err != nil {
+										return err
+									}
+
+									return shell.New(ctx, inst.l, "pulumi", "login", fmt.Sprintf("azblob://%s", backend.Container)).
+										Env("AZURE_STORAGE_ACCOUNT=" + backend.StorageAccount).
+										Env("AZURE_STORAGE_KEY=" + storageAccountKey).
+										Env("ARM_SUBSCRIPTION_ID=" + backend.Subscription).
+										Debug().
 										Run()
 								},
 							},
@@ -503,7 +502,12 @@ func (c *Command) executeStack(ctx context.Context, r *readline.Readline) error 
 	proj := r.Args().At(2)
 	stack := r.Args().At(3)
 
-	be, storageAccountKey, err := c.backendKey(ctx, e)
+	be, err := c.cfg.Backend(r.Args().At(0))
+	if err != nil {
+		return err
+	}
+
+	storageAccountKey, err := c.getStorageAccountKey(ctx, be)
 	if err != nil {
 		return err
 	}
@@ -551,12 +555,7 @@ func (c *Command) completeProjects(ctx context.Context, t tree.Root, r *readline
 	}).([]goprompt.Suggest)
 }
 
-func (c *Command) backendKey(ctx context.Context, env string) (Backend, string, error) {
-	be, err := c.cfg.Backend(env)
-	if err != nil {
-		return Backend{}, "", err
-	}
-
+func (c *Command) getStorageAccountKey(ctx context.Context, be Backend) (string, error) {
 	// retrieve storage key
 	c.l.Info("retrieving storage key")
 	sk, err := shell.New(ctx, c.l, "az", "storage", "account", "keys", "list").
@@ -566,10 +565,10 @@ func (c *Command) backendKey(ctx context.Context, env string) (Backend, string, 
 		Args("-o", "tsv", "--query", "'[0].value'").
 		Output()
 	if err != nil {
-		return Backend{}, "", err
+		return "", err
 	}
 
-	return be, strings.ReplaceAll(strings.TrimSpace(string(sk)), "\n", ""), nil
+	return strings.ReplaceAll(strings.TrimSpace(string(sk)), "\n", ""), nil
 }
 
 func (c *Command) completeStacks(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
