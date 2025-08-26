@@ -5,7 +5,7 @@ type (
 		// Unique tunnel name
 		Name string `json:"name" yaml:"name"`
 		// Whether this tunnel requires sudo privileges
-		Sudo bool `json:"sudo" yaml:"sudo"`
+		Sudo bool `json:"sudo,omitempty" yaml:"sudo,omitempty"`
 		// Local port to bind
 		LocalPort int `json:"localPort" yaml:"localPort"`
 		// Target server proxy host
@@ -17,13 +17,13 @@ type (
 		// SSH server hostname or IP
 		TargetHost string `json:"targetHost" yaml:"targetHost"`
 		// Authentication details (password, private key)
-		TargetAuth TargetAuth `json:"targetAuth" yaml:"targetAuth"`
+		TargetAuth TargetAuth `json:"targetAuth,omitzero" yaml:"targetAuth,omitempty"`
 	}
 
 	// TargetAuth holds authentication information for SSH Target Server
 	TargetAuth struct {
 		// Auth method: "sshpass", "key",
-		Type string `json:"type" yaml:"type"`
+		Type string `json:"type,omitempty" yaml:"type,omitempty"`
 		// Password-based authentication (optional)
 		Password string `json:"password,omitempty" yaml:"password,omitempty"`
 		// Private key path (optional)

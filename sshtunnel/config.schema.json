@@ -43,9 +43,6 @@
       },
       "additionalProperties": false,
       "type": "object",
-      "required": [
-        "type"
-      ],
       "description": "TargetAuth holds authentication information for SSH Target Server"
     },
     "Tunnel": {
@@ -87,7 +84,6 @@
       "type": "object",
       "required": [
         "name",
-        "sudo",
         "localPort",
         "targetProxyHost",
         "targetProxyPort",
