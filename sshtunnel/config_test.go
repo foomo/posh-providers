@@ -8,7 +8,7 @@ import (
 
 	testingx "github.com/foomo/go/testing"
 	tagx "github.com/foomo/go/testing/tag"
-	"github.com/foomo/posh-providers/arbitrary/task"
+	"github.com/foomo/posh-providers/sshtunnel"
 	"github.com/invopop/jsonschema"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -24,7 +24,7 @@ func TestConfig(t *testing.T) {
 
 	reflector := new(jsonschema.Reflector)
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/sshtunnel", "./"))
-	schema := reflector.Reflect(&task.Config{})
+	schema := reflector.Reflect(&sshtunnel.Config{})
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 
