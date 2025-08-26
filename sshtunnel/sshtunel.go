@@ -107,12 +107,12 @@ func (s *SSHTunnel) IsTargetProxyPortOpen(ctx context.Context, name, targetAuthP
 
 	cmdStr := fmt.Sprintf("%s ssh", sshpass)
 
-	ncStr := fmt.Sprintf("nc -z -w2 %s %d", tunnel.TargetProxyHost, tunnel.TargetProxyPort)
+	ncCmdStr := fmt.Sprintf("nc -z -w2 %s %d", tunnel.TargetProxyHost, tunnel.TargetProxyPort)
 
 	// Build the shell command
 	sh := shell.New(ctx, s.l, cmdStr).
 		Args(fmt.Sprintf("%s@%s", tunnel.TargetUsername, tunnel.TargetHost)).
-		Args(ncStr)
+		Args(ncCmdStr)
 
 	if targetAuthPrivateKey != "" {
 		sh.Args("-i", targetAuthPrivateKey)

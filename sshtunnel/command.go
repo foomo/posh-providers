@@ -150,7 +150,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	if err := os.MkdirAll(socketsDir, 0o755); err != nil {
 		return errors.Wrap(err, "failed to create SSH sockets directory")
 	}
-	socketsFile := fmt.Sprintf("%s/%s", socketsDir, tunnelName)
+	socketFile := fmt.Sprintf("%s/%s", socketsDir, tunnelName)
 
 	sudo := ""
 	if tunnelConfig.Sudo {
@@ -214,7 +214,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 		sh := shell.New(ctx, c.l, cmdStr).
 			Args("-M").
-			Args("-S", socketsFile).
+			Args("-S", socketFile).
 			Args("-fnNT").
 			Args("-L", fmt.Sprintf(
 				"%d:%s:%d",
@@ -246,7 +246,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		)
 
 		sh := shell.New(ctx, c.l, cmdStr).
-			Args("-S", socketsFile).
+			Args("-S", socketFile).
 			Args("-O", "exit").
 			Args(fmt.Sprintf("%s@%s", tunnelConfig.TargetUsername, tunnelConfig.TargetHost))
 
@@ -299,10 +299,10 @@ func (c *Command) resolveSSHCredential(ctx context.Context, value, tempDir, auth
 	}
 
 	switch authType {
-	case "sshpass":
+	case AuthTypePass:
 		return value, nil, nil
 
-	case "key":
+	case AuthTypeKey:
 		// Check if the value is a path to an existing file
 		if !isFrom1Password {
 			if _, err := os.Stat(value); err == nil {
