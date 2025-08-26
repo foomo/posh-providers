@@ -78,8 +78,7 @@ func (s *SSHTunnel) IsTunnelRunning(ctx context.Context, name string) bool {
 		sudo = "sudo"
 	}
 
-	cmdStr := ""
-	cmdStr = fmt.Sprintf(
+	cmdStr := fmt.Sprintf(
 		"%s ssh",
 		sudo,
 	)

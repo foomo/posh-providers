@@ -17,6 +17,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	AuthTypePass = "sshpass"
+	AuthTypeKey  = "key"
+)
+
 type (
 	Command struct {
 		l           log.Logger
@@ -172,15 +177,15 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 			cleanup              func()
 			err                  error
 		)
-		if tunnelConfig.TargetAuth.Type == "sshpass" {
-			targetAuthPassword, _, err = c.resolveSSHCredential(ctx, tunnelConfig.TargetAuth.Password, tempDir, "sshpass")
+		if tunnelConfig.TargetAuth.Type == AuthTypePass {
+			targetAuthPassword, _, err = c.resolveSSHCredential(ctx, tunnelConfig.TargetAuth.Password, tempDir, AuthTypePass)
 			if err != nil {
 				return err
 			}
 		}
 
-		if tunnelConfig.TargetAuth.Type == "key" {
-			targetAuthPrivateKey, cleanup, err = c.resolveSSHCredential(ctx, tunnelConfig.TargetAuth.PrivateKey, tempDir, "key")
+		if tunnelConfig.TargetAuth.Type == AuthTypeKey {
+			targetAuthPrivateKey, cleanup, err = c.resolveSSHCredential(ctx, tunnelConfig.TargetAuth.PrivateKey, tempDir, AuthTypeKey)
 			if cleanup != nil {
 				defer cleanup()
 			}
@@ -191,7 +196,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 		if !c.sshTunnel.IsTargetProxyPortOpen(ctx, tunnelName, targetAuthPassword, targetAuthPrivateKey) {
 			return errors.Errorf(
-				"cannot reach target proxy port %d at %s from host %s. Make sure the port is open.",
+				"cannot reach target proxy port %d at %s from host %s",
 				tunnelConfig.TargetProxyPort,
 				tunnelConfig.TargetProxyHost,
 				tunnelConfig.TargetHost,
@@ -266,9 +271,9 @@ func (c *Command) resolveSSHCredential(ctx context.Context, value, tempDir, auth
 	value = strings.TrimSpace(value)
 	if value == "" {
 		switch authType {
-		case "sshpass":
+		case AuthTypePass:
 			return "", nil, errors.New("password field is required for authType sshpass")
-		case "key":
+		case AuthTypeKey:
 			return "", nil, errors.New("privateKey field is required for authType key")
 		}
 		return "", nil, nil
@@ -313,11 +318,15 @@ func (c *Command) resolveSSHCredential(ctx context.Context, value, tempDir, auth
 		}
 		defer tmpFile.Close()
 
-		if _, err := tmpFile.Write([]byte(value)); err != nil {
+		if _, err := tmpFile.WriteString(value); err != nil {
 			return "", nil, errors.Wrap(err, "failed to write private key to temporary file")
 		}
 
-		cleanup := func() { os.Remove(tmpFile.Name()) }
+		cleanup := func() {
+			if err := os.Remove(tmpFile.Name()); err != nil {
+				c.l.Warnf("failed to remove temp file %s: %v", tmpFile.Name(), err)
+			}
+		}
 		return tmpFile.Name(), cleanup, nil
 
 	default:
