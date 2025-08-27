@@ -306,6 +306,9 @@ func (c *Command) resolveSSHCredential(ctx context.Context, value, tempDir, auth
 		// Check if the value is a path to an existing file
 		if !isFrom1Password {
 			if _, err := os.Stat(value); err == nil {
+				if err := os.Chmod(value, 0600); err != nil {
+					return "", nil, errors.Wrap(err, "failed to set permissions on private key")
+				}
 				return value, nil, nil
 			} else if os.IsNotExist(err) {
 				return "", nil, errors.Wrap(err, "private key file does not exist")
