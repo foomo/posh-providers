@@ -67,6 +67,7 @@ schema:
 		--resolve ./stern/stern/config.schema.json \
 		--resolve ./usebruno/bruno/config.schema.json \
 		--resolve ./webdriverio/webdriverio/config.schema.json \
+		--resolve ./sshtunnel/config.schema.json \
 		--without-id \
 		> config.schema.json
 

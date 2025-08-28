@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/sshtunnel/config",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "socketsDir": {
+          "type": "string"
+        },
+        "tempDir": {
+          "type": "string"
+        },
+        "tunnels": {
+          "items": {
+            "$ref": "#/$defs/Tunnel"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "socketsDir",
+        "tempDir",
+        "tunnels"
+      ]
+    },
+    "TargetAuth": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Auth method: \"sshpass\", \"key\","
+        },
+        "password": {
+          "type": "string",
+          "description": "Password-based authentication (optional)"
+        },
+        "privateKey": {
+          "type": "string",
+          "description": "Private key path (optional)"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "TargetAuth holds authentication information for SSH Target Server"
+    },
+    "Tunnel": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique tunnel name"
+        },
+        "sudo": {
+          "type": "boolean",
+          "description": "Whether this tunnel requires sudo privileges"
+        },
+        "localPort": {
+          "type": "integer",
+          "description": "Local port to bind"
+        },
+        "targetProxyHost": {
+          "type": "string",
+          "description": "Target server proxy host"
+        },
+        "targetProxyPort": {
+          "type": "integer",
+          "description": "Target server proxy port"
+        },
+        "targetUsername": {
+          "type": "string",
+          "description": "SSH server username"
+        },
+        "targetHost": {
+          "type": "string",
+          "description": "SSH server hostname or IP"
+        },
+        "targetAuth": {
+          "$ref": "#/$defs/TargetAuth",
+          "description": "Authentication details (password, private key)"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "localPort",
+        "targetProxyHost",
+        "targetProxyPort",
+        "targetUsername",
+        "targetHost",
+        "targetAuth"
+      ]
+    }
+  }
+}
