@@ -16,7 +16,6 @@ type Plugin struct {
 func New(l log.Logger) (plugin.Plugin, error) {
   inst := &Plugin{
     l:        l,
-    cache:    &cache.MemoryCache{},
     commands: command.Commands{},
   }
 
