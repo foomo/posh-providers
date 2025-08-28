@@ -4,15 +4,18 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/command/tree"
+	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
+	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
@@ -74,7 +77,7 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 		Name:        inst.name,
 		Description: "Run k6",
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-			fs.Default().Bool("debug", false, "show debug output")
+			fs.Default().Bool("verbose", false, "enable verbose logging")
 			return nil
 		},
 		Args: tree.Args{
@@ -89,11 +92,15 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 				Name:        "scenario",
 				Description: "Scenario name",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-					scenarios, err := inst.cfg.Scenarios()
+					root := env.Path(inst.cfg.Path)
+					ret, err := files.Find(ctx, root, "*.k6.js", files.FindWithIsFile(true))
 					if err != nil {
 						return nil
 					}
-					return suggests.List(scenarios)
+					for i, s := range ret {
+						ret[i] = strings.TrimPrefix(s, root+"/")
+					}
+					return suggests.List(ret)
 				},
 			},
 		},
@@ -140,8 +147,45 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		envs = append(envs, fmt.Sprintf("%s=%s", strings.ToUpper(k), v))
 	}
 
-	return shell.New(ctx, c.l, "k6", "run", "--out", "web-dashboard", path.Join(c.cfg.Path, scenario)).
+	if c.op != nil {
+		{
+			secret := path.Join(c.cfg.Path, "all.k6.secret")
+			if err := files.Exists(secret + ".tpl"); err == nil {
+				if err := exec.CommandContext(ctx, "op", "inject", "-f", "-i", secret+".tpl", "-o", secret).Run(); err != nil {
+					return err
+				}
+			}
+		}
+		{
+			secret := path.Join(c.cfg.Path, strings.TrimSuffix(scenario, ".js")+".secret")
+			if err := files.Exists(secret + ".tpl"); err == nil {
+				if err := exec.CommandContext(ctx, "op", "inject", "-f", "-i", secret+".tpl", "-o", secret).Run(); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	var args []string
+	{
+		secret := path.Join(c.cfg.Path, "all.k6.secret")
+		if err := files.Exists(secret); err == nil {
+			args = append(args, "--secret-source=file=name=all,filename="+secret)
+		}
+	}
+	{
+		secret := path.Join(c.cfg.Path, strings.TrimSuffix(scenario, ".js")+".secret")
+		if err := files.Exists(secret); err == nil {
+			args = append(args, "--secret-source=file=name=default,filename="+secret)
+		}
+	}
+
+	return shell.New(ctx, c.l, "k6", "run").
+		Args(args...).
+		Args("--no-usage-report").
+		Args("--out", "web-dashboard").
 		Args(fs.Visited().Args()...).
+		Args(path.Join(c.cfg.Path, scenario)).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Env(envs...).
