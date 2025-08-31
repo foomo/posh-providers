@@ -11,12 +11,12 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cloudrecipes/packagejson v1.0.0
-	github.com/digitalocean/godo v1.162.0
+	github.com/digitalocean/godo v1.163.0
 	github.com/foomo/go v0.0.3
 	github.com/foomo/gokazi v0.1.5
 	github.com/foomo/posh v0.13.0
 	github.com/goccy/go-json v0.10.5
-	github.com/golang-migrate/migrate/v4 v4.18.3
+	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/google/go-github/v47 v47.1.0
 	github.com/invopop/jsonschema v0.13.0
 	github.com/joho/godotenv v1.5.1
@@ -31,7 +31,7 @@ require (
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/slack-go/slack v0.17.3
 	github.com/spf13/viper v1.20.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.30.0
 	golang.org/x/sync v0.16.0
