@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/jondot/hygen/config",
+  "$id": "https://github.com/foomo/posh-providers/jondot/hygen",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {

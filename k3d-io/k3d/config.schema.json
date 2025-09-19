@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/k3d-io/k3d/config",
+  "$id": "https://github.com/foomo/posh-providers/k3d-io/k3d",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {

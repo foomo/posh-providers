@@ -10,7 +10,6 @@ import (
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
-	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	"github.com/spf13/viper"
@@ -69,7 +68,12 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 			{
 				Name: "task",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-					return suggests.List(inst.cfg.Names())
+					var ret []goprompt.Suggest
+					for _, name := range inst.cfg.Names() {
+						task := inst.cfg[name]
+						ret = append(ret, goprompt.Suggest{Text: name, Description: task.Description})
+					}
+					return ret
 				},
 			},
 		},
@@ -124,6 +128,24 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		return errors.Errorf("task not found: %s", taskID)
 	}
 
+	for i, cmd := range task.Precondition {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		cmd = os.ExpandEnv(cmd)
+		var sh *exec.Cmd
+		if strings.HasPrefix(cmd, "sudo ") {
+			sh = exec.CommandContext(ctx, "sudo", "sh", "-c", strings.TrimPrefix(cmd, "sudo "))
+		} else {
+			sh = exec.CommandContext(ctx, "sh", "-c", cmd)
+		}
+		sh.Env = append(os.Environ(), task.Env...)
+		c.l.Infof("☑︎ | [%d|%d] %s: %s", i+1, len(task.Cmds), taskID, cmd)
+		if err := sh.Run(); err != nil {
+			return err
+		}
+	}
+
 	if task.Prompt != "" {
 		if result, err := pterm.DefaultInteractiveConfirm.WithOnInterruptFunc(func() {
 			cancel()
@@ -149,6 +171,7 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
+		cmd = os.ExpandEnv(cmd)
 		var sh *exec.Cmd
 		if strings.HasPrefix(cmd, "sudo ") {
 			sh = exec.CommandContext(ctx, "sudo", "sh", "-c", strings.TrimPrefix(cmd, "sudo "))
@@ -158,7 +181,7 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		sh.Stdin = os.Stdin
 		sh.Stdout = os.Stdout
 		sh.Stderr = os.Stderr
-		sh.Env = os.Environ()
+		sh.Env = append(os.Environ(), task.Env...)
 		c.l.Infof("🔧 | [%d|%d] %s: %s", i+1, len(task.Cmds), taskID, cmd)
 		if err := sh.Run(); err != nil {
 			return err

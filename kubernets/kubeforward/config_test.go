@@ -25,6 +25,7 @@ func TestConfig(t *testing.T) {
 	reflector := new(jsonschema.Reflector)
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/kubernets/kubeforward", "./"))
 	schema := reflector.Reflect(&kubeforward.Config{})
+	schema.ID = "https://github.com/foomo/posh-providers/kubernetes/kubeforward"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"harbor": {
+					"$ref": "https://github.com/foomo/posh-providers/goharbor/harbor"
+				}
+			}
+		}
+	]
+}

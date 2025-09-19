@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/grafana/k6/config",
+  "$id": "https://github.com/foomo/posh-providers/grafana/k6",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {

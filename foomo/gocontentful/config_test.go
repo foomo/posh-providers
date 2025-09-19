@@ -25,6 +25,7 @@ func TestConfig(t *testing.T) {
 	reflector := new(jsonschema.Reflector)
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/foomo/gocontentful", "./"))
 	schema := reflector.Reflect(&gocontentful.Config{})
+	schema.ID = "https://github.com/foomo/posh-providers/foomo/gocontentful"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

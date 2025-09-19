@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"k3d": {
+					"$ref": "https://github.com/foomo/posh-providers/k3d-io/k3d"
+				}
+			}
+		}
+	]
+}

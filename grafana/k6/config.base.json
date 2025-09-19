@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"k6": {
+					"$ref": "https://github.com/foomo/posh-providers/grafana/k6"
+				}
+			}
+		}
+	]
+}

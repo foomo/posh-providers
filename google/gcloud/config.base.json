@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"gcloud": {
+					"$ref": "https://github.com/foomo/posh-providers/google/gcloud"
+				}
+			}
+		}
+	]
+}

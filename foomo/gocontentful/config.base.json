@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"gocontentful": {
+					"$ref": "https://github.com/foomo/posh-providers/foomo/gocontentful"
+				}
+			}
+		}
+	]
+}

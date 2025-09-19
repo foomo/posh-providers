@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"migrate": {
+					"$ref": "https://github.com/foomo/posh-providers/golang-migrate/migrate"
+				}
+			}
+		}
+	]
+}

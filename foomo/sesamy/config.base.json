@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"sesamy": {
+					"$ref": "https://github.com/foomo/posh-providers/foomo/sesamy"
+				}
+			}
+		}
+	]
+}

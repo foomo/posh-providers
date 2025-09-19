@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"rclone": {
+					"$ref": "https://github.com/foomo/posh-providers/rclone/rclone"
+				}
+			}
+		}
+	]
+}

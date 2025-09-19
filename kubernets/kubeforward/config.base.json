@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"kubeforward": {
+					"$ref": "https://github.com/foomo/posh-providers/kubernetes/kubeforward"
+				}
+			}
+		}
+	]
+}
