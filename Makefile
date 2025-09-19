@@ -58,14 +58,6 @@ test:
 .PHONY: schema
 ## Run linter
 schema:
-	@jsonschema bundle config.schema.base.json \
-  		$(shell find . -name config.schema.json -printf '--resolve %p ') \
-  		--without-id \
-  		> posh.schema.json
-
-.PHONY: foo
-## Run linter
-foo:
 	@yq eval-all '. as $$item ireduce ({}; . *+ $$item)' base.schema.json \
 		$(shell find . -name config.base.json -print | tr '\n' ' ') \
 		> merged.schema.json
