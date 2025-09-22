@@ -139,6 +139,12 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		} else {
 			sh = exec.CommandContext(ctx, "sh", "-c", cmd)
 		}
+		sh.Stdin = os.Stdin
+		sh.Stdout = os.Stdout
+		sh.Stderr = os.Stderr
+		if task.Dir != "" {
+			sh.Dir = task.Dir
+		}
 		sh.Env = append(os.Environ(), task.Env...)
 		c.l.Infof("☑︎ | [%d|%d] %s: %s", i+1, len(task.Cmds), taskID, cmd)
 		if err := sh.Run(); err != nil {
@@ -181,6 +187,9 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		sh.Stdin = os.Stdin
 		sh.Stdout = os.Stdout
 		sh.Stderr = os.Stderr
+		if task.Dir != "" {
+			sh.Dir = task.Dir
+		}
 		sh.Env = append(os.Environ(), task.Env...)
 		c.l.Infof("🔧 | [%d|%d] %s: %s", i+1, len(task.Cmds), taskID, cmd)
 		if err := sh.Run(); err != nil {

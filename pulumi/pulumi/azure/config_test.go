@@ -23,6 +23,7 @@ func TestConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	reflector := new(jsonschema.Reflector)
+	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/pulumi/pulumi/azure", "./"))
 	schema := reflector.Reflect(&pulumi.Config{})
 	schema.ID = "https://github.com/foomo/posh-providers/pulumi/pulumi/azure"
