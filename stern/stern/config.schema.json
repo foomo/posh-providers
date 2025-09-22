@@ -13,10 +13,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "queries"
-      ]
+      "type": "object"
     },
     "Query": {
       "properties": {
@@ -34,11 +31,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "query",
-        "queries"
-      ]
+      "type": "object"
     }
   }
 }

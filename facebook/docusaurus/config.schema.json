@@ -28,15 +28,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "sourcePath",
-        "localPort",
-        "nodeTag",
-        "imageTag",
-        "imageName",
-        "volumes"
-      ]
+      "type": "object"
     }
   }
 }

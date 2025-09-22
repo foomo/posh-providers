@@ -16,11 +16,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "envs"
-      ]
+      "type": "object"
     },
     "Env": {
       "additionalProperties": {

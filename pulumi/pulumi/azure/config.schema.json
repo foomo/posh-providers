@@ -25,15 +25,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "location",
-        "container",
-        "subscription",
-        "resourceGroup",
-        "storageAccount",
-        "passphrase"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -51,12 +43,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "configPath",
-        "backends"
-      ]
+      "type": "object"
     },
     "Secret": {
       "properties": {
@@ -74,13 +61,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "account",
-        "vault",
-        "item",
-        "field"
-      ]
+      "type": "object"
     }
   }
 }

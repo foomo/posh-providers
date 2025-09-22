@@ -16,12 +16,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "port",
-        "hostname",
-        "kubeconfig"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -39,11 +34,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "clusters",
-        "databases"
-      ]
+      "type": "object"
     },
     "Database": {
       "properties": {
@@ -55,11 +46,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "port",
-        "hostname"
-      ]
+      "type": "object"
     },
     "Secret": {
       "properties": {
@@ -77,13 +64,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "account",
-        "vault",
-        "item",
-        "field"
-      ]
+      "type": "object"
     }
   }
 }

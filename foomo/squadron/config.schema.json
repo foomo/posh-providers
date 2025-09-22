@@ -26,13 +26,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "name",
-        "notify",
-        "confirm",
-        "fleets"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -49,11 +43,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "clusters"
-      ]
+      "type": "object"
     }
   }
 }

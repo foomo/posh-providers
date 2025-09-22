@@ -13,10 +13,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "credentials"
-      ]
+      "type": "object"
     },
     "Secret": {
       "properties": {
@@ -34,13 +31,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "account",
-        "vault",
-        "item",
-        "field"
-      ]
+      "type": "object"
     }
   }
 }

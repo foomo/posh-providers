@@ -146,9 +146,11 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 			sh.Dir = task.Dir
 		}
 		sh.Env = append(os.Environ(), task.Env...)
-		c.l.Infof("☑︎ | [%d|%d] %s: %s", i+1, len(task.Cmds), taskID, cmd)
+		c.l.Infof("🔧 | {%d|%d} %s: %s", i+1, len(task.Cmds), taskID, cmd)
 		if err := sh.Run(); err != nil {
-			return err
+			c.l.Debug(err.Error())
+		} else {
+			return nil
 		}
 	}
 

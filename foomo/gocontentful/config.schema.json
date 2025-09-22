@@ -22,12 +22,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "spaceId",
-        "cmaKey",
-        "contentTypes"
-      ]
+      "type": "object"
     }
   }
 }

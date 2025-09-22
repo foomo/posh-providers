@@ -19,12 +19,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "logPath",
-        "decisionsPath",
-        "sources"
-      ]
+      "type": "object"
     }
   }
 }

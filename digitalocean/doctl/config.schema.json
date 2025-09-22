@@ -10,10 +10,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "name"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -28,11 +25,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "configPath",
-        "clusters"
-      ]
+      "type": "object"
     }
   }
 }

@@ -28,14 +28,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "dirs",
-        "modes",
-        "sites",
-        "secrets",
-        "browserStack"
-      ]
+      "type": "object"
     },
     "ConfigEnv": {
       "properties": {
@@ -47,11 +40,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "auth",
-        "domain"
-      ]
+      "type": "object"
     },
     "ConfigEnvs": {
       "additionalProperties": {
@@ -69,11 +58,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "port",
-        "hostPrefix"
-      ]
+      "type": "object"
     },
     "ConfigModes": {
       "additionalProperties": {
@@ -103,13 +88,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "account",
-        "vault",
-        "item",
-        "field"
-      ]
+      "type": "object"
     }
   }
 }

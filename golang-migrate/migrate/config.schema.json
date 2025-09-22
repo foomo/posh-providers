@@ -19,11 +19,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "sources",
-        "databases"
-      ]
+      "type": "object"
     }
   }
 }

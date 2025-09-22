@@ -32,13 +32,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "description",
-        "routes",
-        "basicAuth"
-      ]
+      "type": "object"
     },
     "ConfigRouter": {
       "properties": {
@@ -59,12 +53,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "url",
-        "routes",
-        "description"
-      ]
+      "type": "object"
     },
     "Secret": {
       "properties": {
@@ -82,13 +71,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "account",
-        "vault",
-        "item",
-        "field"
-      ]
+      "type": "object"
     }
   }
 }

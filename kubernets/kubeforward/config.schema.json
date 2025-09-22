@@ -33,14 +33,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "cluster",
-        "namespace",
-        "description",
-        "target",
-        "port"
-      ]
+      "type": "object"
     }
   }
 }

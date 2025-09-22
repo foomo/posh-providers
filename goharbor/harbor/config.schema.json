@@ -16,12 +16,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "url",
-        "authUrl",
-        "project"
-      ]
+      "type": "object"
     }
   }
 }

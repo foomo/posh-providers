@@ -16,12 +16,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "type",
-        "hostname",
-        "port"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -36,11 +31,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "access"
-      ]
+      "type": "object"
     }
   }
 }

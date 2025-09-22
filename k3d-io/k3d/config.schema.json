@@ -19,12 +19,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "charts",
-        "registry",
-        "clusters"
-      ]
+      "type": "object"
     },
     "ConfigCharts": {
       "properties": {
@@ -36,11 +31,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "prefix"
-      ]
+      "type": "object"
     },
     "ConfigCluster": {
       "properties": {
@@ -69,14 +60,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "alias",
-        "image",
-        "port",
-        "enableTraefikRouter",
-        "args"
-      ]
+      "type": "object"
     },
     "ConfigRegistry": {
       "properties": {
@@ -88,11 +72,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "name",
-        "port"
-      ]
+      "type": "object"
     }
   }
 }

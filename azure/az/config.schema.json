@@ -13,11 +13,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "name",
-        "resourceGroup"
-      ]
+      "type": "object"
     },
     "Cluster": {
       "properties": {
@@ -31,11 +27,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "name",
-        "resourceGroup"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -63,13 +55,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "configPath",
-        "tenantId",
-        "subscriptions",
-        "servicePrincipals"
-      ]
+      "type": "object"
     },
     "ServicePrincipal": {
       "properties": {
@@ -87,12 +73,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "tenantId",
-        "clientId",
-        "clientSecret"
-      ]
+      "type": "object"
     },
     "Subscription": {
       "properties": {
@@ -113,12 +94,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "name",
-        "clusters",
-        "artifactories"
-      ]
+      "type": "object"
     }
   }
 }

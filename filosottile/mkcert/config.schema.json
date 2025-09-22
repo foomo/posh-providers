@@ -16,11 +16,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "name",
-        "names"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -35,11 +31,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "certificatePath",
-        "certificates"
-      ]
+      "type": "object"
     }
   }
 }
