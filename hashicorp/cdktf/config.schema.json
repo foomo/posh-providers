@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/hashicorp/cdktf/config",
+  "$id": "https://github.com/foomo/posh-providers/hashicorp/cdktf",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -13,11 +13,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "outPath"
-      ]
+      "type": "object"
     }
   }
 }

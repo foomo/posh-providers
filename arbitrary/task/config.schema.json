@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/arbitrary/task/config",
+  "$id": "https://github.com/foomo/posh-providers/arbitrary/task",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -14,6 +14,28 @@
         "prompt": {
           "type": "string",
           "description": "Prompt string to confirm execution"
+        },
+        "env": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Task environment variables"
+        },
+        "dir": {
+          "type": "string",
+          "description": "Dir to execute the task in"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the task"
+        },
+        "precondition": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Precondition to cancel the execution of a task and its dependencies"
         },
         "deps": {
           "items": {
@@ -35,13 +57,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "prompt",
-        "deps",
-        "cmds",
-        "hidden"
-      ]
+      "type": "object"
     }
   }
 }

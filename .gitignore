@@ -29,3 +29,6 @@ go.work.sum
 ## Posh
 !.posh/
 !.posh.yml
+
+## Mise
+!.mise.toml

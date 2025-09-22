@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/stern/stern/config",
+  "$id": "https://github.com/foomo/posh-providers/stern/stern",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -13,10 +13,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "queries"
-      ]
+      "type": "object"
     },
     "Query": {
       "properties": {
@@ -34,11 +31,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "query",
-        "queries"
-      ]
+      "type": "object"
     }
   }
 }

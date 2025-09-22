@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/kubernets/kubectl/config",
+  "$id": "https://github.com/foomo/posh-providers/kubernetes/kubectl",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -10,10 +10,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "configPath"
-      ]
+      "type": "object"
     }
   }
 }

@@ -1,0 +1,19 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"az": {
+					"oneOf": [
+						{
+							"$ref": "https://github.com/foomo/posh-providers/pulumi/pulumi/azure"
+						},
+						{
+							"$ref": "https://github.com/foomo/posh-providers/pulumi/pulumi/gcloud"
+						}
+					]
+				}
+			}
+		}
+	]
+}

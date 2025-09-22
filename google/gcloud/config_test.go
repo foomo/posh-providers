@@ -23,8 +23,10 @@ func TestConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	reflector := new(jsonschema.Reflector)
+	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/google/gcloud", "./"))
 	schema := reflector.Reflect(&gcloud.Config{})
+	schema.ID = "https://github.com/foomo/posh-providers/google/gcloud"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

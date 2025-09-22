@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/kubernets/kubeforward/config",
+  "$id": "https://github.com/foomo/posh-providers/kubernetes/kubeforward",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -33,14 +33,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "cluster",
-        "namespace",
-        "description",
-        "target",
-        "port"
-      ]
+      "type": "object"
     }
   }
 }

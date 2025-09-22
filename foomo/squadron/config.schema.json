@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/foomo/squadron/config",
+  "$id": "https://github.com/foomo/posh-providers/foomo/squadron",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Cluster": {
@@ -26,13 +26,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "name",
-        "notify",
-        "confirm",
-        "fleets"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -49,11 +43,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "clusters"
-      ]
+      "type": "object"
     }
   }
 }

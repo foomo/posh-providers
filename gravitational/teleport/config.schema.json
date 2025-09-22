@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/gravitational/teleport/config",
+  "$id": "https://github.com/foomo/posh-providers/gravitational/teleport",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -34,15 +34,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "labels",
-        "hostname",
-        "kubernetes",
-        "apps",
-        "database"
-      ]
+      "type": "object"
     },
     "Database": {
       "properties": {
@@ -51,10 +43,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "user"
-      ]
+      "type": "object"
     },
     "Kubernetes": {
       "properties": {
@@ -66,10 +55,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "aliases"
-      ]
+      "type": "object"
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/arbitrary/open/config",
+  "$id": "https://github.com/foomo/posh-providers/arbitrary/open",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -32,13 +32,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "description",
-        "routes",
-        "basicAuth"
-      ]
+      "type": "object"
     },
     "ConfigRouter": {
       "properties": {
@@ -59,12 +53,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "url",
-        "routes",
-        "description"
-      ]
+      "type": "object"
     },
     "Secret": {
       "properties": {
@@ -82,13 +71,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "account",
-        "vault",
-        "item",
-        "field"
-      ]
+      "type": "object"
     }
   }
 }

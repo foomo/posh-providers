@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"stackit": {
+					"$ref": "https://github.com/foomo/posh-providers/stackitcloud/stackit"
+				}
+			}
+		}
+	]
+}

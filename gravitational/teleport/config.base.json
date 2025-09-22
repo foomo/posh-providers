@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"teleport": {
+					"$ref": "https://github.com/foomo/posh-providers/gravitational/teleport"
+				}
+			}
+		}
+	]
+}

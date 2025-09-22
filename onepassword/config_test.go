@@ -23,8 +23,10 @@ func TestConfig(t *testing.T) {
 	require.NoError(t, err)
 
 	reflector := new(jsonschema.Reflector)
+	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/onepassword", "./"))
 	schema := reflector.Reflect(&onepassword.Config{})
+	schema.ID = "https://github.com/foomo/posh-providers/onepassword/op"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

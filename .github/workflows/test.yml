@@ -15,33 +15,28 @@ jobs:
     name: test
     runs-on: ubuntu-latest
     steps:
-
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-go@v5
+      - uses: jdx/mise-action@v3
+
+      - uses: actions/setup-go@v6
         with:
+          check-latest: true
           go-version-file: go.mod
-
-      - uses: sourcemeta/jsonschema@v11.1.1
-
-      #- uses: gotesttools/gotestfmt-action@v2
-      #  with:
-      #    token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: golangci/golangci-lint-action@v8
         with:
-          version: latest
+          install-mode: none
+
+      - name: Run tidy
+        run: make tidy && git diff --exit-code
+
+      - name: Run lint
+        run: make lint
 
       - name: Run test
         run: make test
 
       - name: Generate schema
-        run: |
-          make schema
-          git diff
-          #git diff --exit-code
-
-      - uses: coverallsapp/github-action@v2
-        with:
-          file: coverage.out
+        run: make schema & git diff --exit-code
 

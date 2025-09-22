@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/foomo/beam/config",
+  "$id": "https://github.com/foomo/posh-providers/foomo/beam",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Cluster": {
@@ -16,12 +16,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "port",
-        "hostname",
-        "kubeconfig"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -39,11 +34,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "clusters",
-        "databases"
-      ]
+      "type": "object"
     },
     "Database": {
       "properties": {
@@ -55,11 +46,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "port",
-        "hostname"
-      ]
+      "type": "object"
     },
     "Secret": {
       "properties": {
@@ -77,13 +64,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "account",
-        "vault",
-        "item",
-        "field"
-      ]
+      "type": "object"
     }
   }
 }

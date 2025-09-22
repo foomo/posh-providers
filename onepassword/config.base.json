@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"op": {
+					"$ref": "https://github.com/foomo/posh-providers/onepassword/op"
+				}
+			}
+		}
+	]
+}

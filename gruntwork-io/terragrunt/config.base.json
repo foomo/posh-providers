@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"terragrunt": {
+					"$ref": "https://github.com/foomo/posh-providers/gruntwork-io/terragrunt"
+				}
+			}
+		}
+	]
+}

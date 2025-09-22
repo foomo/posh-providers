@@ -1,0 +1,12 @@
+{
+	"allOf": [
+		{
+			"type": "object",
+			"properties": {
+				"mkcert": {
+					"$ref": "https://github.com/foomo/posh-providers/filosottile/mkcert"
+				}
+			}
+		}
+	]
+}

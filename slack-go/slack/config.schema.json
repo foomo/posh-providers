@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/slack-go/slack/config",
+  "$id": "https://github.com/foomo/posh-providers/slack-go/slack",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -22,12 +22,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "token",
-        "channels",
-        "webhooks"
-      ]
+      "type": "object"
     },
     "Secret": {
       "properties": {
@@ -45,13 +40,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "account",
-        "vault",
-        "item",
-        "field"
-      ]
+      "type": "object"
     }
   }
 }

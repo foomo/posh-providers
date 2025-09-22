@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/pulumi/pulumi/gcloud/config",
+  "$id": "https://github.com/foomo/posh-providers/pulumi/pulumi/gcloud",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Backend": {
@@ -19,13 +19,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "location",
-        "bucket",
-        "project",
-        "passphrase"
-      ]
+      "type": "object"
     },
     "Config": {
       "properties": {
@@ -43,12 +37,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "path",
-        "configPath",
-        "backends"
-      ]
+      "type": "object"
     },
     "Secret": {
       "properties": {
@@ -66,13 +55,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "required": [
-        "account",
-        "vault",
-        "item",
-        "field"
-      ]
+      "type": "object"
     }
   }
 }

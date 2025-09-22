@@ -1,0 +1,9 @@
+[tools]
+# https://github.com/mikefarah/yq/releases
+yq = "4.47.2"
+# https://github.com/sourcemeta/jsonschema/releases
+jsonschema = "11.8.1"
+# https://github.com/golangci/golangci-lint/releases
+golangci-lint = "2.4.0"
+# https://github.com/go-courier/husky/releases
+"github:go-courier/husky" = "1.8.1"
