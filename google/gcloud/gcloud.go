@@ -89,6 +89,10 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+func (p *GCloud) Config() *Config {
+	return p.cfg
+}
+
 func (p *GCloud) ServiceAccountKeysPath() string {
 	return path.Join(p.cfg.ConfigPath, "service_account_keys")
 }
