@@ -29,6 +29,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/foomo/posh v0.15.0 h1:sdqFgzZ3V0GDK0fV9KInpCeCvGjtCg7duhll6BnJ6o8=
+github.com/foomo/posh v0.15.0/go.mod h1:Cr3QAlLdChDXPkK7w3NRSFbARkijdOP8Im3KdbwKhn4=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5/go.mod h1:+syUfnvYJUO5A+6QMQYXAyzkxHMNlj9dH2LIeQfBSjc=
 github.com/gookit/assert v0.1.1 h1:lh3GcawXe/p+cU7ESTZ5Ui3Sm/x8JWpIis4/1aF0mY0=

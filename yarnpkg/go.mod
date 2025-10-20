@@ -4,14 +4,13 @@ go 1.25
 
 replace (
 	github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
-	github.com/foomo/posh => ../../posh
 	github.com/foomo/posh-providers => ../
 	github.com/pkg/term => github.com/pkg/term v1.1.0
 )
 
 require (
 	github.com/cloudrecipes/packagejson v1.0.0
-	github.com/foomo/posh v0.14.2
+	github.com/foomo/posh v0.15.0
 	golang.org/x/sync v0.17.0
 )
 
