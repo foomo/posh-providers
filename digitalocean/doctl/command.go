@@ -3,7 +3,7 @@ package doctl
 import (
 	"context"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
@@ -59,6 +59,7 @@ func NewCommand(l log.Logger, cache cache.Cache, doctl *Doctl, kubectl *kubectl.
 			return name
 		},
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -162,6 +163,7 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 	var args []string
+
 	ifs := r.FlagSets().Internal()
 	clusterName := r.Args().At(2)
 

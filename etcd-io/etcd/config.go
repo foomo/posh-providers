@@ -11,6 +11,7 @@ func (c Config) Cluster(name string) (Cluster, bool) {
 			return cluster, true
 		}
 	}
+
 	return Cluster{}, false
 }
 

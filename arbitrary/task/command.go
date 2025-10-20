@@ -5,7 +5,10 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
+	"github.com/c-bata/go-prompt"
+	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -19,6 +22,7 @@ type (
 	Command struct {
 		l           log.Logger
 		cfg         Config
+		cache       cache.Namespace
 		name        string
 		configKey   string
 		commandTree tree.Root
@@ -46,33 +50,39 @@ func WithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
+func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("task"),
 		name:      "task",
+		cache:     cache.Get("task"),
 		configKey: "task",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run make scripts",
+		Description: "Run task scripts",
 		Args: tree.Args{
 			{
 				Name: "task",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-					var ret []goprompt.Suggest
-					for _, name := range inst.cfg.Names() {
-						task := inst.cfg[name]
-						ret = append(ret, goprompt.Suggest{Text: name, Description: task.Description})
+					var ret []prompt.Suggest
+
+					for name, task := range inst.tasks() {
+						if !task.Hidden {
+							ret = append(ret, goprompt.Suggest{Text: name, Description: task.Description})
+						}
 					}
+
 					return ret
 				},
 			},
@@ -111,11 +121,27 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
+func (c *Command) tasks() map[string]Task {
+	return c.cache.Get("tasks", func() any {
+		tasks, err := c.cfg.AllTasks()
+		if err != nil {
+			c.l.Debug(err)
+			return map[string]Task{}
+		}
+
+		return tasks
+	}).(map[string]Task)
+}
+
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
+	start := time.Now()
+
 	if err := c.executeTask(ctx, r.Args().At(0)); err != nil {
 		return err
 	}
-	c.l.Success("🔧 | done")
+
+	c.l.Success("🔧 | done ⏱︎ " + time.Since(start).Truncate(time.Second).String())
+
 	return nil
 }
 
@@ -123,7 +149,7 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	task, ok := c.cfg[taskID]
+	task, ok := c.tasks()[taskID]
 	if !ok {
 		return errors.Errorf("task not found: %s", taskID)
 	}
@@ -132,21 +158,26 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		cmd = os.ExpandEnv(cmd)
+
 		var sh *exec.Cmd
 		if strings.HasPrefix(cmd, "sudo ") {
 			sh = exec.CommandContext(ctx, "sudo", "sh", "-c", strings.TrimPrefix(cmd, "sudo "))
 		} else {
 			sh = exec.CommandContext(ctx, "sh", "-c", cmd)
 		}
+
 		sh.Stdin = os.Stdin
 		sh.Stdout = os.Stdout
 		sh.Stderr = os.Stderr
+
+		sh.Env = append(os.Environ(), task.Env...)
 		if task.Dir != "" {
 			sh.Dir = task.Dir
 		}
+
 		sh.Env = append(os.Environ(), task.Env...)
 		c.l.Infof("🔧 | {%d|%d} %s: %s", i+1, len(task.Cmds), taskID, cmd)
+
 		if err := sh.Run(); err == nil {
 			return nil
 		} else {
@@ -170,6 +201,7 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
+
 		if err := c.executeTask(ctx, dep); err != nil {
 			return err
 		}
@@ -179,21 +211,25 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		cmd = os.ExpandEnv(cmd)
+
 		var sh *exec.Cmd
 		if strings.HasPrefix(cmd, "sudo ") {
 			sh = exec.CommandContext(ctx, "sudo", "sh", "-c", strings.TrimPrefix(cmd, "sudo "))
 		} else {
 			sh = exec.CommandContext(ctx, "sh", "-c", cmd)
 		}
+
 		sh.Stdin = os.Stdin
 		sh.Stdout = os.Stdout
 		sh.Stderr = os.Stderr
+
+		sh.Env = append(os.Environ(), task.Env...)
 		if task.Dir != "" {
 			sh.Dir = task.Dir
 		}
-		sh.Env = append(os.Environ(), task.Env...)
+
 		c.l.Infof("🔧 | [%d|%d] %s: %s", i+1, len(task.Cmds), taskID, cmd)
+
 		if err := sh.Run(); err != nil {
 			return err
 		}

@@ -69,11 +69,13 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			return strings.TrimSuffix(path2.Base(path), ".stack.yaml")
 		},
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -118,6 +120,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 					skipSynthFlag(fs)
 					fs.Default().Bool("refresh-only", false, "Select the 'refresh only' planning mode")
 					fs.Default().Bool("migrate-state", false, "Pass this flag after switching state backends")
+
 					return nil
 				},
 				Execute: inst.diff,
@@ -131,6 +134,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 					fs.Default().Bool("auto-approve", false, "Auto approve")
 					fs.Default().Bool("refresh-only", false, "Select the 'refresh only' planning mode")
 					fs.Default().Bool("migrate-state", false, "Pass this flag after switching state backends")
+
 					return nil
 				},
 				Execute: inst.deploy,
@@ -143,6 +147,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 					skipSynthFlag(fs)
 					fs.Default().Bool("auto-approve", false, "Auto approve")
 					fs.Default().Bool("migrate-state", false, "Pass this flag after switching state backends")
+
 					return nil
 				},
 				Execute: inst.destroy,
@@ -194,6 +199,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	if _, err := exec.LookPath("cdktf"); err != nil {
 		c.l.Print()
+
 		return errors.New(`
 Please ensure you have the cdktf installed!
 
@@ -202,6 +208,7 @@ Please ensure you have the cdktf installed!
 $ npm install --global cdktf-cli
         `)
 	}
+
 	return nil
 }
 
@@ -215,12 +222,14 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) list(ctx context.Context, r *readline.Readline) error {
 	var envs []string
+
 	ifs := r.FlagSets().Internal()
 	if value, err := ifs.GetBool("skip-synth"); err != nil {
 		return err
 	} else if value {
 		envs = append(envs, "SKIP_SYNTH=true")
 	}
+
 	return shell.New(ctx, c.l, "cdktf", "list").
 		Env(envs...).
 		Dir(c.cfg.Path).
@@ -232,12 +241,14 @@ func (c *Command) list(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) diff(ctx context.Context, r *readline.Readline) error {
 	var envs []string
+
 	ifs := r.FlagSets().Internal()
 	if value, err := ifs.GetBool("skip-synth"); err != nil {
 		return err
 	} else if value {
 		envs = append(envs, "SKIP_SYNTH=true")
 	}
+
 	return shell.New(ctx, c.l, "cdktf", "diff").
 		Env(envs...).
 		Dir(c.cfg.Path).
@@ -250,13 +261,16 @@ func (c *Command) diff(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) deploy(ctx context.Context, r *readline.Readline) error {
 	var envs []string
+
 	fs := r.FlagSets().Default()
+
 	ifs := r.FlagSets().Internal()
 	if value, err := ifs.GetBool("skip-synth"); err != nil {
 		return err
 	} else if value {
 		envs = append(envs, "SKIP_SYNTH=true")
 	}
+
 	return shell.New(ctx, c.l, "cdktf", "deploy").
 		Env(envs...).
 		Dir(c.cfg.Path).
@@ -269,12 +283,14 @@ func (c *Command) deploy(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) destroy(ctx context.Context, r *readline.Readline) error {
 	var envs []string
+
 	ifs := r.FlagSets().Internal()
 	if value, err := ifs.GetBool("skip-synth"); err != nil {
 		return err
 	} else if value {
 		envs = append(envs, "SKIP_SYNTH=true")
 	}
+
 	return shell.New(ctx, c.l, "cdktf", "destroy").
 		Env(envs...).
 		Dir(c.cfg.Path).
@@ -304,6 +320,7 @@ func (c *Command) stacks(ctx context.Context) []string {
 			for i, s := range value {
 				value[i] = c.stackNameProvider(s)
 			}
+
 			return value
 		}
 	}).([]string)

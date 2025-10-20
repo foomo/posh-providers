@@ -63,11 +63,13 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 		op:        op,
 		az:        az,
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	inst.l = l.Named(inst.name)
 	inst.cache = cache.Get(inst.name)
 
@@ -101,6 +103,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									fs.Default().Bool("vebose", false, "Increase logging verbosity")
 									fs.Internal().String("group-args", "", "Additional group create args")
 									fs.Internal().String("storage-args", "", "Additional storaage create args")
+
 									return nil
 								},
 								Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -108,22 +111,26 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									if err != nil {
 										return err
 									}
+
 									fsi := r.FlagSets().Internal()
 
 									groupArgs, err := fsi.GetString("group-args")
 									if err != nil {
 										return err
 									}
+
 									groupArgs = strings.Trim(strings.Trim(groupArgs, "\""), "'")
 
 									storageArgs, err := fsi.GetString("storage-args")
 									if err != nil {
 										return err
 									}
+
 									storageArgs = strings.Trim(strings.Trim(storageArgs, "\""), "'")
 
 									// Create a new resource group
 									inst.l.Info("creating resource group:", backend.ResourceGroup)
+
 									if err := shell.New(ctx, inst.l, "az", "group", "create").
 										Args("--resource-group", backend.ResourceGroup).
 										Args("--subscription", backend.Subscription).
@@ -136,6 +143,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 
 									// Create a new resource group
 									inst.l.Info("creating storage account:", backend.StorageAccount)
+
 									if err := shell.New(ctx, inst.l, "az", "storage", "account", "create").
 										Args("--name", backend.StorageAccount).
 										Args("--resource-group", backend.ResourceGroup).
@@ -154,6 +162,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									}
 
 									inst.l.Info("creating storage container:", backend.Container)
+
 									return shell.New(ctx, inst.l, "az", "storage", "container", "create").
 										Args("--account-name", backend.StorageAccount).
 										Args("--account-key", storageAccountKey).
@@ -211,6 +220,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							fs.Default().Bool("help", false, "Show command help")
 							fs.Default().Int("verbose", 3, "Enable verbose logging")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -237,6 +247,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 							fs.Default().Int("verbose", 3, "Enable verbose logging")
 							fs.Default().StringArray("target", nil, "Specify a single resource URN to update")
 							fs.Default().StringArray("target-replace", nil, "Specify a single resource URN to replace")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -263,6 +274,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 							fs.Default().Bool("target-dependents", false, "Allows updating of dependent targets discovered but not specified in --target list")
 							fs.Default().Int("verbose", 3, "Enable verbose logging")
 							fs.Default().StringArray("target", nil, "Specify a single resource URN to update")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -289,6 +301,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 							fs.Default().Int("verbose", 3, "Enable verbose logging")
 							fs.Default().StringArray("target", nil, "Specify a single resource URN to update")
 							fs.Default().StringArray("target-replace", nil, "Specify a single resource URN to replace")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -335,6 +348,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 							fs.Default().Bool("show-sames", false, "Show resources that needn't be updated because they haven't changed, alongside those that d")
 							fs.Default().StringArray("import-pending-creates", nil, "A list of form [[URN ID]...] describing the provider IDs of pending creates")
 							fs.Default().StringArray("target", nil, "Specify a single resource URN to update")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -400,6 +414,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 							fs.Default().String("out", "", "The path to the file that will contain the generated resource declarations")
 							fs.Default().String("parent", "", "The name and URN of the parent resource in the format name=urn")
 							fs.Default().StringArray("properties", nil, "The property names to use for the import in the format name1,name")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -448,12 +463,15 @@ func (c *Command) completeEnvs(ctx context.Context, r *readline.Readline) []gopr
 			c.l.Debug(err.Error())
 			return []goprompt.Suggest{}
 		}
+
 		var ret []string
+
 		for _, e := range entries {
 			if e.IsDir() && !strings.HasPrefix(e.Name(), ".") {
 				ret = append(ret, e.Name())
 			}
 		}
+
 		return suggests.List(ret)
 	}).([]goprompt.Suggest)
 }
@@ -545,12 +563,15 @@ func (c *Command) completeProjects(ctx context.Context, t tree.Root, r *readline
 			c.l.Debug(err.Error())
 			return []goprompt.Suggest{}
 		}
+
 		var ret []string
+
 		for _, e := range entries {
 			if e.IsDir() && !strings.HasPrefix(e.Name(), ".") {
 				ret = append(ret, e.Name())
 			}
 		}
+
 		return suggests.List(ret)
 	}).([]goprompt.Suggest)
 }
@@ -558,6 +579,7 @@ func (c *Command) completeProjects(ctx context.Context, t tree.Root, r *readline
 func (c *Command) getStorageAccountKey(ctx context.Context, be Backend) (string, error) {
 	// retrieve storage key
 	c.l.Info("retrieving storage key")
+
 	sk, err := shell.New(ctx, c.l, "az", "storage", "account", "keys", "list").
 		Args("--resource-group", be.ResourceGroup).
 		Args("--subscription", be.Subscription).
@@ -581,12 +603,15 @@ func (c *Command) completeStacks(ctx context.Context, t tree.Root, r *readline.R
 			c.l.Debug(err.Error())
 			return []goprompt.Suggest{}
 		}
+
 		var ret []string
+
 		for _, e := range entries {
 			if !e.IsDir() && len(e.Name()) > 11 && strings.HasPrefix(e.Name(), "Pulumi.") && strings.HasSuffix(e.Name(), ".yaml") {
 				ret = append(ret, strings.TrimSuffix(strings.TrimPrefix(e.Name(), "Pulumi."), ".yaml"))
 			}
 		}
+
 		return suggests.List(ret)
 	}).([]goprompt.Suggest)
 }

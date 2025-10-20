@@ -3,7 +3,7 @@ package az
 import (
 	"context"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -56,6 +56,7 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 			return name
 		},
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -71,9 +72,11 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 				Description: "Log in to Azure",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					fs.Internal().String("service-principal", "", "Service principal to use for authentication")
+
 					if err := fs.Internal().SetValues("service-principal", inst.az.Config().ServicePrincipalNames()...); err != nil {
 						return err
 					}
+
 					return nil
 				},
 				Execute: inst.login,
@@ -107,6 +110,7 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 							if err != nil {
 								return nil
 							}
+
 							return suggests.List(ret.ArtifactoryNames())
 						},
 					},
@@ -132,6 +136,7 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 							if err != nil {
 								return nil
 							}
+
 							return suggests.List(ret.ClusterNames())
 						},
 					},
@@ -255,11 +260,13 @@ func (c *Command) login(ctx context.Context, r *readline.Readline) error {
 	}
 
 	var args []string
+
 	if servicePricipal != "" {
 		sp, err := c.az.cfg.ServicePrincipal(servicePricipal)
 		if err != nil {
 			return err
 		}
+
 		args = append(args,
 			"--service-principal",
 			"--username", sp.ClientID,

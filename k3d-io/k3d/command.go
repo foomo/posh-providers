@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
@@ -51,6 +51,7 @@ func NewCommand(l log.Logger, k3d *K3d, cache cache.Cache, kubectl *kubectl.Kube
 		kubectl: kubectl,
 		name:    "k3d",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -126,6 +127,7 @@ func NewCommand(l log.Logger, k3d *K3d, cache cache.Cache, kubectl *kubectl.Kube
 			},
 		},
 	})
+
 	return inst, nil
 }
 
@@ -192,6 +194,7 @@ func (c *Command) up(ctx context.Context, r *readline.Readline) error {
 	if err != nil {
 		return err
 	}
+
 	if registry == nil {
 		// create registry
 		if err := shell.New(ctx, c.l, "k3d", "registry", "create", cfg.Registry.Name,
@@ -290,6 +293,7 @@ func (c *Command) resume(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) install(ctx context.Context, r *readline.Readline) error {
 	var args []string
+
 	cfg := c.k3d.Config()
 	fs := r.FlagSets().Default()
 	cluster, name := r.Args().At(1), r.Args().At(2)
@@ -320,6 +324,7 @@ func (c *Command) uninstall(ctx context.Context, r *readline.Readline) error {
 	fs := r.FlagSets().Default()
 	cfg := c.k3d.Config()
 	cluster, name := r.Args().At(1), r.Args().At(2)
+
 	return shell.New(ctx, c.l, "helm",
 		"uninstall",
 		"--namespace", fmt.Sprintf("%s%s", cfg.Charts.Prefix, name),
@@ -409,6 +414,7 @@ func (c *Command) down(ctx context.Context, r *readline.Readline) error {
 	if err != nil {
 		return err
 	}
+
 	if registry != nil {
 		// TODO check if empty
 		// delete registry

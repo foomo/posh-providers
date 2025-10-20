@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
@@ -44,6 +44,7 @@ func New(l log.Logger, kubectl *kubectl.Kubectl, opts ...Option) (*ETCD, error) 
 		kubectl:   kubectl,
 		configKey: "etcd",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -51,9 +52,11 @@ func New(l log.Logger, kubectl *kubectl.Kubectl, opts ...Option) (*ETCD, error) 
 			}
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
+
 	if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
 		return nil, errors.Wrapf(err, "failed to create config path: %s", inst.cfg.ConfigPath)
 	}

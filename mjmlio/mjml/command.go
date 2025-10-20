@@ -48,11 +48,13 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 		name:  "mjml",
 		cache: cache.Get("mjml"),
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
 		Description: "Run mjml",
@@ -126,17 +128,19 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	ctx, wg := c.wg(ctx, r)
 	c.l.Infof("Running mjml under %q", dir)
+
 	for _, src := range c.files(ctx, dir) {
-		src := src
 		wg.Go(func() error {
 			c.l.Info("└  " + src)
 			out := strings.ReplaceAll(src, ".mjml", ".html")
 			out = strings.ReplaceAll(out, "/src/", "/html/")
+
 			return shell.New(ctx, c.l, "mjml", src, "-o", out).
 				Args(r.AdditionalArgs()...).
 				Run()
 		})
 	}
+
 	return wg.Wait()
 }
 
@@ -153,6 +157,7 @@ func (c *Command) paths(ctx context.Context) []string {
 					ret = append(ret, v[0])
 				}
 			}
+
 			return lo.Uniq(ret)
 		}
 	}).([]string)
@@ -164,6 +169,7 @@ func (c *Command) files(ctx context.Context, root string) []string {
 	if value := strings.TrimPrefix(root, "."); value != "" {
 		cacheKey += strings.ReplaceAll(value, "/", "-")
 	}
+
 	return c.cache.Get(cacheKey, func() any {
 		if value, err := files.Find(ctx, ".", "*.mjml"); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
@@ -175,6 +181,7 @@ func (c *Command) files(ctx context.Context, root string) []string {
 					ret = append(ret, s)
 				}
 			}
+
 			return ret
 		}
 	}).([]string)
@@ -187,5 +194,6 @@ func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context
 	} else {
 		wg.SetLimit(1)
 	}
+
 	return ctx, wg
 }

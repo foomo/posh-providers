@@ -38,9 +38,11 @@ func NewCommand(l log.Logger, zip *Zip, opts ...CommandOption) *Command {
 				Name: "extract",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					fs.Internal().String("cred", "", "configured zip credential name")
+
 					if err := fs.Internal().SetValues("cred", inst.zip.Config().CredentialNames()...); err != nil {
 						return err
 					}
+
 					return nil
 				},
 				Args: tree.Args{
@@ -51,6 +53,7 @@ func NewCommand(l log.Logger, zip *Zip, opts ...CommandOption) *Command {
 							ret, _ := files.Find(ctx, ".", "*.zip",
 								files.FindWithIgnore(`^\.`, "vendor", "node_modules"),
 							)
+
 							return suggests.List(ret)
 						},
 					},

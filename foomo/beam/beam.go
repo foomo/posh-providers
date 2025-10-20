@@ -44,6 +44,7 @@ func New(l log.Logger, op *onepassword.OnePassword, gk *gokazi.Gokazi, opts ...O
 		gk:        gk,
 		configKey: "beam",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -51,6 +52,7 @@ func New(l log.Logger, op *onepassword.OnePassword, gk *gokazi.Gokazi, opts ...O
 			}
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -66,6 +68,7 @@ func New(l log.Logger, op *onepassword.OnePassword, gk *gokazi.Gokazi, opts ...O
 			},
 		})
 	}
+
 	for key, value := range inst.cfg.Databases {
 		inst.gk.Add("beam.database."+key, gokaziconfig.Task{
 			Name:        "cloudflared",
@@ -77,6 +80,7 @@ func New(l log.Logger, op *onepassword.OnePassword, gk *gokazi.Gokazi, opts ...O
 			},
 		})
 	}
+
 	return inst, nil
 }
 

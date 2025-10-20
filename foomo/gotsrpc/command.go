@@ -101,6 +101,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx)
 	}
+
 	flags := make([]string, len(r.Flags()))
 	for i, flag := range r.Flags() {
 		flags[i] = strings.ReplaceAll(flag, "--", "-")
@@ -108,6 +109,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	for _, value := range paths {
 		c.l.Info("gotsrpc:", value)
+
 		if out, err := shell.New(ctx, c.l, "gotsrpc").
 			Args(flags...).
 			Args(value).
@@ -116,6 +118,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 			return errors.Wrap(err, string(out))
 		}
 	}
+
 	return nil
 }
 

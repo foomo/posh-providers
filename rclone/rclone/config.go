@@ -20,9 +20,11 @@ type Config struct {
 func (c Config) RenderConfig(ctx context.Context) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, "op", "inject")
 	cmd.Stdin = strings.NewReader(c.Config)
+
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to inject config: %s", out)
 	}
+
 	return out, nil
 }

@@ -3,7 +3,7 @@ package stackit
 import (
 	"context"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
@@ -59,6 +59,7 @@ func NewCommand(l log.Logger, cache cache.Cache, stackit *Stackit, kubectl *kube
 			return name
 		},
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -97,6 +98,7 @@ func NewCommand(l log.Logger, cache cache.Cache, stackit *Stackit, kubectl *kube
 											if err != nil {
 												return []goprompt.Suggest{}
 											}
+
 											return suggests.List(project.ClusterNames())
 										},
 									},
@@ -147,11 +149,14 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 	ifs := r.FlagSets().Internal()
+
 	project, err := c.stackit.Config().Project(r.Args().At(1))
 	if err != nil {
 		return err
 	}
+
 	clusterName := r.Args().At(3)
+
 	cluster, err := project.Cluster(clusterName)
 	if err != nil {
 		return err

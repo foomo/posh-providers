@@ -124,6 +124,7 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 					fs.Default().Bool("insecure", false, "Allow insecure server connections")
 					fs.Default().Bool("tests-only", false, "Only run requests that have tests")
 					fs.Default().Bool("verbose", false, "Allow verbose output for debugging purpose")
+
 					return nil
 				},
 				Execute: inst.run,
@@ -180,6 +181,7 @@ func (c *Command) list(ctx context.Context, r *readline.Readline) error {
 				Text: request,
 			})
 		}
+
 		if len(child.Children) > 0 {
 			t.Children = append(t.Children, child)
 		}
@@ -193,21 +195,25 @@ func (c *Command) list(ctx context.Context, r *readline.Readline) error {
 				Text: request,
 			})
 		}
+
 		if len(child.Children) > 0 {
 			t.Children = append(t.Children, child)
 		}
 	}
+
 	return pterm.DefaultTree.WithRoot(t).Render()
 }
 
 func (c *Command) run(ctx context.Context, r *readline.Readline) error {
 	fs := r.FlagSets().Default()
+
 	args := []string{
 		"--env", r.Args().At(1),
 	}
 	if r.Args().LenGte(3) {
 		args = append(args, r.Args().From(2)...)
 	}
+
 	return shell.New(ctx, c.l, "bru", "run").
 		Args(args...).
 		Args(fs.Visited().Args()...).
@@ -222,12 +228,14 @@ func (c *Command) env(ctx context.Context, r *readline.Readline) error {
 	}
 
 	envFilename := path.Join(c.config.Filename(), ".env")
+
 	templateFilename := path.Join(c.config.Filename(), "bruno.env")
 	if _, err := os.Stat(templateFilename); err != nil {
 		return err
 	}
 
 	c.l.Info("rendering secrets file:", envFilename)
+
 	return shell.New(ctx, c.l, "op", "inject", "-f", "-i", templateFilename, "-o", envFilename).Quiet().Run()
 }
 
@@ -236,13 +244,16 @@ func (c *Command) open(ctx context.Context, r *readline.Readline) error {
 	if err != nil {
 		return err
 	}
+
 	pref, err := NewPreferences(prefFilename)
 	if err != nil {
 		return err
 	}
+
 	if err := pref.AddLastOpenedCollection(c.config.Filename()); err != nil {
 		return err
 	}
+
 	if err := pref.Save(prefFilename); err != nil {
 		return err
 	}

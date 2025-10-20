@@ -44,6 +44,7 @@ func New(l log.Logger, opts ...Option) (*Harbor, error) {
 		l:         l,
 		configKey: "harbor",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -51,6 +52,7 @@ func New(l log.Logger, opts ...Option) (*Harbor, error) {
 			}
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -70,6 +72,7 @@ func (t *Harbor) IsAuthenticated(ctx context.Context) bool {
 	if t.signedIn && time.Since(t.signedInTime) < time.Hour {
 		return true
 	}
+
 	out, _ := shell.New(ctx, t.l,
 		"docker",
 		"pull",
@@ -78,8 +81,11 @@ func (t *Harbor) IsAuthenticated(ctx context.Context) bool {
 	if strings.HasPrefix(string(out), "Error response from daemon: unknown") {
 		t.signedIn = true
 		t.signedInTime = time.Now()
+
 		return true
 	}
+
 	t.signedIn = false
+
 	return false
 }

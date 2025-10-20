@@ -43,6 +43,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*AZ, error) {
 		cache:     cache.Get("az"),
 		configKey: "az",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -50,6 +51,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*AZ, error) {
 			}
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}

@@ -7,6 +7,8 @@ type Task struct {
 	Env []string `json:"env" yaml:"env"`
 	// Dir to execute the task in
 	Dir string `json:"dir" yaml:"dir"`
+	// Run as sudo
+	Sudo bool `json:"sudo" yaml:"sudo"`
 	// Description of the task
 	Description string `json:"description" yaml:"description"`
 	// Precondition to cancel the execution of a task and its dependencies

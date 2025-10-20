@@ -44,6 +44,7 @@ func New(l log.Logger, opts ...Option) (*Cloudflared, error) {
 		l:         l,
 		configKey: "cloudflared",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -51,6 +52,7 @@ func New(l log.Logger, opts ...Option) (*Cloudflared, error) {
 			}
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -80,6 +82,7 @@ func (t *Cloudflared) Disonnect(ctx context.Context, access Access) error {
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -93,7 +96,9 @@ func (t *Cloudflared) Connect(ctx context.Context, access Access) error {
 		"--hostname", access.Hostname,
 		"--url", fmt.Sprintf("127.0.0.1:%d", access.Port),
 	)
+
 	cmd.Env = append(os.Environ(), "HOME="+t.Config().Path)
+
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
 	}
@@ -113,11 +118,13 @@ func (t *Cloudflared) IsConnected(ctx context.Context, access Access) bool {
 	if err != nil {
 		return false
 	}
+
 	for _, p := range list {
 		if strings.Contains(p.Cmdline, "--hostname "+access.Hostname) {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -128,6 +135,7 @@ func (t *Cloudflared) List() ([]Process, error) {
 	}
 
 	var ret []Process
+
 	for _, p := range ps {
 		if value, _ := p.Name(); value == "cloudflared" {
 			exe, _ := p.Exe()

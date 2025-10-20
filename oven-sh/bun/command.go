@@ -5,7 +5,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/foomo/posh-providers/utils"
+	"github.com/foomo/posh-providers/pkg/npm"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
@@ -70,6 +70,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			if child == nil {
 				return nil
 			}
+
 			return child(ctx, r, fs)
 		}
 	}
@@ -80,9 +81,11 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			fs.Default().Bool("omit", false, "Exclude 'dev', 'optional', or 'peer' dependencies from install")
 			fs.Default().Bool("save-text-lockfile", false, " Save a text-based lockfile")
 			fs.Default().Bool("lockfile-only", false, " Save a text-based lockfile")
+
 			if child == nil {
 				return nil
 			}
+
 			return child(ctx, r, fs)
 		}
 	}
@@ -127,6 +130,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 									fs.Default().String("timeout", "", "Set the per-test timeout in milliseconds, default is 5000")
 									fs.Default().String("bail", "", "Exit the test suite after <NUMBER> failures")
 									fs.Default().String("test-name-pattern", "", "Run only tests with a name that matches the given regex")
+
 									return nil
 								}),
 								Execute: inst.runWorkspace,
@@ -145,6 +149,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 									fs.Default().Bool("peer", false, "Add dependency to peerDependencies")
 									fs.Default().Bool("optional", false, "Add dependency to optionalDependencies")
 									fs.Default().Bool("exact", false, "Add the exact version instead of the ^range")
+
 									return nil
 								})),
 								Execute: inst.runWorkspace,
@@ -343,7 +348,8 @@ func (c *Command) runWorkspace(ctx context.Context, r *readline.Readline) error 
 func (c *Command) scripts(ctx context.Context, dirname string) []string {
 	return c.cache.Get("scripts-"+dirname, func() any {
 		var ret []string
-		f, err := utils.LoadPackageJSON(path.Join(dirname, "package.json"))
+
+		f, err := npm.LoadPackageJSON(path.Join(dirname, "package.json"))
 		if err != nil {
 			c.l.Debug("failed to load package.json", err.Error())
 			return []string{}
@@ -360,15 +366,18 @@ func (c *Command) scripts(ctx context.Context, dirname string) []string {
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		var ret []string
-		var roots []string
+		var (
+			ret   []string
+			roots []string
+		)
 
 		{
-			value, err := utils.LoadPackageJSON("package.json")
+			value, err := npm.LoadPackageJSON("package.json")
 			if err != nil {
 				c.l.Debug("failed to load package.json", err.Error())
 				return []string{}
 			}
+
 			for _, s := range value.Workspaces {
 				roots = append(roots, strings.TrimSuffix(s, "/*"))
 			}

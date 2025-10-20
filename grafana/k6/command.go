@@ -59,6 +59,7 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 		configKey: "k6",
 		op:        op,
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -93,13 +94,16 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 				Description: "Scenario name",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					root := env.Path(inst.cfg.Path)
+
 					ret, err := files.Find(ctx, root, "*.k6.js", files.FindWithIsFile(true))
 					if err != nil {
 						return nil
 					}
+
 					for i, s := range ret {
 						ret[i] = strings.TrimPrefix(s, root+"/")
 					}
+
 					return suggests.List(ret)
 				},
 			},

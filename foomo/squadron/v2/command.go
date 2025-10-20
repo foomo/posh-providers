@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh-providers/slack-go/slack"
 	"github.com/foomo/posh/pkg/cache"
@@ -105,6 +105,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 			}
 		},
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -140,10 +141,12 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 	profileFlag := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 		if r.Args().HasIndex(0) {
 			fs.Internal().String("profile", "", "Profile to use.")
+
 			if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 				return err
 			}
 		}
+
 		return nil
 	}
 	commonFlags := func(fs *readline.FlagSets) {
@@ -153,11 +156,13 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 
 	clusterValues := func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 		var ret []string
+
 		for _, cluster := range inst.kubectl.Clusters() {
 			if _, ok := inst.squadron.cfg.Cluster(cluster.Name()); ok {
 				ret = append(ret, cluster.Name())
 			}
 		}
+
 		return suggests.List(ret)
 	}
 
@@ -171,6 +176,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Default().Bool("no-render", false, "don't render the config template")
 				fs.Default().Bool("raw", false, "print raw output without highlighting")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -185,9 +191,11 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Default().String("tags", "", "list of tags to include or exclude")
 				fs.Default().Bool("raw", false, "print raw output without highlighting")
 				fs.Internal().String("tag", "", "image tag")
+
 				if err := profileFlag(ctx, r, fs); err != nil {
 					return err
 				}
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -201,9 +209,11 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				commonFlags(fs)
 				fs.Default().Int64("parallel", 1, "number of parallel processes")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
+
 				if err := profileFlag(ctx, r, fs); err != nil {
 					return err
 				}
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -219,6 +229,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Default().Bool("with-builds", false, "include builds")
 				fs.Default().Bool("with-bakes", false, "include bakes")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -232,6 +243,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Default().Bool("raw", false, "print raw output without highlighting")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
 				fs.Default().String("output", "", "output json file")
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -249,6 +261,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Internal().String("tag", "", "image tag")
 				fs.Internal().StringSlice("push-args", nil, "additional docker push args")
 				fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -263,9 +276,11 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Default().Int64("parallel", 1, "number of parallel processes")
 				fs.Default().String("revision", "", "revision number to rollback to")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
+
 				if err := profileFlag(ctx, r, fs); err != nil {
 					return err
 				}
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -278,9 +293,11 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				commonFlags(fs)
 				fs.Default().Int64("parallel", 1, "number of parallel processes")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
+
 				if err := profileFlag(ctx, r, fs); err != nil {
 					return err
 				}
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -295,6 +312,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Default().Int64("parallel", 1, "number of parallel processes")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
 				fs.Internal().String("tag", "", "image tag")
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -306,9 +324,11 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 				slackFlag(fs)
 				commonFlags(fs)
+
 				if err := profileFlag(ctx, r, fs); err != nil {
 					return err
 				}
+
 				fs.Default().Bool("push", false, "push image")
 				fs.Default().Int64("parallel", 1, "number of parallel processes")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
@@ -318,6 +338,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Internal().StringSlice("push-args", nil, "additional docker push args")
 				fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
 				fs.Internal().Bool("create-namespace", false, "create namespace if not exist")
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -338,6 +359,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Internal().StringSlice("push-args", nil, "additional docker push args")
 				fs.Internal().StringSlice("build-args", nil, "additional docker buildx bake args")
 				fs.Internal().String("tag", "", "image tag")
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -356,6 +378,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Internal().StringSlice("push-args", nil, "additional docker push args")
 				fs.Internal().StringSlice("build-args", nil, "additional docker buildx build args")
 				fs.Internal().String("tag", "", "image tag")
+
 				return nil
 			},
 			Execute: inst.execute,
@@ -377,6 +400,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 							if cluster, ok := inst.squadron.cfg.Cluster(r.Args().At(0)); ok {
 								ret = cluster.Fleets
 							}
+
 							return suggests.List(ret)
 						},
 						Nodes: tree.Nodes{
@@ -432,10 +456,12 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	var env []string
+
 	fs := r.FlagSets().Default()
 	ifs := r.FlagSets().Internal()
 	passFlags := []string{"--"}
 	cluster, fleet, squadron, cmd, units := r.Args()[0], r.Args()[1], r.Args()[2], r.Args()[3], r.Args()[4:]
+
 	cfgCluster, ok := c.squadron.Cluster(cluster)
 	if !ok {
 		return errors.New("cluster configuration not found")
@@ -461,6 +487,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		if c.op != nil {
 			if ok, _ := c.op.IsAuthenticated(ctx); !ok {
 				c.l.Info("missing 1password session, please login")
+
 				if err := c.op.SignIn(ctx); err != nil {
 					return err
 				}
@@ -472,6 +499,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		if slices.Contains([]string{"up", "diff", "template"}, cmd) {
 			passFlags = append(passFlags, "--set", "global.foomo.squadron.fleet="+fleet)
 		}
+
 		if slices.Contains([]string{"up"}, cmd) {
 			if log.MustGet(ifs.GetBool("create-namespace"))(c.l) {
 				passFlags = append(passFlags, "--create-namespace")
@@ -484,6 +512,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		if tag != "" {
 			env = append(env, fmt.Sprintf("TAG=%q", tag))
 		}
+
 		env = append(env,
 			c.kubectl.Cluster(cluster).Env(profile),
 			fmt.Sprintf("GIT_DIR=%s", env2.ProjectRoot()),
@@ -564,12 +593,14 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 	user, err := git.ConfigUserName(ctx, c.l)
 	if err != nil {
 		c.l.Debug("failed to get git user:", err.Error())
+
 		user = "unknown"
 	}
 
 	ref, err := git.Ref(ctx, c.l)
 	if err != nil {
 		c.l.Debug("failed to get git ref:", err.Error())
+
 		ref = "unknown"
 	}
 
@@ -577,57 +608,66 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 
 	switch cmd {
 	case "up":
-		if tags != "" {
+		switch {
+		case tags != "":
 			str := make([]string, 0, len(units))
 			for _, v := range strings.Split(tags, ",") {
 				str = append(str, "- "+v)
 			}
+
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🏷️ Tag deployment to *%s* | *%s* _(%s)_\n\n```\n%s\n```\n", cluster, fleet, tag, strings.Join(str, "\n")))
-		} else if squadron == All {
+		case squadron == All:
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🚢 Full deployment to *%s* | *%s* _(%s)_", cluster, fleet, tag))
-		} else if len(units) == 0 {
+		case len(units) == 0:
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🛥 Deployment to *%s*\n\n- %s.all | *%s* _(%s)_\n", cluster, squadron, fleet, tag))
-		} else {
+		default:
 			str := make([]string, 0, len(units))
 			for _, v := range units {
 				str = append(str, "- "+squadron+"."+v)
 			}
+
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🛶 Deployment to *%s* | *%s* _(%s)_\n\n```\n%s\n```\n", cluster, fleet, tag, strings.Join(str, "\n")))
 		}
 	case "down":
-		if tags != "" {
+		switch {
+		case tags != "":
 			str := make([]string, 0, len(units))
 			for _, v := range strings.Split(tags, ",") {
 				str = append(str, "- "+v)
 			}
+
 			msg = c.slack.MarkdownSection(fmt.Sprintf("💀️ Tag uninstallation of *%s* | *%s*\n\n```\n%s\n```\n", cluster, fleet, strings.Join(str, "\n")))
-		} else if squadron == All {
+		case squadron == All:
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🪦 Full uninstallation of *%s* | *%s*", cluster, fleet))
-		} else if len(units) == 0 {
+		case len(units) == 0:
 			msg = c.slack.MarkdownSection(fmt.Sprintf("💀 Uninstalling from *%s*\n\n- %s.all | *%s*\n", cluster, squadron, fleet))
-		} else {
+		default:
 			str := make([]string, 0, len(units))
 			for _, unit := range units {
 				str = append(str, "- "+squadron+"."+unit)
 			}
+
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🗑 Uninstalling from *%s* | *%s*\n\n```\n%s\n```\n", cluster, fleet, strings.Join(str, "\n")))
 		}
 	case "rollback":
-		if tags != "" {
+		switch {
+		case tags != "":
 			str := make([]string, 0, len(units))
 			for _, v := range strings.Split(tags, ",") {
 				str = append(str, "- "+v)
 			}
+
 			msg = c.slack.MarkdownSection(fmt.Sprintf("⏪ Tag roll back of *%s* | *%s*\n\n```\n%s\n```\n", cluster, fleet, strings.Join(str, "\n")))
-		} else if squadron == "all" {
+		case squadron == "all":
 			msg = c.slack.MarkdownSection(fmt.Sprintf("⏬ Full roll back of *%s* | *%s*", cluster, fleet))
-		} else if len(units) == 0 {
+		case len(units) == 0:
 			msg = c.slack.MarkdownSection(fmt.Sprintf("⏪ Rollback in *%s*\n\n- %s.all | *%s*\n", cluster, squadron, fleet))
-		} else {
+		default:
 			str := make([]string, 0, len(units))
 			for _, unit := range units {
 				str = append(str, "- "+squadron+"."+unit)
 			}
+
 			msg = c.slack.MarkdownSection(fmt.Sprintf("🔙 Rollback in *%s* | *%s*\n\n```\n%s\n```\n", cluster, fleet, strings.Join(str, "\n")))
 		}
 	default:

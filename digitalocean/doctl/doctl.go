@@ -55,6 +55,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*Doctl, error) {
 		cache:     cache.Get("doctl"),
 		configKey: "doctl",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -62,6 +63,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*Doctl, error) {
 			}
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -92,6 +94,7 @@ func (k *Doctl) Client() (*godo.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return godo.NewFromToken(accessToken), nil
 }
 
@@ -120,10 +123,12 @@ func (k *Doctl) Cluster(ctx context.Context, name string) (*godo.KubernetesClust
 	if err != nil {
 		return nil, err
 	}
+
 	cluster, _, err := c.Kubernetes.Get(ctx, name)
 	if err != nil {
 		return nil, err
 	}
+
 	return cluster, nil
 }
 
@@ -135,11 +140,13 @@ func (k *Doctl) Clusters(ctx context.Context) []*godo.KubernetesCluster {
 			k.l.Info(err.Error())
 			return []*godo.KubernetesCluster{}
 		}
+
 		clusters, _, err := c.Kubernetes.List(ctx, nil)
 		if err != nil {
 			k.l.Info(err.Error())
 			return []*godo.KubernetesCluster{}
 		}
+
 		return clusters
 	}).([]*godo.KubernetesCluster)
 }

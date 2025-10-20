@@ -16,6 +16,7 @@ func (c Subscription) Cluster(name string) (Cluster, error) {
 	if !ok {
 		return Cluster{}, errors.Errorf("cluster not found: %s", name)
 	}
+
 	return value, nil
 }
 
@@ -28,6 +29,7 @@ func (c Subscription) Artifactory(name string) (Artifactory, error) {
 	if !ok {
 		return Artifactory{}, errors.Errorf("artifactory not found: %s", name)
 	}
+
 	return value, nil
 }
 

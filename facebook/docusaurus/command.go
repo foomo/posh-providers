@@ -55,11 +55,13 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 		name:      "docusaurus",
 		configKey: "docusaurus",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -69,6 +71,7 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 		Description: "Run docusaurus",
 		Execute:     inst.execute,
 	})
+
 	return inst, nil
 }
 
@@ -111,6 +114,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	).Stdin(strings.NewReader(dockerfile)).Run(); err != nil {
 		return err
 	}
+
 	cmd := shell.New(ctx, c.l,
 		"docker", "run", "-it", "--rm",
 		"-p", fmt.Sprintf("%s:%s", c.cfg.LocalPort, "3000"),
@@ -118,6 +122,8 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	for _, volume := range c.cfg.Volumes {
 		cmd.Args("-v", os.ExpandEnv(volume))
 	}
+
 	cmd.Args(fmt.Sprintf("%s:%s", c.cfg.ImageName, c.cfg.ImageTag))
+
 	return cmd.Run()
 }
