@@ -94,13 +94,16 @@ release:
 ifndef TAG
 	$(error $(br)$(br)TAG variable is required.$(br)Usage: make release TAG=1.0.0$(br)$(br))
 endif
+	@echo "$(TAG)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "Error: TAG must be in format X.Y.Z"; exit 1; }
 	@echo "〉️Create release"
 	@echo "🔖 v$(TAG)" && git tag v$(TAG)
-	@$(foreach mod,$(MODS), (echo "🔖 $(patsubst %/,%,$(patsubst ./%,%,$(basename $(dir $(mod)))))/v$(TAG)" && git tag $(patsubst %/,%,$(patsubst ./%,%,$(basename $(dir $(mod)))))/v$(TAG)") &&) true
-	@echo
+	@$(foreach mod,$(MODS), \
+		echo "🔖 $(patsubst %/,%,$(patsubst ./%,%,$(dir $(mod))))/v$(TAG)" && \
+		git tag "$(patsubst %/,%,$(patsubst ./%,%,$(dir $(mod))))/v$(TAG)" && \
+	) true
+	@echo ""
 	@read -p "Do you want to push the tags to the remote? [y/N] " yn; \
-	@case $$yn in [Yy]*) git push origin --tags ;; *) echo "Skipping git push." ;; esac
-
+	case $$yn in [Yy]*) git push origin --tags ;; *) echo "Skipping git push." ;; esac
 ### Utils
 
 .PHONY: docs
