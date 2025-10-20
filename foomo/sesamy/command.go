@@ -302,10 +302,10 @@ func (c *Command) merge(ctx context.Context, path string) ([]byte, error) {
 		return nil, errors.New("invalid config key: " + path)
 	}
 
-	var conf = koanf.Conf{
-		Delim: "/",
-	}
-	var k = koanf.NewWithConf(conf)
+	var (
+		conf = koanf.Conf{Delim: "/"}
+		k    = koanf.NewWithConf(conf)
+	)
 
 	for _, filename := range filenames {
 		if err := k.Load(file.Provider(filename), yaml.Parser()); err != nil {
@@ -325,6 +325,7 @@ func (c *Command) conf(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("Printing sesamy config ...")
+
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
@@ -348,6 +349,7 @@ func (c *Command) conf(ctx context.Context, r *readline.Readline) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -360,6 +362,7 @@ func (c *Command) tags(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("Running sesamy tags ...")
+
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
@@ -383,6 +386,7 @@ func (c *Command) tags(ctx context.Context, r *readline.Readline) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -395,6 +399,7 @@ func (c *Command) open(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("Running sesamy open ...")
+
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
@@ -418,6 +423,7 @@ func (c *Command) open(ctx context.Context, r *readline.Readline) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -430,6 +436,7 @@ func (c *Command) typescript(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("Running sesamy typescript ...")
+
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
@@ -453,6 +460,7 @@ func (c *Command) typescript(ctx context.Context, r *readline.Readline) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -465,6 +473,7 @@ func (c *Command) provision(ctx context.Context, r *readline.Readline, cmd strin
 	}
 
 	c.l.Info("Running sesamy provision " + cmd + " ...")
+
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
@@ -488,6 +497,7 @@ func (c *Command) provision(ctx context.Context, r *readline.Readline, cmd strin
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -495,9 +505,11 @@ func (c *Command) provisionAll(ctx context.Context, r *readline.Readline) error 
 	if err := c.provision(ctx, r, "web"); err != nil {
 		return err
 	}
+
 	if err := c.provision(ctx, r, "server"); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -529,6 +541,7 @@ func (c *Command) list(ctx context.Context, r *readline.Readline, cmd string) er
 	}
 
 	c.l.Info("Running sesamy list " + cmd + " ...")
+
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
@@ -552,6 +565,7 @@ func (c *Command) list(ctx context.Context, r *readline.Readline, cmd string) er
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -574,6 +588,7 @@ func (c *Command) diff(ctx context.Context, r *readline.Readline, cmd string) er
 	}
 
 	c.l.Info("Running sesamy diff " + cmd + " ...")
+
 	for _, value := range paths {
 		c.l.Info("└ " + value)
 
@@ -597,6 +612,7 @@ func (c *Command) diff(ctx context.Context, r *readline.Readline, cmd string) er
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -607,5 +623,6 @@ func (c *Command) completePaths(ctx context.Context, t tree.Root, r *readline.Re
 func (c *Command) paths(ctx context.Context) []string {
 	keys := lo.Keys(c.config)
 	sort.Strings(keys)
+
 	return keys
 }

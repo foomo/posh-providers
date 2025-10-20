@@ -58,11 +58,13 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 		configKey: "licenseFinder",
 		cache:     cache.Get("licensefinder"),
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -74,6 +76,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 	addFlags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 		fs.Default().String("who", "", "Who approved")
 		fs.Default().String("why", "", "Reason to approve")
+
 		return nil
 	}
 
@@ -167,6 +170,7 @@ func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	if _, err := exec.LookPath("license_finder"); err != nil {
 		c.l.Print()
+
 		return errors.New(`
 Please ensure you have the license_finder installed!
 
@@ -176,6 +180,7 @@ $ brew update
 $ brew install licensefinder
         `)
 	}
+
 	return nil
 }
 
@@ -225,6 +230,7 @@ func (c *Command) report(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline, args ...string) error {
 	fs := r.FlagSets().Default()
+
 	return shell.New(ctx, c.l, "license_finder").
 		Args(args...).
 		Args(
@@ -242,12 +248,15 @@ func (c *Command) aggregatePaths(ctx context.Context) string {
 	for _, file := range c.cfg.Sources {
 		paths = append(paths, c.paths(ctx, file)...)
 	}
+
 	paths = lo.Uniq(paths)
 	sort.Strings(paths)
 	c.l.Info("Aggregating liceses from:")
+
 	for _, value := range paths {
 		c.l.Info("└  " + value)
 	}
+
 	return "--aggregate_paths=" + strings.Join(paths, " ")
 }
 
@@ -261,6 +270,7 @@ func (c *Command) paths(ctx context.Context, filename string) []string {
 			for i, s := range value {
 				value[i] = path.Dir(s)
 			}
+
 			return value
 		}
 	}).([]string)

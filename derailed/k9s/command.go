@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/foomo/posh-providers/foomo/squadron"
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -16,11 +16,11 @@ import (
 
 type (
 	Command struct {
-		l           log.Logger
-		kubectl     *kubectl.Kubectl
-		squadron    squadron.Squadron
-		commandTree tree.Root
-		namespaceFn NamespaceFn
+		l                   log.Logger
+		kubectl             *kubectl.Kubectl
+		squadron            squadron.Squadron
+		commandTree         tree.Root
+		squadronNamespaceFn NamespaceFn
 	}
 	NamespaceFn   func(cluster, fleet, squadron string) string
 	CommandOption func(*Command)
@@ -30,9 +30,15 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
+func CommandWithSquadrn(v squadron.Squadron) CommandOption {
 	return func(o *Command) {
-		o.namespaceFn = v
+		o.squadron = v
+	}
+}
+
+func CommandWithSquadronNamespaceFn(v NamespaceFn) CommandOption {
+	return func(o *Command) {
+		o.squadronNamespaceFn = v
 	}
 }
 
@@ -40,12 +46,11 @@ func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadron, opts ...CommandOption) *Command {
+func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
-		l:        l.Named("k9s"),
-		kubectl:  kubectl,
-		squadron: squadron,
-		namespaceFn: func(cluster, fleet, squadron string) string {
+		l:       l.Named("k9s"),
+		kubectl: kubectl,
+		squadronNamespaceFn: func(cluster, fleet, squadron string) string {
 			switch {
 			case fleet == "":
 				return ""
@@ -58,41 +63,50 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 			}
 		},
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
-	inst.commandTree = tree.New(&tree.Node{
-		Name:        "k9s",
-		Description: "Open the k9s dashboard",
-		Args: tree.Args{
-			{
-				Name:    "cluster",
-				Suggest: inst.completeClusters,
-			},
-			{
-				Name:     "fleet",
-				Optional: true,
-				Suggest:  inst.completeFleets,
-			},
-			{
+
+	args := tree.Args{
+		{
+			Name:    "cluster",
+			Suggest: inst.completeClusters,
+		},
+	}
+	if inst.squadron != nil {
+		args = append(args, &tree.Arg{
+			Name:     "fleet",
+			Optional: true,
+			Suggest:  inst.completeFleets,
+		},
+			&tree.Arg{
 				Name:     "squadron",
 				Optional: true,
 				Suggest:  inst.completeSquadrons,
-			},
-		},
+			})
+	}
+
+	inst.commandTree = tree.New(&tree.Node{
+		Name:        "k9s",
+		Description: "Open the k9s dashboard",
+		Args:        args,
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 			if r.Args().HasIndex(0) {
 				fs.Internal().String("profile", "", "Profile to use.")
+
 				if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 					return err
 				}
 			}
+
 			return nil
 		},
 		Execute: inst.execute,
 	})
+
 	return inst
 }
 
@@ -126,6 +140,7 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	var args []string
+
 	ifs := r.FlagSets().Internal()
 	cluster, fleet, squad := r.Args().At(0), r.Args().AtDefault(1, ""), r.Args().AtDefault(2, "")
 
@@ -134,7 +149,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	if value := c.namespaceFn(cluster, fleet, squad); value == "all" {
+	if value := c.squadronNamespaceFn(cluster, fleet, squad); value == "all" {
 		args = append(args, "--all-namespaces")
 	} else if value != "" {
 		args = append(args, "--namespace", value)
@@ -156,6 +171,7 @@ func (c *Command) completeFleets(ctx context.Context, t tree.Root, r *readline.R
 	if cluster, ok := c.squadron.Cluster(r.Args().At(0)); ok {
 		return suggests.List(cluster.Fleets)
 	}
+
 	return nil
 }
 

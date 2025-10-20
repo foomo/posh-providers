@@ -46,6 +46,7 @@ func NewCommand(l log.Logger, cloudflared *Cloudflared, opts ...CommandOption) (
 		name:        "cloudflared",
 		cloudflared: cloudflared,
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -209,6 +210,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 		c.l.Print()
 		return errors.New("missing cloudflared executable")
 	}
+
 	return nil
 }
 

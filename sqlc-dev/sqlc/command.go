@@ -55,11 +55,13 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 		l:     l.Named("sqlc"),
 		cache: cache.Get("sqlc"),
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -146,8 +148,10 @@ func (c *Command) run(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("Running sqlc " + cmd + " ...")
+
 	for _, value := range paths {
 		c.l.Info("└ " + value)
+
 		if out, err := shell.New(ctx, c.l, "sqlc", "--no-remote", cmd).
 			Dir(path.Dir(value)).
 			Args(r.AdditionalArgs()...).
@@ -157,6 +161,7 @@ func (c *Command) run(ctx context.Context, r *readline.Readline) error {
 			return errors.Wrap(err, string(out))
 		}
 	}
+
 	return nil
 }
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
@@ -68,11 +68,13 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 			return name
 		},
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
 		Description: "Run google cloud sdk commands",
@@ -158,6 +160,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) authLogin(ctx context.Context, r *readline.Readline) error {
 	accountName := r.Args().At(1)
+
 	account, err := c.gcloud.cfg.Account(accountName)
 	if err != nil {
 		return err
@@ -181,7 +184,9 @@ func (c *Command) authLogin(ctx context.Context, r *readline.Readline) error {
 		} else if err := os.WriteFile(keyFilename, []byte(value), 0600); err != nil {
 			return errors.Wrap(err, "failed to write service account key")
 		}
+
 		c.l.Debug("retrieved and store service account key file:", keyFilename)
+
 		return c.authLoginServiceAccount(ctx, r, keyFilename)
 	} else {
 		c.l.Debug("using default login")
@@ -212,6 +217,7 @@ func (c *Command) authConfigureDocker(ctx context.Context, r *readline.Readline)
 
 func (c *Command) containerClustersGetCredentials(ctx context.Context, r *readline.Readline) error {
 	var args []string
+
 	ifs := r.FlagSets().Internal()
 	clusterName := r.Args().At(1)
 

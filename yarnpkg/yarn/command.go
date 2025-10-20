@@ -48,6 +48,7 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 		name:  "yarn",
 		cache: c.Get("yarn"),
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -59,18 +60,18 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 		Description: "Run yarn commands",
 		Execute:     inst.execute,
 		Nodes: tree.Nodes{
-			{
+			&tree.Node{
 				Name:        "install",
 				Description: "Install dependencies",
 				Args:        tree.Args{inst.pathArg()},
 				Execute:     inst.install,
 			},
-			{
+			&tree.Node{
 				Name:        "run",
 				Description: "Run script",
 				Args: tree.Args{
 					inst.pathArg(),
-					{
+					&tree.Arg{
 						Name: "script",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.scripts(ctx, r.Args().At(1)))
@@ -79,7 +80,7 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 				},
 				Execute: inst.run,
 			},
-			{
+			&tree.Node{
 				Name:        "run-all",
 				Description: "Run script in all",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -87,7 +88,7 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 					return nil
 				},
 				Args: tree.Args{
-					{
+					&tree.Arg{
 						Name: "script",
 					},
 				},
@@ -138,6 +139,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 func (c *Command) run(ctx context.Context, r *readline.Readline) error {
 	dir, script := r.Args().At(1), r.Args().At(2)
 	c.l.Infof("Running script %q in %q", script, dir)
+
 	return shell.New(ctx, c.l, "yarn", "run", script).
 		Args(r.AdditionalArgs()...).
 		Dir(dir).
@@ -148,10 +150,12 @@ func (c *Command) runAll(ctx context.Context, r *readline.Readline) error {
 	script := r.Args().At(1)
 	ctx, wg := c.wg(ctx, r)
 	c.l.Infof("Running script %q in...", script)
+
 	for _, dir := range c.paths(ctx) {
 		if dir := dir; dir != "." {
 			wg.Go(func() error {
 				c.l.Info("└ " + dir)
+
 				return shell.New(ctx, c.l, "yarn", "run", script).
 					Args(r.AdditionalArgs()...).
 					Dir(dir).
@@ -159,6 +163,7 @@ func (c *Command) runAll(ctx context.Context, r *readline.Readline) error {
 			})
 		}
 	}
+
 	return wg.Wait()
 }
 
@@ -167,7 +172,9 @@ func (c *Command) install(ctx context.Context, r *readline.Readline) error {
 	if r.Args().LenGt(1) {
 		dir = r.Args().At(1)
 	}
+
 	c.l.Infof("Running install in %q", dir)
+
 	return shell.New(ctx, c.l, "yarn", "install").
 		Args(r.AdditionalArgs()...).
 		Dir(dir).
@@ -184,6 +191,7 @@ func (c *Command) paths(ctx context.Context) []string {
 			for i, s := range value {
 				value[i] = path.Dir(s)
 			}
+
 			return value
 		}
 	}).([]string)
@@ -196,7 +204,9 @@ func (c *Command) scripts(ctx context.Context, filename string) []string {
 		if err != nil {
 			return []string{}
 		}
+
 		ret := make([]string, 0)
+
 		if value, err := packagejson.Parse(payload); err != nil {
 			return nil
 		} else {
@@ -204,6 +214,7 @@ func (c *Command) scripts(ctx context.Context, filename string) []string {
 				ret = append(ret, name)
 			}
 		}
+
 		return ret
 	}).([]string)
 }
@@ -225,5 +236,6 @@ func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context
 	} else {
 		wg.SetLimit(1)
 	}
+
 	return ctx, wg
 }

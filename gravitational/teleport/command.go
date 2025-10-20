@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
@@ -48,6 +48,7 @@ func NewCommand(l log.Logger, cache cache.Cache, teleport *Teleport, kubectl *ku
 		kubectl:  kubectl,
 		teleport: teleport,
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -211,6 +212,7 @@ func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
 		Run(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -222,5 +224,6 @@ func (c *Command) logout(ctx context.Context, r *readline.Readline) error {
 		Run(); err != nil {
 		return err
 	}
+
 	return nil
 }

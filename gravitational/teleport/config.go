@@ -27,10 +27,12 @@ func (c Config) Query() string {
 	if len(c.Labels) == 0 {
 		return ""
 	}
+
 	var ret []string
 	for k, v := range c.Labels {
 		ret = append(ret, fmt.Sprintf("labels[\"%s\"] == \"%s\"", k, v))
 	}
+
 	return strings.Join(ret, " && ")
 }
 
@@ -38,6 +40,7 @@ func (c Database) EnvUser() string {
 	if value := os.Getenv("TELEPORT_DATABASE_USER"); value != "" {
 		return value
 	}
+
 	return c.User
 }
 
@@ -45,9 +48,11 @@ func (c Kubernetes) Alias(name string) string {
 	if c.Aliases == nil {
 		return name
 	}
+
 	if value, ok := c.Aliases[name]; ok {
 		return value
 	}
+
 	return name
 }
 
@@ -57,5 +62,6 @@ func (c Kubernetes) Name(alias string) string {
 			return name
 		}
 	}
+
 	return alias
 }

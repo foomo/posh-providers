@@ -63,11 +63,13 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 		op:        op,
 		gcloud:    gcloud,
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	inst.l = l.Named(inst.name)
 	inst.cache = cache.Get(inst.name)
 
@@ -99,6 +101,7 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 									fs.Default().String("debug", "", "Show full logs")
 									fs.Default().String("tags", "", "Quoted string with space-separated tags")
 									fs.Default().String("vebose", "", "Increase logging verbosity")
+
 									return nil
 								},
 								Execute: func(ctx context.Context, r *readline.Readline) error {
@@ -108,6 +111,7 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 									}
 
 									inst.l.Info("creating storage bucket:", be.Bucket)
+
 									return shell.New(ctx, inst.l, "gcloud", "storage", "buckets", "create", fmt.Sprintf("gs://%s", be.Bucket)).
 										Args("--location", be.Location).
 										Args("--project", be.Project).
@@ -125,6 +129,7 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 									}
 									// Configure Google ADC auth
 									inst.l.Info("configuring google ADC auth")
+
 									if err := shell.New(ctx, inst.l, "gcloud", "auth", "application-default", "login").
 										Args("--project", be.Project).
 										Run(); err != nil {
@@ -132,7 +137,7 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 									}
 
 									return shell.New(ctx, inst.l, "pulumi", "login", fmt.Sprintf("gs://%s", be.Bucket)).
-										//Env("GOOGLE_PROJECT=" + be.Project).
+										// Env("GOOGLE_PROJECT=" + be.Project).
 										Env("GOOGLE_APPLICATION_CREDENTIALS=" + env.Path("devops/config/gcloud/application_default_credentials.json")).
 										Run()
 								},
@@ -165,6 +170,7 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							fs.Default().Bool("help", false, "Show command help")
 							fs.Default().Int("verbose", 3, "Enable verbose logging")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -191,6 +197,7 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 							fs.Default().Int("verbose", 3, "Enable verbose logging")
 							fs.Default().StringArray("target", nil, "Specify a single resource URN to update")
 							fs.Default().StringArray("target-replace", nil, "Specify a single resource URN to replace")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -217,6 +224,7 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 							fs.Default().Bool("target-dependents", false, "Allows updating of dependent targets discovered but not specified in --target list")
 							fs.Default().Int("verbose", 3, "Enable verbose logging")
 							fs.Default().StringArray("target", nil, "Specify a single resource URN to update")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -243,6 +251,7 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 							fs.Default().Int("verbose", 3, "Enable verbose logging")
 							fs.Default().StringArray("target", nil, "Specify a single resource URN to update")
 							fs.Default().StringArray("target-replace", nil, "Specify a single resource URN to replace")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -289,6 +298,7 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 							fs.Default().Bool("show-sames", false, "Show resources that needn't be updated because they haven't changed, alongside those that d")
 							fs.Default().StringArray("import-pending-creates", nil, "A list of form [[URN ID]...] describing the provider IDs of pending creates")
 							fs.Default().StringArray("target", nil, "Specify a single resource URN to update")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -354,6 +364,7 @@ func NewCommand(l log.Logger, gcloud *gcloud.GCloud, op *onepassword.OnePassword
 							fs.Default().String("out", "", "The path to the file that will contain the generated resource declarations")
 							fs.Default().String("parent", "", "The name and URN of the parent resource in the format name=urn")
 							fs.Default().StringArray("properties", nil, "The property names to use for the import in the format name1,name")
+
 							return nil
 						},
 						Execute: inst.executeStack,
@@ -402,12 +413,15 @@ func (c *Command) completeEnvs(ctx context.Context, r *readline.Readline) []gopr
 			c.l.Debug(err.Error())
 			return []goprompt.Suggest{}
 		}
+
 		var ret []string
+
 		for _, e := range entries {
 			if e.IsDir() && !strings.HasPrefix(e.Name(), ".") {
 				ret = append(ret, e.Name())
 			}
 		}
+
 		return suggests.List(ret)
 	}).([]goprompt.Suggest)
 }
@@ -492,12 +506,15 @@ func (c *Command) completeProjects(ctx context.Context, t tree.Root, r *readline
 			c.l.Debug(err.Error())
 			return []goprompt.Suggest{}
 		}
+
 		var ret []string
+
 		for _, e := range entries {
 			if e.IsDir() && !strings.HasPrefix(e.Name(), ".") {
 				ret = append(ret, e.Name())
 			}
 		}
+
 		return suggests.List(ret)
 	}).([]goprompt.Suggest)
 }
@@ -512,12 +529,15 @@ func (c *Command) completeStacks(ctx context.Context, t tree.Root, r *readline.R
 			c.l.Debug(err.Error())
 			return []goprompt.Suggest{}
 		}
+
 		var ret []string
+
 		for _, e := range entries {
 			if !e.IsDir() && len(e.Name()) > 11 && strings.HasPrefix(e.Name(), "Pulumi.") && strings.HasSuffix(e.Name(), ".yaml") {
 				ret = append(ret, strings.TrimSuffix(strings.TrimPrefix(e.Name(), "Pulumi."), ".yaml"))
 			}
 		}
+
 		return suggests.List(ret)
 	}).([]goprompt.Suggest)
 }

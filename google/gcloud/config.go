@@ -16,6 +16,7 @@ func (c Config) Cluster(name string) (Cluster, error) {
 	if !ok {
 		return Cluster{}, errors.Errorf("given cluster not found: %s", name)
 	}
+
 	return value, nil
 }
 
@@ -28,6 +29,7 @@ func (c Config) Account(name string) (Account, error) {
 	if !ok {
 		return Account{}, errors.Errorf("given account not found: %s", name)
 	}
+
 	return value, nil
 }
 

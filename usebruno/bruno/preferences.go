@@ -34,16 +34,19 @@ func (p *Preferences) AddLastOpenedCollection(path string) error {
 	if _, ok := p.data["lastOpenedCollections"]; !ok {
 		p.data["lastOpenedCollections"] = make(map[string][]any)
 	}
+
 	if lastOpenedCollections, ok := p.data["lastOpenedCollections"].([]any); ok {
 		var lastOpenedCollectionsStrings []string
 		if err := mapstructure.Decode(lastOpenedCollections, &lastOpenedCollectionsStrings); err != nil {
 			return err
 		}
+
 		if !slices.Contains(lastOpenedCollectionsStrings, path) {
 			lastOpenedCollections = append(lastOpenedCollections, path)
 			p.data["lastOpenedCollections"] = lastOpenedCollections
 		}
 	}
+
 	return nil
 }
 
@@ -52,5 +55,6 @@ func (p *Preferences) Save(path string) error {
 	if err != nil {
 		return err
 	}
+
 	return os.WriteFile(path, data, 0600)
 }

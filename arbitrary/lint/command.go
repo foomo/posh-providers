@@ -49,12 +49,15 @@ func CommandWithGo() CommandOption {
 				fs.Default().String("timeout", "1m", "max excution timeout")
 				fs.Default().String("out-format", "github-actions", "output format")
 				fs.Default().Int("concurrency", 1, "num of concurrent processes")
+
 				return nil
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
 				o.l.Info("Running golangci-lint ...")
+
 				for _, dir := range o.dirs(ctx, r, "go.mod", 1) {
 					o.l.Info("└  " + dir)
+
 					if out, err := shell.New(ctx, o.l, "golangci-lint", "run").
 						Args("--path-prefix", dir).
 						Args(r.Flags()...).
@@ -64,6 +67,7 @@ func CommandWithGo() CommandOption {
 						return errors.Wrap(err, string(out))
 					}
 				}
+
 				return nil
 			},
 		})
@@ -82,6 +86,7 @@ func CommandWithTSC() CommandOption {
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
 				o.l.Info("Running tsc ...")
+
 				for _, dir := range o.dirs(ctx, r, "tsconfig.json", 1) {
 					o.l.Info("└  " + dir)
 
@@ -93,6 +98,7 @@ func CommandWithTSC() CommandOption {
 						return errors.Wrap(err, string(out))
 					}
 				}
+
 				return nil
 			},
 		})
@@ -111,8 +117,10 @@ func CommandWithHelm() CommandOption {
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
 				o.l.Info("Running helm ...")
+
 				for _, dir := range o.dirs(ctx, r, "Chart.yaml", 1) {
 					o.l.Info("└  " + dir)
+
 					if out, err := shell.New(ctx, o.l, "helm", "lint", dir).
 						Args(r.Flags()...).
 						Args(r.AdditionalArgs()...).
@@ -120,6 +128,7 @@ func CommandWithHelm() CommandOption {
 						return errors.Wrap(err, string(out))
 					}
 				}
+
 				return nil
 			},
 		})
@@ -135,12 +144,15 @@ func CommandWithESLint() CommandOption {
 			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 				fs.Default().Bool("fix", false, "run quick fix")
 				fs.Default().Bool("cache", false, "use cache")
+
 				return nil
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
 				o.l.Info("Running eslint ...")
+
 				for _, dir := range o.dirs(ctx, r, "package.json", 1) {
 					o.l.Info("└  " + dir)
+
 					if out, err := shell.New(ctx, o.l, "eslint", "--quiet", ".").
 						Args(r.Flags()...).
 						Args(r.AdditionalArgs()...).
@@ -149,6 +161,7 @@ func CommandWithESLint() CommandOption {
 						return errors.Wrap(err, string(out))
 					}
 				}
+
 				return nil
 			},
 		})
@@ -167,6 +180,7 @@ func CommandWithGherkin() CommandOption {
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
 				o.l.Info("Running gherkin ...")
+
 				for _, dir := range o.dirs(ctx, r, "wdio.conf.ts", 1) {
 					o.l.Info("└  " + dir)
 
@@ -177,6 +191,7 @@ func CommandWithGherkin() CommandOption {
 						return errors.Wrap(err, string(out))
 					}
 				}
+
 				return nil
 			},
 		})
@@ -195,6 +210,7 @@ func CommandWithTerraform() CommandOption {
 			},
 			Execute: func(ctx context.Context, r *readline.Readline) error {
 				o.l.Info("Running tflint ...")
+
 				for _, dir := range o.dirs(ctx, r, "main.tf", 1) {
 					o.l.Info("└  " + dir)
 
@@ -206,6 +222,7 @@ func CommandWithTerraform() CommandOption {
 						return errors.Wrap(err, string(out))
 					}
 				}
+
 				return nil
 			},
 		})
@@ -228,8 +245,10 @@ func CommandWithTerrascan() CommandOption {
 					},
 					Execute: func(ctx context.Context, r *readline.Readline) error {
 						o.l.Info("Running terrascan helm ...")
+
 						for _, dir := range o.dirs(ctx, r, "Chart.yaml", 2) {
 							o.l.Info("└  " + dir)
+
 							if out, err := shell.New(ctx, o.l, "terrascan", "scan").
 								Args("--iac-dir", dir).
 								Args("--iac-type", "docker").
@@ -239,6 +258,7 @@ func CommandWithTerrascan() CommandOption {
 								return errors.Wrap(err, string(out))
 							}
 						}
+
 						return nil
 					},
 				},
@@ -252,8 +272,10 @@ func CommandWithTerrascan() CommandOption {
 					},
 					Execute: func(ctx context.Context, r *readline.Readline) error {
 						o.l.Info("Running terrascan terraform ...")
+
 						for _, dir := range o.dirs(ctx, r, "main.tf", 2) {
 							o.l.Info("└  " + dir)
+
 							if out, err := shell.New(ctx, o.l, "terrascan", "scan").
 								Args("--iac-dir", dir).
 								Args("--iac-type", "docker").
@@ -263,6 +285,7 @@ func CommandWithTerrascan() CommandOption {
 								return errors.Wrap(err, string(out))
 							}
 						}
+
 						return nil
 					},
 				},
@@ -276,8 +299,10 @@ func CommandWithTerrascan() CommandOption {
 					},
 					Execute: func(ctx context.Context, r *readline.Readline) error {
 						o.l.Info("Running terrascan docker ...")
+
 						for _, dir := range o.dirs(ctx, r, "Dockerfile", 2) {
 							o.l.Info("└  " + dir)
+
 							if out, err := shell.New(ctx, o.l, "terrascan", "scan").
 								Args("--iac-dir", dir).
 								Args("--iac-type", "docker").
@@ -287,6 +312,7 @@ func CommandWithTerrascan() CommandOption {
 								return errors.Wrap(err, string(out))
 							}
 						}
+
 						return nil
 					},
 				},
@@ -308,11 +334,13 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 			Description: "Lint your code",
 		}),
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	inst.commandTree.Node().Name = inst.name
 
 	return inst
@@ -356,6 +384,7 @@ func (c *Command) paths(ctx context.Context, filename string) []string {
 			for i, s := range value {
 				value[i] = path.Dir(s)
 			}
+
 			return value
 		}
 	}).([]string)
@@ -373,6 +402,7 @@ func (c *Command) pathArg(filename string) *tree.Arg {
 
 func (c *Command) dirs(ctx context.Context, r *readline.Readline, filename string, offset int) []string {
 	var ret []string
+
 	if r.Args().LenGt(offset) {
 		for _, value := range r.Args()[offset:] {
 			ret = append(ret, value)
@@ -380,5 +410,6 @@ func (c *Command) dirs(ctx context.Context, r *readline.Readline, filename strin
 	} else {
 		ret = c.paths(ctx, filename)
 	}
+
 	return ret
 }

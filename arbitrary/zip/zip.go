@@ -43,6 +43,7 @@ func New(l log.Logger, op *onepassword.OnePassword, opts ...Option) (*Zip, error
 		op:        op,
 		configKey: "zip",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -50,6 +51,7 @@ func New(l log.Logger, op *onepassword.OnePassword, opts ...Option) (*Zip, error
 			}
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -76,6 +78,7 @@ func (c *Zip) Create(ctx context.Context, filename string) error {
 		Output(); err != nil {
 		return errors.Wrap(err, string(out))
 	}
+
 	return nil
 }
 
@@ -86,6 +89,7 @@ func (c *Zip) Extract(ctx context.Context, filename string) error {
 		Output(); err != nil {
 		return errors.Wrap(err, string(out))
 	}
+
 	return nil
 }
 
@@ -102,6 +106,7 @@ func (c *Zip) CreateWithPassword(ctx context.Context, filename, credential strin
 		Output(); err != nil {
 		return errors.Wrap(err, string(out))
 	}
+
 	return nil
 }
 
@@ -118,6 +123,7 @@ func (c *Zip) ExtractWithPassword(ctx context.Context, filename, credential stri
 		Output(); err != nil {
 		return errors.Wrap(err, string(out))
 	}
+
 	return nil
 }
 
@@ -126,5 +132,6 @@ func (c *Zip) GetCredentialPassword(ctx context.Context, name string) (string, e
 	if !ok {
 		return "", fmt.Errorf("credential %s not found", name)
 	}
+
 	return c.op.Get(ctx, secret)
 }

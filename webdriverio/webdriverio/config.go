@@ -30,6 +30,7 @@ func (c ConfigSites) Keys() []string {
 	for s := range c {
 		ret = append(ret, s)
 	}
+
 	return ret
 }
 
@@ -38,6 +39,7 @@ func (c ConfigEnvs) Keys() []string {
 	for s := range c {
 		ret = append(ret, s)
 	}
+
 	return ret
 }
 
@@ -46,5 +48,6 @@ func (c ConfigModes) Keys() []string {
 	for s := range c {
 		ret = append(ret, s)
 	}
+
 	return ret
 }

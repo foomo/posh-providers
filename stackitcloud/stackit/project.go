@@ -21,11 +21,13 @@ func (c Project) Cluster(name string) (Cluster, error) {
 	if !ok {
 		return Cluster{}, errors.Errorf("given cluster not found: %s", name)
 	}
+
 	return value, nil
 }
 
 func (c Project) ClusterNames() []string {
 	ret := lo.Keys(c.Clusters)
 	sort.Strings(ret)
+
 	return ret
 }

@@ -51,11 +51,13 @@ func NewCommand(l log.Logger, cache cache.Cache, op *onepassword.OnePassword, op
 		cache: cache.Get("gocontentful"),
 		op:    op,
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
 		Description: "Run gocontentful",
@@ -130,6 +132,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("Running gocontentful...")
+
 	for _, value := range paths {
 		c.l.Info("└  " + value)
 
@@ -159,6 +162,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 			return err
 		}
 	}
+
 	return nil
 }
 

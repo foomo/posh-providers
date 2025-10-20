@@ -50,6 +50,7 @@ func New(l log.Logger, op *onepassword.OnePassword, opts ...Option) (*Slack, err
 		op:        op,
 		configKey: "slack",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -57,9 +58,11 @@ func New(l log.Logger, op *onepassword.OnePassword, opts ...Option) (*Slack, err
 			}
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
+
 	return inst, nil
 }
 
@@ -75,6 +78,7 @@ func (s *Slack) Client(ctx context.Context) (*slack.Client, error) {
 			s.token = value
 		}
 	}
+
 	return slack.New(s.token, slack.OptionDebug(s.l.IsLevel(log.LevelTrace))), nil
 }
 
@@ -91,6 +95,7 @@ func (s *Slack) Webhook(ctx context.Context, id string) (string, error) {
 	if !ok {
 		return "", errors.Errorf("missing webhook configuration for %s", id)
 	}
+
 	return s.op.Get(ctx, value)
 }
 
@@ -108,11 +113,14 @@ func (s *Slack) SendUserMessage(ctx context.Context, markdown, channel string, a
 	if !annotate {
 		markdown = fmt.Sprintf("*%s*: %s", user, markdown)
 	}
+
 	blocks := []slack.Block{s.MarkdownSection(markdown)}
 	if annotate {
 		blocks = append(blocks, slack.NewContextBlock("", slack.NewTextBlockObject("mrkdwn", "by "+user, false, false)))
 	}
+
 	fallbackOpt := slack.MsgOptionText(markdown, false)
+
 	return s.Send(ctx, ch, slack.MsgOptionCompose(fallbackOpt, slack.MsgOptionBlocks(blocks...)))
 }
 
@@ -120,6 +128,7 @@ func (s *Slack) SendETCDUpdateMessage(ctx context.Context, cluster string) error
 	user, err := git.ConfigUserName(ctx, s.l)
 	if err != nil {
 		pterm.Debug.Println("failed to get git user: " + err.Error())
+
 		user = "unknown"
 	}
 
@@ -147,6 +156,7 @@ func (s *Slack) SendETCDUpdateMessage(ctx context.Context, cluster string) error
 func (s *Slack) Send(ctx context.Context, channel string, opts ...slack.MsgOption) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
+
 	client, err := s.Client(ctx)
 	if err != nil {
 		return err
@@ -157,6 +167,7 @@ func (s *Slack) Send(ctx context.Context, channel string, opts ...slack.MsgOptio
 	}
 
 	s.l.Info("💌 sent slack notification")
+
 	return nil
 }
 
@@ -165,6 +176,7 @@ func (s *Slack) SendWebhook(ctx context.Context, webhook string, blocks []slack.
 	if err != nil {
 		return err
 	}
+
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 

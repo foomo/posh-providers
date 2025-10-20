@@ -198,6 +198,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	go func() {
 		if <-ctx.Done(); true {
 			c.l.Info("triggering graceful migration shutdown")
+
 			m.GracefulStop <- true
 		}
 	}()
@@ -224,12 +225,14 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		if err != nil {
 			return err
 		}
-		return m.Migrate(uint(i))
+
+		return m.Migrate(uint(i)) //nolint:gosec
 	case "force":
 		i, err := strconv.Atoi(r.Args().At(3))
 		if err != nil {
 			return err
 		}
+
 		return m.Force(i)
 	case "drop":
 		return m.Drop()
@@ -238,9 +241,11 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		if err != nil {
 			return err
 		}
+
 		c.l.Infof("Version: %d, Dirty: %t", version, dirty)
+
 		return nil
 	default:
-		return errors.Errorf("unkown command: %s", r.Args().At(2))
+		return errors.Errorf("unknown command: %s", r.Args().At(2))
 	}
 }

@@ -3,7 +3,7 @@ package kubeprompt
 import (
 	"context"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -39,10 +39,12 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 			if r.Args().HasIndex(0) {
 				fs.Internal().String("profile", "", "Profile to use.")
+
 				if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 					return err
 				}
 			}
+
 			return nil
 		},
 		Execute: inst.execute,

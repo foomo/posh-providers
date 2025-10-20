@@ -45,12 +45,15 @@ func (c ConfigCharts) Names() ([]string, error) {
 	}
 
 	var ret []string
+
 	for _, file := range files {
 		if !file.IsDir() {
 			continue
 		}
+
 		ret = append(ret, file.Name())
 	}
+
 	return ret, nil
 }
 
@@ -71,5 +74,6 @@ func (c ConfigCluster) AliasName() string {
 	if c.Alias == "" {
 		return c.Name
 	}
+
 	return c.Alias
 }

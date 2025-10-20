@@ -18,6 +18,7 @@ func Checker(gk *gokazi.Gokazi) check.Checker {
 				Status: check.StatusFailure,
 			}}
 		}
+
 		var ret []check.Info
 		for key, task := range ls {
 			ret = append(ret, check.Info{
@@ -27,6 +28,7 @@ func Checker(gk *gokazi.Gokazi) check.Checker {
 					if task.Running {
 						return check.StatusSuccess
 					}
+
 					return check.StatusNote
 				}(),
 			})

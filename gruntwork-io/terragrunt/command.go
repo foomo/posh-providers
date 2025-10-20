@@ -64,11 +64,13 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache, op
 		cache:     cache.Get("terragrunt"),
 		configKey: "terragrunt",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -233,6 +235,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 		c.l.Print()
 		return errors.New("missing terragrunt executable")
 	}
+
 	return nil
 }
 
@@ -255,12 +258,15 @@ func (c *Command) secrets(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("Rendering secret templates...")
+
 	for _, value := range values {
 		c.l.Info("└  " + value)
+
 		if err := c.op.RenderFileTo(ctx, value, strings.Replace(value, ".tpl.yaml", ".yaml", 1)); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -271,8 +277,10 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	stacks := r.Args().From(3)
 
 	c.l.Info("Running terragrunt...")
+
 	for _, stack := range stacks {
 		c.l.Info("└  " + stack)
+
 		if err := shell.New(ctx, c.l, "terragrunt", command).
 			Args(r.AdditionalFlags()...).
 			Dir(path.Join(c.cfg.StacksPath(envName, siteName), stack)).
@@ -292,6 +300,7 @@ func (c *Command) getEnvs(ctx context.Context, r *readline.Readline) []goprompt.
 
 func (c *Command) getSites(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	envName := r.Args().At(0)
+
 	return c.cache.GetSuggests("sites-"+envName, func() any {
 		return suggests.List(c.cfg.SiteNames(envName))
 	})
@@ -300,11 +309,13 @@ func (c *Command) getSites(ctx context.Context, r *readline.Readline) []goprompt
 func (c *Command) getStacks(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	envName := r.Args().At(0)
 	site := r.Args().At(1)
+
 	return c.cache.GetSuggests("stacks-"+envName+"-"+site, func() any {
 		stacks, err := c.cfg.StackNames(ctx, envName, site)
 		if err != nil {
 			c.l.Debug("failed to retrieve stacks", zap.Error(err))
 		}
+
 		return suggests.List(stacks)
 	})
 }

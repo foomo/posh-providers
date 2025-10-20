@@ -15,5 +15,6 @@ func (p Config) Backend(name string) (Backend, error) {
 	if !ok {
 		return Backend{}, errors.Errorf("backend not found: %s", name)
 	}
+
 	return value, nil
 }

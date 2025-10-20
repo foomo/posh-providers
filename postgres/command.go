@@ -80,9 +80,11 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 					fs.Internal().Bool("zip", false, "create a zip file")
 					fs.Internal().Bool("dump", false, "use dump format")
 					fs.Internal().String("zip-cred", "", "configured zip credential name")
+
 					if err := fs.Internal().SetValues("zip-cred", inst.zip.Config().CredentialNames()...); err != nil {
 						return err
 					}
+
 					return nil
 				},
 				Args: tree.Args{
@@ -139,9 +141,11 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 					fs.Default().Bool("no-owner", false, "skip restoration of object ownership")
 					connectionFlags(fs)
 					fs.Internal().String("zip-cred", "", "configured zip credential name")
+
 					if err := fs.Internal().SetValues("zip-cred", inst.zip.Config().CredentialNames()...); err != nil {
 						return err
 					}
+
 					return nil
 				},
 				Args: tree.Args{
@@ -215,6 +219,7 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 	ifs := r.FlagSets().Internal()
 
 	database := r.Args().At(1)
+
 	dirname := r.Args().At(2)
 	if err := os.MkdirAll(dirname, 0700); err != nil {
 		return err
@@ -223,6 +228,7 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 	filename := fmt.Sprintf("%s/%s-%s", dirname, database, time.Now().Format("20060102150405"))
 	if log.MustGet(ifs.GetBool("dump"))(c.l) {
 		filename += ".dump"
+
 		if err := fs.Set("format", "custom"); err != nil {
 			return err
 		}
@@ -231,6 +237,7 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("Creating database dump: " + filename)
+
 	if out, err := shell.New(ctx, c.l, "pg_dump").
 		Args(fs.Visited().Args()...).
 		Args(r.AdditionalFlags()...).
@@ -243,6 +250,7 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 
 	if log.MustGet(ifs.GetBool("zip"))(c.l) {
 		c.l.Info("Compressing database dump...")
+
 		if err := c.zip.Create(ctx, filename); err != nil {
 			return err
 		}
@@ -250,6 +258,7 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 
 	if cred := log.MustGet(ifs.GetString("zip-cred"))(c.l); cred != "" {
 		c.l.Info("Securing database dump...")
+
 		if err := c.zip.CreateWithPassword(ctx, filename, cred); err != nil {
 			return err
 		}
@@ -263,6 +272,7 @@ func (c *Command) restore(ctx context.Context, r *readline.Readline) error {
 	filename := r.Args().At(1)
 
 	c.l.Info("Restoring database dump: " + filename)
+
 	if out, err := shell.New(ctx, c.l, "pg_restore").
 		Args(flags...).
 		Args(r.AdditionalFlags()...).

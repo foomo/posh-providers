@@ -3,6 +3,7 @@
 
 # --- Config -----------------------------------------------------------------
 
+GOMODS=$(shell find . -type f -name go.mod)
 # Newline hack for error output
 define br
 
@@ -12,8 +13,15 @@ endef
 # --- Targets -----------------------------------------------------------------
 
 # This allows us to accept extra arguments
-%: .mise .husky
+%: .mise .husky go.work
 	@:
+
+# Ensure go.work file
+go.work:
+	@echo "〉initializing go work"
+	@go work init
+	@go work use -r .
+	@go work sync
 
 .PHONY: .mise
 # Install dependencies
@@ -32,32 +40,43 @@ endif
 ### Tasks
 
 .PHONY: check
-## Run tests and linters
+## Run tidy, schema, lint & tests
 check: tidy schema lint test
 
 .PHONY: tidy
 ## Run go mod tidy
 tidy:
-	@go mod tidy
+	@echo "〉go mod tidy"
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go mod tidy) &&) true
 
 .PHONY: lint
 ## Run linter
 lint:
-	@golangci-lint run
+	@echo "〉golangci-lint run"
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && golangci-lint run) &&) true
 
 .PHONY: lint.fix
 ## Fix lint violations
 lint.fix:
-	@golangci-lint run --fix
+	@echo "〉golangci-lint run fix"
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && golangci-lint run --fix) &&) true
 
 .PHONY: test
 ## Run tests
 test:
-	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out --tags=safe -race ./...
+	@echo "〉go test"
+	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -tags=safe -race work
+
+.PHONY: outdated
+## Show outdated direct dependencies
+outdated:
+	@echo "〉go mod outdated"
+	@go list -u -m -json all | go-mod-outdated -update -direct
 
 .PHONY: schema
-## Run linter
+## Generate JSON schema
 schema:
+	@echo "〉generating schema"
 	@yq eval-all '. as $$item ireduce ({}; . *+ $$item)' base.schema.json \
 		$(shell find . -name config.base.json -print | tr '\n' ' ') \
 		> merged.schema.json
@@ -68,12 +87,32 @@ schema:
 			> posh.schema.json
 	@rm merged.schema.json
 
+.PHONY: release
+## Create release TAG=1.0.0
+release: MODS=$(shell find . -type f -name 'go.mod' -mindepth 2 -not -path './examples/*')
+release:
+ifndef TAG
+	$(error $(br)$(br)TAG variable is required.$(br)Usage: make release TAG=1.0.0$(br)$(br))
+endif
+	@echo "〉️Create release"
+	@echo "🔖 v$(TAG)" && git tag v$(TAG)
+	@$(foreach mod,$(MODS), (echo "🔖 $(patsubst %/,%,$(patsubst ./%,%,$(basename $(dir $(mod)))))/v$(TAG)" && git tag $(patsubst %/,%,$(patsubst ./%,%,$(basename $(dir $(mod)))))/v$(TAG)") &&) true
+	@echo
+	@read -p "Do you want to push the tags to the remote? [y/N] " yn; \
+	@case $$yn in [Yy]*) git push origin --tags ;; *) echo "Skipping git push." ;; esac
+
 ### Utils
+
+.PHONY: docs
+## Open go docs
+docs:
+	@echo "〉starting go docs"
+	@go doc -http
 
 .PHONY: help
 ## Show help text
 help:
-	@echo "Project Oriented SHELL (posh)\n"
+	@echo "Project Oriented SHELL (posh) Providers\n"
 	@echo "Usage:\n  make [task]"
 	@awk '{ \
 		if($$0 ~ /^### /){ \

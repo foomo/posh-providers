@@ -29,6 +29,7 @@ type (
 func (c ConfigRouter) RouteForPath(paths []string) ConfigRoute {
 	paths, route := paths[0:len(paths)-1], paths[len(paths)-1]
 	routes := c.RoutesForPath(paths)
+
 	return routes[route]
 }
 
@@ -40,5 +41,6 @@ func (c ConfigRouter) RoutesForPath(paths []string) map[string]ConfigRoute {
 			break
 		}
 	}
+
 	return routes
 }

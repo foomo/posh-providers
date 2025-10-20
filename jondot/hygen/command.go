@@ -172,12 +172,14 @@ func (c *Command) paths(ctx context.Context) []string {
 			c.l.Debug("failed to read template dir:", err.Error())
 			return []string{}
 		}
+
 		ret := make([]string, 0, len(files))
 		for _, value := range files {
 			if value.IsDir() {
 				ret = append(ret, value.Name())
 			}
 		}
+
 		return ret
 	}).([]string)
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/foomo/posh-providers/foomo/squadron"
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -72,6 +72,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 			}
 		},
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -117,17 +118,21 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
 							fs.Default().String("template", "default", "Template to use for log lines")
 							fs.Internal().String("profile", "", "Profile to use")
+
 							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
 								return err
 							}
+
 							if r.Args().HasIndex(0) {
 								if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 									return err
 								}
+
 								if err := fs.Default().SetValues("namespace", inst.kubectl.Cluster(r.Args().At(0)).Namespaces(ctx, "")...); err != nil {
 									return err
 								}
 							}
+
 							return nil
 						},
 						Execute: inst.tailQuery,
@@ -154,17 +159,21 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
 							fs.Default().String("template", "default", "Template to use for log lines")
 							fs.Internal().String("profile", "", "Profile to use")
+
 							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
 								return err
 							}
+
 							if r.Args().HasIndex(0) {
 								if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 									return err
 								}
+
 								if err := fs.Default().SetValues("namespace", inst.kubectl.Cluster(r.Args().At(0)).Namespaces(ctx, "")...); err != nil {
 									return err
 								}
 							}
+
 							return nil
 						},
 						Execute: inst.tailRaw,
@@ -198,14 +207,17 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
 							fs.Default().String("template", "default", "Template to use for log lines")
 							fs.Internal().String("profile", "", "Profile to use")
+
 							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
 								return err
 							}
+
 							if r.Args().HasIndex(0) {
 								if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 									return err
 								}
 							}
+
 							return nil
 						},
 						Execute: inst.tailSquadron,
@@ -270,10 +282,12 @@ func (c *Command) tailQuery(ctx context.Context, r *readline.Readline) error {
 	if queries == nil {
 		return errors.New("query not found")
 	}
+
 	var args []string
 	for _, query := range queries {
 		args = append(args, query.Query...)
 	}
+
 	return c.tail(ctx, r, args...)
 }
 
@@ -294,6 +308,7 @@ func (c *Command) completeFleets(ctx context.Context, t tree.Root, r *readline.R
 	if cluster, ok := c.squadron.Cluster(r.Args().At(0)); ok {
 		return suggests.List(cluster.Fleets)
 	}
+
 	return nil
 }
 
