@@ -32,12 +32,14 @@ func (c Config) Subscription(name string) (Subscription, error) {
 	if !ok {
 		return Subscription{}, errors.Errorf("resource group not found: %s", name)
 	}
+
 	return value, nil
 }
 
 func (c Config) SubscriptionNames() []string {
 	keys := lo.Keys(c.Subscriptions)
 	sort.Strings(keys)
+
 	return keys
 }
 
@@ -46,11 +48,13 @@ func (c Config) ServicePrincipal(name string) (ServicePrincipal, error) {
 	if !ok {
 		return ServicePrincipal{}, errors.Errorf("service principal not found: %s", name)
 	}
+
 	return value, nil
 }
 
 func (c Config) ServicePrincipalNames() []string {
 	keys := lo.Keys(c.ServicePrincipals)
 	sort.Strings(keys)
+
 	return keys
 }

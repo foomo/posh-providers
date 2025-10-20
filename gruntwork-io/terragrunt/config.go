@@ -37,19 +37,25 @@ func (c Config) SitesPath(env string) string {
 
 func (c Config) StackNames(ctx context.Context, env, site string) ([]string, error) {
 	var ret []string
+
 	root := c.StacksPath(env, site)
+
 	out, err := files.Find(ctx, root, "terragrunt.hcl", files.FindWithIsFile(true))
 	if err != nil {
 		return nil, err
 	}
+
 	for _, v := range out {
 		v = strings.TrimPrefix(v, root)
+
 		v = strings.TrimSuffix(v, "/terragrunt.hcl")
 		if v = strings.TrimPrefix(v, "/"); strings.Contains(v, "/") {
 			ret = append(ret, v)
 		}
 	}
+
 	slices.Sort(ret)
+
 	return ret, err
 }
 
@@ -63,6 +69,7 @@ func (c Config) StacksPath(env, site string) string {
 
 func (c Config) dirNames(path string) []string {
 	var ret []string
+
 	if files, err := os.ReadDir(path); err == nil {
 		for _, value := range files {
 			if value.IsDir() && !strings.HasPrefix(value.Name(), ".") && !strings.HasPrefix(value.Name(), "_") {
@@ -70,5 +77,6 @@ func (c Config) dirNames(path string) []string {
 			}
 		}
 	}
+
 	return ret
 }

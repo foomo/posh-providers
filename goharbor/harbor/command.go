@@ -46,6 +46,7 @@ func NewCommand(l log.Logger, harbor *Harbor, opts ...CommandOption) *Command {
 		name:   "harbor",
 		harbor: harbor,
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -118,6 +119,7 @@ func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
 	)
 
 	var username string
+
 	user, _, err := client.Users.Get(ctx, "")
 	if err == nil && user != nil && user.Login != nil {
 		username = *user.Login

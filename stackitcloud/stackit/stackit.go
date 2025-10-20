@@ -73,5 +73,6 @@ func (s *Stackit) ClusterNames(projectName string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return project.ClusterNames(), nil
 }

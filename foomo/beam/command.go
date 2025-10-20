@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/foomo/posh-providers/cloudflare/cloudflared"
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -50,6 +50,7 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 		kubectl:     kubectl,
 		cloudflared: cloudflared,
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -211,6 +212,7 @@ func (c *Command) clusterKubeconfig(ctx context.Context, r *readline.Readline) e
 	if err != nil {
 		return err
 	}
+
 	kubeconfig = strings.ReplaceAll(kubeconfig, "$PORT", fmt.Sprintf("%d", clusterConfig.Port))
 
 	return os.WriteFile(kubectlCluster.Config(""), []byte(kubeconfig), 0600)
@@ -221,6 +223,7 @@ func (c *Command) clusterConnect(ctx context.Context, r *readline.Readline) erro
 	clusterConfig := c.beam.Config().GetCluster(name)
 
 	c.l.Info("Connecting to cluster: " + name)
+
 	return c.cloudflared.Connect(ctx, cloudflared.Access{
 		Type:     "tcp",
 		Hostname: clusterConfig.Hostname,
@@ -235,8 +238,10 @@ func (c *Command) clusterDisconnect(ctx context.Context, r *readline.Readline) e
 	} else {
 		names = c.beam.cfg.ClusterNames()
 	}
+
 	for _, name := range names {
 		c.l.Info("Disconnecting from cluster: " + name)
+
 		clusterConfig := c.beam.Config().GetCluster(name)
 		if err := c.cloudflared.Disonnect(ctx, cloudflared.Access{
 			Type:     "tcp",
@@ -246,6 +251,7 @@ func (c *Command) clusterDisconnect(ctx context.Context, r *readline.Readline) e
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -254,6 +260,7 @@ func (c *Command) databaseConnect(ctx context.Context, r *readline.Readline) err
 	databaseConfig := c.beam.Config().GetDatabase(name)
 
 	c.l.Info("Connecting to database: " + name)
+
 	return c.cloudflared.Connect(ctx, cloudflared.Access{
 		Type:     "tcp",
 		Hostname: databaseConfig.Hostname,
@@ -268,8 +275,10 @@ func (c *Command) databaseDisconnect(ctx context.Context, r *readline.Readline) 
 	} else {
 		names = c.beam.cfg.DatabaseNames()
 	}
+
 	for _, name := range names {
 		c.l.Info("Disconnecting from database: " + name)
+
 		databaseConfig := c.beam.Config().GetDatabase(name)
 		if err := c.cloudflared.Disonnect(ctx, cloudflared.Access{
 			Type:     "tcp",
@@ -279,5 +288,6 @@ func (c *Command) databaseDisconnect(ctx context.Context, r *readline.Readline) 
 			return err
 		}
 	}
+
 	return nil
 }

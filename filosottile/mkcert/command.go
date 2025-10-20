@@ -129,6 +129,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	case r.Args().LenIs(0):
 		return errors.New("missing [CMD] argument")
 	}
+
 	return nil
 }
 
@@ -156,9 +157,12 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 	if err := files.MkdirAll(c.cfg.CertificatePath); err != nil {
 		return err
 	}
+
 	c.l.Info("Generating certificates:")
+
 	for _, certificate := range c.cfg.Certificates {
 		c.l.Info("└  " + certificate.Name)
+
 		if err := shell.New(ctx, c.l, "mkcert").
 			Args("-key-file", fmt.Sprintf("%s-key.pem", certificate.Name)).
 			Args("-cert-file", fmt.Sprintf("%s.pem", certificate.Name)).
@@ -170,6 +174,7 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -193,6 +198,7 @@ func (c *Command) create(ctx context.Context, r *readline.Readline) error {
 	if err := files.MkdirAll(c.cfg.CertificatePath); err != nil {
 		return err
 	}
+
 	return shell.New(ctx, c.l, "mkcert").
 		Dir(c.cfg.CertificatePath).
 		Args(r.Args().From(1)...).

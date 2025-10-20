@@ -39,6 +39,7 @@ func New(l log.Logger, opts ...Option) (*K3d, error) {
 		l:         l.Named("k3d"),
 		configKey: "k3d",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -46,6 +47,7 @@ func New(l log.Logger, opts ...Option) (*K3d, error) {
 			}
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -75,6 +77,7 @@ func (i *K3d) Registry(ctx context.Context, name string) (*Registry, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var registries []*Registry
 	if err := json.Unmarshal(out, &registries); err != nil {
 		return nil, err
@@ -85,6 +88,7 @@ func (i *K3d) Registry(ctx context.Context, name string) (*Registry, error) {
 			return registry, nil
 		}
 	}
+
 	return nil, nil //nolint: nilnil
 }
 
@@ -93,14 +97,17 @@ func (i *K3d) Cluster(ctx context.Context, name string) (*Cluster, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var clusters []*Cluster
 	if err := json.Unmarshal(out, &clusters); err != nil {
 		return nil, err
 	}
+
 	for _, cluster := range clusters {
 		if cluster.Name == name {
 			return cluster, nil
 		}
 	}
+
 	return nil, nil //nolint: nilnil
 }

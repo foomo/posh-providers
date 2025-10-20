@@ -18,6 +18,7 @@ func (c Config) GetDatabase(name string) Database {
 func (c Config) DatabaseNames() []string {
 	ret := lo.Keys(c.Databases)
 	sort.Strings(ret)
+
 	return ret
 }
 
@@ -33,6 +34,7 @@ func (c Config) GetCluster(name string) Cluster {
 func (c Config) ClusterNames() []string {
 	ret := lo.Keys(c.Clusters)
 	sort.Strings(ret)
+
 	return ret
 }
 

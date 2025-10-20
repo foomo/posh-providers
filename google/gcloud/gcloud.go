@@ -61,6 +61,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 		configKey:            "gcloud",
 		accountFileNameRegex: regexp.MustCompile(`(\w+)@(\w+)-(\w+)\.json`),
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)

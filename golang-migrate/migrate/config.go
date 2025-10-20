@@ -17,6 +17,7 @@ func (c Config) Source(name string) string {
 	if value, ok := c.SourcesMap[name]; ok {
 		return value
 	}
+
 	return ""
 }
 
@@ -28,5 +29,6 @@ func (c Config) Database(name string) string {
 	if value, ok := c.DatabasesMap[name]; ok {
 		return value
 	}
+
 	return ""
 }

@@ -13,6 +13,7 @@ func (c Config) Cluster(name string) (Cluster, bool) {
 			return cluster, true
 		}
 	}
+
 	return Cluster{}, false
 }
 
@@ -21,5 +22,6 @@ func (c Config) ClusterNames() []string {
 	for _, cluster := range c.Clusters {
 		ret = append(ret, cluster.Name)
 	}
+
 	return ret
 }

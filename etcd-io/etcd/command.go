@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	prompt2 "github.com/c-bata/go-prompt"
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -45,6 +45,7 @@ func NewCommand(l log.Logger, etcd *ETCD, kubectl *kubectl.Kubectl, opts ...Opti
 				if value, ok := inst.etcd.cfg.Cluster(r.Args().At(0)); ok {
 					return suggests.List(value.Paths)
 				}
+
 				return nil
 			},
 		},
@@ -52,10 +53,12 @@ func NewCommand(l log.Logger, etcd *ETCD, kubectl *kubectl.Kubectl, opts ...Opti
 	flags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 		if r.Args().HasIndex(0) {
 			fs.Internal().String("profile", "", "Profile to use.")
+
 			if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 				return err
 			}
 		}
+
 		return nil
 	}
 
@@ -67,11 +70,13 @@ func NewCommand(l log.Logger, etcd *ETCD, kubectl *kubectl.Kubectl, opts ...Opti
 				Name: "cluster",
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					var ret []string
+
 					for _, cluster := range inst.etcd.kubectl.Clusters() {
 						if _, ok := inst.etcd.cfg.Cluster(cluster.Name()); ok {
 							ret = append(ret, cluster.Name())
 						}
 					}
+
 					return suggests.List(ret)
 				},
 				Nodes: tree.Nodes{
@@ -139,6 +144,7 @@ func (c *Command) get(ctx context.Context, r *readline.Readline) error {
 	} else {
 		prints.Code(c.l, etcdPath, out+"\n", "yaml")
 	}
+
 	return nil
 }
 
@@ -147,6 +153,7 @@ func (c *Command) edit(ctx context.Context, r *readline.Readline) error {
 		prev []byte
 		next []byte
 	)
+
 	cluster, ok := c.etcd.cfg.Cluster(r.Args().At(0))
 	if !ok {
 		return errors.New("invalid cluster")
@@ -182,9 +189,11 @@ func (c *Command) edit(ctx context.Context, r *readline.Readline) error {
 		if value := os.Getenv("EDITOR"); value != "" {
 			d = value
 		}
+
 		editor := exec.CommandContext(ctx, d, filename)
 		editor.Stdin = os.Stdin
 		editor.Stdout = os.Stdout
+
 		editor.Stderr = os.Stderr
 		if err := editor.Run(); err != nil {
 			return err
@@ -203,8 +212,10 @@ func (c *Command) edit(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("updating config")
+
 	if out, err := c.etcd.SetPath(ctx, cluster, profile, etcdPath, string(next)); err != nil {
 		return errors.Wrap(err, out)
 	}
+
 	return nil
 }

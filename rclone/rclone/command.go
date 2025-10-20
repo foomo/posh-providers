@@ -59,11 +59,13 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 		cache:     cache.Get("rclone"),
 		configKey: "rclone",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -81,6 +83,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			return inst.cache.GetSuggests("remotes", func() any {
 				out, _ := exec.CommandContext(ctx, "rclone", "listremotes").Output()
 				ret := strings.Split(strings.Trim(string(out), "\n"), "\n")
+
 				return suggests.List(ret)
 			})
 		},
@@ -277,6 +280,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 		c.l.Print()
 		return errors.New("missing rclone executable")
 	}
+
 	return nil
 }
 

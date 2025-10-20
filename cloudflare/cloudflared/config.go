@@ -14,6 +14,7 @@ type Config struct {
 func (c Config) AccessNames() []string {
 	ret := lo.Keys(c.Access)
 	sort.Strings(ret)
+
 	return ret
 }
 

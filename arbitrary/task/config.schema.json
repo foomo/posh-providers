@@ -4,9 +4,20 @@
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
-      "additionalProperties": {
-        "$ref": "#/$defs/Task"
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the directory containing tasks"
+        },
+        "tasks": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Task"
+          },
+          "type": "object",
+          "description": "Task configurations"
+        }
       },
+      "additionalProperties": false,
       "type": "object"
     },
     "Task": {
@@ -25,6 +36,10 @@
         "dir": {
           "type": "string",
           "description": "Dir to execute the task in"
+        },
+        "sudo": {
+          "type": "boolean",
+          "description": "Run as sudo"
         },
         "description": {
           "type": "string",

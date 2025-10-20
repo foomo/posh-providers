@@ -17,5 +17,6 @@ func (c Tunnel) GetCluster(name string) Cluster {
 func (c Tunnel) GetClusterNames() []string {
 	ret := lo.Keys(c.Clusters)
 	sort.Strings(ret)
+
 	return ret
 }

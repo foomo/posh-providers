@@ -50,6 +50,7 @@ func NewTeleport(l log.Logger, cache cache.Cache, opts ...Option) (*Teleport, er
 		cache:     cache.Get("teleport"),
 		configKey: "teleport",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -57,6 +58,7 @@ func NewTeleport(l log.Logger, cache cache.Cache, opts ...Option) (*Teleport, er
 			}
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -85,6 +87,7 @@ func (t *Teleport) IsAuthenticated(ctx context.Context) bool {
 	} else {
 		t.signedIn = true
 		t.signedInTime = time.Now()
+
 		return true
 	}
 }
@@ -96,6 +99,7 @@ func (t *Teleport) Clusters(ctx context.Context) []string {
 	if !t.IsAuthenticated(ctx) {
 		return nil
 	}
+
 	return t.cache.Get("clusters", func() interface{} {
 		ret := []string{}
 
@@ -121,6 +125,7 @@ func (t *Teleport) Clusters(ctx context.Context) []string {
 		for _, s := range clusters {
 			ret = append(ret, t.cfg.Kubernetes.Alias(s.KubeClusterName))
 		}
+
 		return ret
 	}).([]string)
 }
@@ -132,6 +137,7 @@ func (t *Teleport) Apps(ctx context.Context) []string {
 	if !t.IsAuthenticated(ctx) {
 		return nil
 	}
+
 	return t.cache.Get("apps", func() interface{} {
 		ret := []string{}
 
@@ -143,6 +149,7 @@ func (t *Teleport) Apps(ctx context.Context) []string {
 				Metadata metadata `json:"metadata"`
 			}
 		)
+
 		value, err := shell.New(ctx, t.l, "tsh", "apps", "ls",
 			fmt.Sprintf("--query='%s'", t.cfg.Query()),
 			"--format", "json",
@@ -174,6 +181,7 @@ func (t *Teleport) Databases(ctx context.Context) []string {
 	if !t.IsAuthenticated(ctx) {
 		return nil
 	}
+
 	return t.cache.Get("databases", func() interface{} {
 		ret := []string{}
 
@@ -185,6 +193,7 @@ func (t *Teleport) Databases(ctx context.Context) []string {
 				Metadata metadata `json:"metadata"`
 			}
 		)
+
 		value, err := shell.New(ctx, t.l, "tsh", "db", "ls",
 			fmt.Sprintf("--query='%s'", t.cfg.Query()),
 			"--format", "json",

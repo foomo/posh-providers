@@ -18,5 +18,6 @@ func (c Config) Env(name string) Env {
 func (c Config) EnvNames() []string {
 	ret := lo.Keys(c.Envs)
 	sort.Strings(ret)
+
 	return ret
 }

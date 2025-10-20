@@ -3,7 +3,7 @@ package helm
 import (
 	"context"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -55,11 +55,13 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
 		fs.Default().Bool("atomic", false, "delete installation on failure")
 		fs.Default().Bool("wait", false, "wait until all resources a ready")
 		fs.Internal().String("profile", "", "Profile to use.")
+
 		if r.Args().HasIndex(0) {
 			if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 				return err
 			}
 		}
+
 		return nil
 	}
 

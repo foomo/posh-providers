@@ -43,6 +43,7 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 		op:   op,
 		name: "op",
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			if err := opt(inst); err != nil {
@@ -50,6 +51,7 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 			}
 		}
 	}
+
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
 		Description: "Execute 1Password commands",
@@ -99,6 +101,7 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 			},
 		},
 	})
+
 	return inst, nil
 }
 
@@ -145,6 +148,7 @@ func (c *Command) download(ctx context.Context, r *readline.Readline) error {
 	if err := os.MkdirAll(path.Dir(r.Args().At(2)), 0700); err != nil {
 		return err
 	}
+
 	return shell.New(ctx, c.l,
 		"op",
 		"--account", c.op.cfg.Account,
@@ -172,5 +176,6 @@ func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
 	} else if err := c.op.SignIn(ctx); err != nil {
 		return err
 	}
+
 	return nil
 }

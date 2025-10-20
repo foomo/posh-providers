@@ -15,6 +15,7 @@ func (c Config) Cluster(name string) (Cluster, error) {
 	if !ok {
 		return Cluster{}, errors.Errorf("given cluster not found: %s", name)
 	}
+
 	return value, nil
 }
 

@@ -62,11 +62,13 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 		configKey: "webdriverio",
 		op:        op,
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
 		}
 	}
+
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
@@ -96,6 +98,7 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 									if value, ok := inst.cfg.Sites[r.Args().At(1)]; ok {
 										return suggests.List(value.Keys())
 									}
+
 									return nil
 								},
 								Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -108,24 +111,30 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 									fs.Internal().Bool("headless", false, "Run suite in headless mode")
 									fs.Internal().Bool("debug", false, "Run in debug mode and leave browser open after test failure")
 									fs.Internal().Bool("bail", false, "Stop test runner after specific amount of tests have failed")
+
 									if r.Args().LenGte(4) {
 										if err := fs.Default().SetValues("spec", inst.specs(ctx, r.Args().At(3))...); err != nil {
 											return err
 										}
+
 										spec, err := fs.Default().GetString("spec")
 										if err != nil {
 											return err
 										}
+
 										if err := fs.Internal().SetValues("tag", inst.tags(ctx, r.Args().At(3), spec)...); err != nil {
 											return err
 										}
+
 										if err := fs.Internal().SetValues("scenario", inst.scenarios(ctx, r.Args().At(3), spec)...); err != nil {
 											return err
 										}
 									}
+
 									if err := fs.Internal().SetValues("log-level", "info", "warn", "debug"); err != nil {
 										return err
 									}
+
 									return nil
 								},
 								Args: tree.Args{
@@ -191,6 +200,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		"LOG_LEVEL=" + logLevel,
 		"NODE_TLS_REJECT_UNAUTHORIZED=0", // allow TLS errors when in local mode with self-signed certificates
 	}
+
 	var args []string
 
 	if log.MustGet(ifs.GetBool("debug"))(c.l) {
@@ -206,11 +216,14 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	} else if mode == "browserstack" {
 		secret := *c.cfg.BrowserStack
 		secret.Field = "username"
+
 		username, err := c.op.Get(ctx, secret)
 		if err != nil {
 			return err
 		}
+
 		secret.Field = "password"
+
 		password, err := c.op.Get(ctx, secret)
 		if err != nil {
 			return err
@@ -242,24 +255,30 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	if modeConfig.HostPrefix != "" {
 		baseURL = modeConfig.HostPrefix + "." + baseURL
 	}
+
 	if modeConfig.Port != "" {
 		baseURL += ":" + modeConfig.Port
 	}
+
 	envs = append(envs, fmt.Sprintf("E2E_BASE_URL=%s", baseURL))
 
 	// basic auth
 	if siteConfig.Auth != nil {
 		secret := *siteConfig.Auth
 		secret.Field = "username"
+
 		username, err := c.op.Get(ctx, secret)
 		if err != nil {
 			return err
 		}
+
 		secret.Field = "password"
+
 		password, err := c.op.Get(ctx, secret)
 		if err != nil {
 			return err
 		}
+
 		envs = append(envs, fmt.Sprintf("BASIC_AUTH=%s:%s", url.QueryEscape(username), url.QueryEscape(password)))
 	}
 
@@ -271,8 +290,10 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	}
 
 	c.l.Info("Running wdio...")
+
 	for _, dir := range dirs {
 		c.l.Info("└  " + dir)
+
 		if err := shell.New(ctx, c.l, "wdio", "run", "e2e/wdio.conf.ts").
 			Args(args...).
 			Args(fs.Visited().Args()...).
@@ -294,14 +315,17 @@ func (c *Command) paths(ctx context.Context) []string {
 		if err != nil {
 			return []string{}
 		}
+
 		ret := make([]string, 0, len(values))
 		for _, file := range values {
 			dir := strings.TrimSuffix(file, "/e2e/wdio.conf.ts")
 			if _, err := os.Stat(dir); err != nil {
 				continue
 			}
+
 			ret = append(ret, dir)
 		}
+
 		return ret
 	}).([]string)
 }
@@ -317,6 +341,7 @@ func (c *Command) specs(ctx context.Context, dir string) []string {
 			for i, s := range value {
 				value[i] = strings.TrimPrefix(s, dir+"/e2e/features/")
 			}
+
 			return value
 		}
 	}).([]string)
@@ -325,16 +350,19 @@ func (c *Command) specs(ctx context.Context, dir string) []string {
 //nolint:forcetypeassert
 func (c *Command) tags(ctx context.Context, dir, spec string) []string {
 	cacheKey := strings.ReplaceAll(dir, "/", "-")
+
 	filename := "'*.feature'"
 	if spec != "" {
 		filename = spec
 		cacheKey += "-" + strings.TrimSuffix(spec, ".feature")
 	}
+
 	return c.cache.Get("tag-"+cacheKey, func() any {
 		res, err := shell.New(ctx, c.l, "find", dir+"/e2e/features", "-type", "f", "-name", filename, "-exec", "cat", "{}", "\\;", "|", "grep", "'^\\t@'").CombinedOutput()
 		if err != nil {
 			return []string{}
 		}
+
 		resMap := map[string]bool{}
 		for _, value := range strings.Split(string(bytes.TrimSpace(res)), "\n") {
 			for _, tag := range strings.Split(strings.TrimSpace(value), " ") {
@@ -343,10 +371,12 @@ func (c *Command) tags(ctx context.Context, dir, spec string) []string {
 				}
 			}
 		}
+
 		ret := make([]string, 0, len(resMap))
 		for tag := range resMap {
 			ret = append(ret, tag)
 		}
+
 		return ret
 	}).([]string)
 }
@@ -354,31 +384,38 @@ func (c *Command) tags(ctx context.Context, dir, spec string) []string {
 //nolint:forcetypeassert
 func (c *Command) scenarios(ctx context.Context, dir, spec string) []string {
 	cacheKey := strings.ReplaceAll(dir, "/", "-")
+
 	filename := "'*.feature'"
 	if spec != "" {
 		filename = spec
 		cacheKey += "-" + strings.TrimSuffix(spec, ".feature")
 	}
+
 	return c.cache.Get("scenario-"+cacheKey, func() any {
 		dir += "/e2e/features"
+
 		res, err := shell.New(ctx, c.l, "find", dir, "-type", "f", "-name", filename, "-exec", "cat", "{}", "\\;", "|", "grep", "'^\\tScenario'").CombinedOutput()
 		if err != nil {
 			return []string{}
 		}
+
 		resMap := map[string]bool{}
 		for _, value := range strings.Split(string(bytes.TrimSpace(res)), "\n") {
 			value = strings.TrimSpace(value)
 			value = strings.TrimPrefix(value, "Scenario:")
 			value = strings.TrimPrefix(value, "Scenario Outline:")
+
 			value = strings.TrimSpace(value)
 			if _, ok := resMap[value]; !ok {
 				resMap[value] = true
 			}
 		}
+
 		ret := make([]string, 0, len(resMap))
 		for scenario := range resMap {
 			ret = append(ret, "\""+scenario+"\"")
 		}
+
 		return ret
 	}).([]string)
 }
@@ -393,5 +430,6 @@ func (c *Command) browserStackTag(ctx context.Context) string {
 	if err != nil {
 		return ""
 	}
+
 	return string(out)
 }

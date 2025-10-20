@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/foomo/posh-providers/utils"
+	"github.com/foomo/posh-providers/pkg/npm"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
@@ -179,7 +179,8 @@ func (c *Command) run(ctx context.Context, dirname, script string) error {
 func (c *Command) scripts(ctx context.Context, dirname string) []string {
 	return c.cache.Get("scripts-"+dirname, func() any {
 		var ret []string
-		f, err := utils.LoadPackageJSON(path.Join(dirname, "package.json"))
+
+		f, err := npm.LoadPackageJSON(path.Join(dirname, "package.json"))
 		if err != nil {
 			c.l.Debug("failed to load package.json", err.Error())
 			return []string{}
@@ -196,8 +197,10 @@ func (c *Command) scripts(ctx context.Context, dirname string) []string {
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		var ret []string
-		var roots []string
+		var (
+			ret   []string
+			roots []string
+		)
 
 		{
 			filename := env.Path("pnpm-workspace.yaml")

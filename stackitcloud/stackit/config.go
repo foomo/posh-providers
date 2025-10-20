@@ -18,6 +18,7 @@ type Config struct {
 func (c Config) ProjectNames() []string {
 	ret := lo.Keys(c.Projects)
 	sort.Strings(ret)
+
 	return ret
 }
 
@@ -26,5 +27,6 @@ func (c Config) Project(name string) (Project, error) {
 	if !ok {
 		return Project{}, errors.Errorf("given project not found: %s", name)
 	}
+
 	return value, nil
 }

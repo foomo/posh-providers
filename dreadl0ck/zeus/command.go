@@ -51,6 +51,7 @@ func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt
 	case r.Args().LenLte(1):
 		return c.completePaths(ctx)
 	}
+
 	return nil
 }
 
@@ -59,6 +60,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	case r.Args().LenLt(1):
 		return errors.New("missing [path] parameter")
 	}
+
 	dir := r.Args().At(0)
 	if info, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
 		if !strings.HasSuffix(dir, "/zeus") {
@@ -67,6 +69,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	} else if err != nil || !info.IsDir() {
 		return errors.Errorf("invalid [path] parameter: %s", dir)
 	}
+
 	return nil
 }
 
@@ -75,6 +78,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
 		c.cache.Delete()
 		c.l.Info("bootstrapping a new zeus:", dir)
+
 		return shell.New(ctx, c.l, "zeus", "bootstrap").
 			Args(args...).
 			Args(r.AdditionalArgs()...).

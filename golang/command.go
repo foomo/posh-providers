@@ -140,6 +140,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 					fs.Default().String("out-format", "", "Formats of output")
 					fs.Default().Int("concurrency", 0, "Number of CPUs to use")
 					fs.Internal().Int("parallel", 0, "Number of parallel processes")
+
 					return nil
 				},
 				Args:    []*tree.Arg{pathModArg},
@@ -167,6 +168,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			},
 		},
 	})
+
 	return inst
 }
 
@@ -205,6 +207,7 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+
 	slices.Sort(paths)
 
 	args := c.getBuildTags()
@@ -214,9 +217,11 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go build ...")
+
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
+
 			return shell.New(ctx, c.l, "go", "build", "-v").
 				Args(args...).
 				Args("./..."). // TODO select test
@@ -224,17 +229,22 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 				Run()
 		})
 	}
+
 	return wg.Wait()
 }
 
 func (c *Command) test(ctx context.Context, r *readline.Readline) error {
-	var envs []string
-	var paths []string
+	var (
+		envs  []string
+		paths []string
+	)
+
 	if r.Args().HasIndex(1) {
 		paths = []string{r.Args().At(1)}
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+
 	slices.Sort(paths)
 
 	fsi := r.FlagSets().Internal()
@@ -249,9 +259,11 @@ func (c *Command) test(ctx context.Context, r *readline.Readline) error {
 
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go test ...")
+
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
+
 			return shell.New(ctx, c.l, "go", "test", "-v").
 				Args(args...).
 				Args("./..."). // TODO select test
@@ -260,6 +272,7 @@ func (c *Command) test(ctx context.Context, r *readline.Readline) error {
 				Run()
 		})
 	}
+
 	return wg.Wait()
 }
 
@@ -270,6 +283,7 @@ func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+
 	slices.Sort(paths)
 
 	var args []string
@@ -279,9 +293,11 @@ func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
 
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod tidy...")
+
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
+
 			return shell.New(ctx, c.l,
 				"go", "mod", "tidy",
 			).
@@ -290,6 +306,7 @@ func (c *Command) modTidy(ctx context.Context, r *readline.Readline) error {
 				Run()
 		})
 	}
+
 	return wg.Wait()
 }
 
@@ -300,6 +317,7 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+
 	slices.Sort(paths)
 
 	var args []string
@@ -309,9 +327,11 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod download...")
+
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
+
 			return shell.New(ctx, c.l,
 				"go", "mod", "download",
 			).
@@ -320,6 +340,7 @@ func (c *Command) modDownload(ctx context.Context, r *readline.Readline) error {
 				Run()
 		})
 	}
+
 	return wg.Wait()
 }
 
@@ -330,13 +351,16 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+
 	slices.Sort(paths)
 
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go mod outdated...")
+
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
+
 			return shell.New(ctx, c.l,
 				"go", "list",
 				"-u", "-m", "-json", "all",
@@ -346,6 +370,7 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 				Run()
 		})
 	}
+
 	return wg.Wait()
 }
 
@@ -354,7 +379,9 @@ func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
 	for _, value := range c.paths(ctx, "go.mod", true) {
 		data += "\t" + strings.TrimSuffix(value, "/go.mod") + "\n"
 	}
+
 	data += ")"
+
 	return os.WriteFile(path.Join(os.Getenv("PROJECT_ROOT"), "go.work"), []byte(data), 0600)
 }
 
@@ -367,23 +394,29 @@ func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 	fsd := r.FlagSets().Default()
+
 	var paths []string
 	if r.Args().HasIndex(1) {
 		paths = []string{r.Args().At(1)}
 	} else {
 		paths = c.paths(ctx, "go.mod", true)
 	}
+
 	slices.Sort(paths)
 
 	var args []string
+
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running golangci-lint run...")
+
 	if value, _ := r.FlagSets().Internal().GetInt("parallel"); value != 0 {
 		args = append(args, "--allow-parallel-runners")
 	}
+
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
+
 			return shell.New(ctx, c.l,
 				"golangci-lint", "run",
 			).
@@ -394,6 +427,7 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 				Run()
 		})
 	}
+
 	return wg.Wait()
 }
 
@@ -408,13 +442,16 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 	} else {
 		paths = c.paths(ctx, "generate.go", false)
 	}
+
 	slices.Sort(paths)
 
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running go generate...")
+
 	for _, value := range paths {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
+
 			return shell.New(ctx, c.l,
 				"go", "generate", value,
 			).
@@ -440,6 +477,7 @@ func (c *Command) paths(ctx context.Context, filename string, dir bool) []string
 			for i, s := range value {
 				value[i] = path.Dir(s)
 			}
+
 			return value
 		} else {
 			return value
@@ -454,6 +492,7 @@ func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context
 	} else {
 		wg.SetLimit(1)
 	}
+
 	return ctx, wg
 }
 
@@ -462,5 +501,6 @@ func (c *Command) getBuildTags() []string {
 	if value := env.GetString("GO_BUILD_TAGS", "safe"); value != "" {
 		buildTags = append(buildTags, "-tags", value)
 	}
+
 	return buildTags
 }

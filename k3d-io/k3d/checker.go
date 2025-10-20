@@ -14,6 +14,7 @@ import (
 func ClusterChecker(inst *K3d, name string) check.Checker {
 	return func(ctx context.Context, l log.Logger) []check.Info {
 		title := "K3d cluster (" + name + ")"
+
 		res, err := shell.New(ctx, l, "k3d", "cluster", "list", "-o", "json").Output()
 		if err != nil {
 			return []check.Info{check.NewFailureInfo(title, fmt.Sprintf("Failed to list clusters (%s)", err.Error()))}
@@ -32,9 +33,11 @@ func ClusterChecker(inst *K3d, name string) check.Checker {
 				if cluster.ServersRunning == 0 {
 					return []check.Info{check.NewNoteInfo(title, "Cluster is paused")}
 				}
+
 				return []check.Info{check.NewSuccessInfo(title, "Cluster is up and running")}
 			}
 		}
+
 		return []check.Info{check.NewNoteInfo(title, "Not running")}
 	}
 }
@@ -42,6 +45,7 @@ func ClusterChecker(inst *K3d, name string) check.Checker {
 func RegistryChecker(inst *K3d) check.Checker {
 	return func(ctx context.Context, l log.Logger) []check.Info {
 		title := "K3d registry"
+
 		res, err := shell.New(ctx, l, "k3d", "registry", "list", "-o", "json").Output()
 		if err != nil {
 			return []check.Info{check.NewFailureInfo(title, fmt.Sprintf("Failed to list registries (%s)", err.Error()))}
@@ -62,12 +66,14 @@ func RegistryChecker(inst *K3d) check.Checker {
 				}
 
 				var configured bool
+
 				for _, ip := range ips {
 					if ip.IP.String() == "127.0.0.1" {
 						configured = true
 						break
 					}
 				}
+
 				if !configured {
 					return []check.Info{check.NewFailureInfo(title, "Missing /etc/hosts entry for: "+registry.Name)}
 				}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/foomo/posh-providers/kubernets/kubectl"
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -43,7 +43,9 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 					for _, cluster := range inst.kubectl.Clusters() {
 						ret = append(ret, cluster.Name())
 					}
+
 					sort.Strings(ret)
+
 					return suggests.List(ret)
 				},
 				Description: "Cluster name",
@@ -63,11 +65,13 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 							fs.Default().String("format", "table", "An output format (table, json)")
 							fs.Default().String("namespace", "", "Namespace to look in")
 							fs.Internal().String("profile", "", "Profile to use")
+
 							if r.Args().HasIndex(0) {
 								if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 									return err
 								}
 							}
+
 							return nil
 						},
 						Execute: inst.execute,

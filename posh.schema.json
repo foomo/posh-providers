@@ -191,22 +191,6 @@
     {
       "type": "object",
       "properties": {
-        "kubeforward": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubeforward"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "kubectl": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubectl"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
         "az": {
           "oneOf": [
             {
@@ -248,6 +232,22 @@
       "properties": {
         "squadron": {
           "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1squadron"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kubeforward": {
+          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubeforward"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kubectl": {
+          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubectl"
         }
       }
     },
@@ -367,9 +367,20 @@
       "$defs": {
         "Config": {
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1task/$defs/Task"
-          }
+          "properties": {
+            "path": {
+              "description": "Path to the directory containing tasks",
+              "type": "string"
+            },
+            "tasks": {
+              "description": "Task configurations",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1task/$defs/Task"
+              }
+            }
+          },
+          "additionalProperties": false
         },
         "Task": {
           "type": "object",
@@ -417,6 +428,10 @@
             "prompt": {
               "description": "Prompt string to confirm execution",
               "type": "string"
+            },
+            "sudo": {
+              "description": "Run as sudo",
+              "type": "boolean"
             }
           },
           "additionalProperties": false
