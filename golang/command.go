@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path"
+	"runtime"
 	"slices"
 	"strings"
 
@@ -375,14 +376,17 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
-	data := "go 1.24.1\n\nuse (\n"
+	var data strings.Builder
+
+	data.WriteString("go " + strings.TrimPrefix(runtime.Version(), "go") + "\n\nuse (\n")
+
 	for _, value := range c.paths(ctx, "go.mod", true) {
-		data += "\t" + strings.TrimSuffix(value, "/go.mod") + "\n"
+		data.WriteString("\t" + strings.TrimSuffix(value, "/go.mod") + "\n")
 	}
 
-	data += ")"
+	data.WriteString(")")
 
-	return os.WriteFile(path.Join(os.Getenv("PROJECT_ROOT"), "go.work"), []byte(data), 0600)
+	return os.WriteFile(path.Join(os.Getenv("PROJECT_ROOT"), "go.work"), []byte(data.String()), 0600)
 }
 
 func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {

@@ -611,7 +611,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 		switch {
 		case tags != "":
 			str := make([]string, 0, len(units))
-			for _, v := range strings.Split(tags, ",") {
+			for v := range strings.SplitSeq(tags, ",") {
 				str = append(str, "- "+v)
 			}
 
@@ -632,7 +632,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 		switch {
 		case tags != "":
 			str := make([]string, 0, len(units))
-			for _, v := range strings.Split(tags, ",") {
+			for v := range strings.SplitSeq(tags, ",") {
 				str = append(str, "- "+v)
 			}
 
@@ -653,7 +653,7 @@ func (c *Command) notify(ctx context.Context, cmd, cluster, fleet, squadron, tag
 		switch {
 		case tags != "":
 			str := make([]string, 0, len(units))
-			for _, v := range strings.Split(tags, ",") {
+			for v := range strings.SplitSeq(tags, ",") {
 				str = append(str, "- "+v)
 			}
 

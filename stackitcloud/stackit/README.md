@@ -8,7 +8,7 @@
 package main
 
 import (
-  "github.com/foomo/posh-providers/kubernets/kubectl"
+  "github.com/foomo/posh-providers/kubernetes/kubectl"
   "github.com/foomo/posh-providers/stackitcloud/stackit"
   "github.com/foomo/posh/pkg/cache"
   "github.com/foomo/posh/pkg/command"

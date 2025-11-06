@@ -160,8 +160,8 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		}
 
 		var sh *exec.Cmd
-		if strings.HasPrefix(cmd, "sudo ") {
-			sh = exec.CommandContext(ctx, "sudo", "sh", "-c", strings.TrimPrefix(cmd, "sudo "))
+		if after, ok := strings.CutPrefix(cmd, "sudo "); ok {
+			sh = exec.CommandContext(ctx, "sudo", "sh", "-c", after)
 		} else {
 			sh = exec.CommandContext(ctx, "sh", "-c", cmd)
 		}
@@ -213,8 +213,8 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		}
 
 		var sh *exec.Cmd
-		if strings.HasPrefix(cmd, "sudo ") {
-			sh = exec.CommandContext(ctx, "sudo", "sh", "-c", strings.TrimPrefix(cmd, "sudo "))
+		if after, ok := strings.CutPrefix(cmd, "sudo "); ok {
+			sh = exec.CommandContext(ctx, "sudo", "sh", "-c", after)
 		} else {
 			sh = exec.CommandContext(ctx, "sh", "-c", cmd)
 		}

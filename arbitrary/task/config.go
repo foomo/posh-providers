@@ -32,9 +32,9 @@ func (c Config) Names() []string {
 			for _, entry := range entries {
 				if !entry.IsDir() {
 					name := entry.Name()
-					if strings.HasSuffix(name, ".yaml") {
+					if before, ok := strings.CutSuffix(name, ".yaml"); ok {
 						// Remove the extension
-						nameWithoutExt := strings.TrimSuffix(strings.TrimSuffix(name, ".yaml"), ".yml")
+						nameWithoutExt := strings.TrimSuffix(before, ".yml")
 						ret = append(ret, nameWithoutExt)
 					}
 				}

@@ -118,7 +118,7 @@ func (s *Squadron) ListUnits(ctx context.Context, squadron, cluster, fleet strin
 		return nil, errors.WithMessage(err, string(out))
 	}
 
-	for _, line := range strings.Split(string(out), "\n") {
+	for line := range strings.SplitSeq(string(out), "\n") {
 		line = stripansi.Strip(line)
 		if len(line) > 11 && line[8:11] == "─" {
 			units = append(units, line[11:])

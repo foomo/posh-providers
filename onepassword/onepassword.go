@@ -186,7 +186,7 @@ $ export OP_SESSION_%s=%s
 	if op.cfg.TokenFilename != "" {
 		if err := os.MkdirAll(path.Dir(op.cfg.TokenFilename), os.ModePerm); err != nil {
 			return err
-		} else if err := os.WriteFile(op.cfg.TokenFilename, []byte(fmt.Sprintf("OP_SESSION_%s=%s\n", op.cfg.Account, token)), 0600); err != nil {
+		} else if err := os.WriteFile(op.cfg.TokenFilename, fmt.Appendf(nil, "OP_SESSION_%s=%s\n", op.cfg.Account, token), 0600); err != nil {
 			return err
 		} else {
 			op.l.Infof(`Session env has been stored for your convenience at:
@@ -350,10 +350,10 @@ func (op *OnePassword) clientGet(ctx context.Context, secret Secret) map[string]
 				ID string `json:"id"`
 			} `json:"vault"`
 			Fields []struct {
-				ID    string      `json:"id"`
-				Type  string      `json:"type"` // CONCEALED, STRING
-				Label string      `json:"label"`
-				Value interface{} `json:"value"`
+				ID    string `json:"id"`
+				Type  string `json:"type"` // CONCEALED, STRING
+				Label string `json:"label"`
+				Value any    `json:"value"`
 			} `json:"fields"`
 		}
 		if res, err := exec.CommandContext(ctx,

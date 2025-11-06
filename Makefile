@@ -115,6 +115,7 @@ docs:
 .PHONY: help
 ## Show help text
 help:
+	@echo ""
 	@echo "Project Oriented SHELL (posh) Providers\n"
 	@echo "Usage:\n  make [task]"
 	@awk '{ \

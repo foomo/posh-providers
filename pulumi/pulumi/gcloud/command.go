@@ -441,7 +441,8 @@ func (c *Command) configureStack(ctx context.Context, stackEnv, proj, stack stri
 	}
 
 	var args []string
-	for _, line := range strings.Split(string(out), "\n") {
+
+	for line := range strings.SplitSeq(string(out), "\n") {
 		line = strings.TrimSpace(line)
 		if line != "" && !strings.HasPrefix(line, "#") && strings.Contains(line, "=") {
 			args = append(args, "--secret", line)

@@ -364,8 +364,9 @@ func (c *Command) tags(ctx context.Context, dir, spec string) []string {
 		}
 
 		resMap := map[string]bool{}
-		for _, value := range strings.Split(string(bytes.TrimSpace(res)), "\n") {
-			for _, tag := range strings.Split(strings.TrimSpace(value), " ") {
+
+		for value := range strings.SplitSeq(string(bytes.TrimSpace(res)), "\n") {
+			for tag := range strings.SplitSeq(strings.TrimSpace(value), " ") {
 				if _, ok := resMap[tag]; !ok {
 					resMap[tag] = true
 				}
@@ -400,7 +401,8 @@ func (c *Command) scenarios(ctx context.Context, dir, spec string) []string {
 		}
 
 		resMap := map[string]bool{}
-		for _, value := range strings.Split(string(bytes.TrimSpace(res)), "\n") {
+
+		for value := range strings.SplitSeq(string(bytes.TrimSpace(res)), "\n") {
 			value = strings.TrimSpace(value)
 			value = strings.TrimPrefix(value, "Scenario:")
 			value = strings.TrimPrefix(value, "Scenario Outline:")

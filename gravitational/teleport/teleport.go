@@ -100,7 +100,7 @@ func (t *Teleport) Clusters(ctx context.Context) []string {
 		return nil
 	}
 
-	return t.cache.Get("clusters", func() interface{} {
+	return t.cache.Get("clusters", func() any {
 		ret := []string{}
 
 		type cluster struct {
@@ -138,7 +138,7 @@ func (t *Teleport) Apps(ctx context.Context) []string {
 		return nil
 	}
 
-	return t.cache.Get("apps", func() interface{} {
+	return t.cache.Get("apps", func() any {
 		ret := []string{}
 
 		type (
@@ -182,7 +182,7 @@ func (t *Teleport) Databases(ctx context.Context) []string {
 		return nil
 	}
 
-	return t.cache.Get("databases", func() interface{} {
+	return t.cache.Get("databases", func() any {
 		ret := []string{}
 
 		type (

@@ -8,7 +8,7 @@ type logger struct {
 	l log.Logger
 }
 
-func (l *logger) Printf(format string, v ...interface{}) {
+func (l *logger) Printf(format string, v ...any) {
 	l.l.Infof(format, v...)
 }
 

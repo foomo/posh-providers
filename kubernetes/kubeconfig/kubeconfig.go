@@ -9,13 +9,13 @@ import (
 )
 
 type KubeConfig struct {
-	APIVersion     string      `yaml:"apiVersion"`
-	Clusters       []Cluster   `yaml:"clusters"`
-	Contexts       []Context   `yaml:"contexts"`
-	CurrentContext string      `yaml:"current-context"`
-	Kind           string      `yaml:"kind"`
-	Preferences    interface{} `yaml:"preferences"`
-	Users          []User      `yaml:"users"`
+	APIVersion     string    `yaml:"apiVersion"`
+	Clusters       []Cluster `yaml:"clusters"`
+	Contexts       []Context `yaml:"contexts"`
+	CurrentContext string    `yaml:"current-context"`
+	Kind           string    `yaml:"kind"`
+	Preferences    any       `yaml:"preferences"`
+	Users          []User    `yaml:"users"`
 }
 
 func Read(path, cluster string) (*KubeConfig, error) {
