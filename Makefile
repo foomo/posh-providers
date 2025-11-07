@@ -89,21 +89,17 @@ schema:
 
 .PHONY: release
 ## Create release TAG=1.0.0
-release: MODS=$(shell find . -type f -name 'go.mod' -mindepth 2 -not -path './examples/*')
 release:
-ifndef TAG
-	$(error $(br)$(br)TAG variable is required.$(br)Usage: make release TAG=1.0.0$(br)$(br))
-endif
-	@echo "$(TAG)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "Error: TAG must be in format X.Y.Z"; exit 1; }
-	@echo "〉️Create release"
-	@echo "🔖 v$(TAG)" && git tag v$(TAG)
-	@$(foreach mod,$(MODS), \
-		echo "🔖 $(patsubst %/,%,$(patsubst ./%,%,$(dir $(mod))))/v$(TAG)" && \
-		git tag "$(patsubst %/,%,$(patsubst ./%,%,$(dir $(mod))))/v$(TAG)" && \
-	) true
-	@echo ""
-	@read -p "Do you want to push the tags to the remote? [y/N] " yn; \
-	case $$yn in [Yy]*) git push origin --tags ;; *) echo "Skipping git push." ;; esac
+	@echo "$(TAG)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "❌ TAG must be X.Y.Z format"; exit 1; }
+	@git diff-index --quiet HEAD -- || { echo "❌ Uncommitted changes detected"; exit 1; }
+	@git rev-parse "v$(TAG)" >/dev/null 2>&1 && { echo "❌ Tag v$(TAG) already exists"; exit 1; } || true
+	@echo "📦 Creating submodule tags..."
+	@find . -type f -name 'go.mod' -mindepth 2 -not -path './examples/*' -not -path './vendor/*' -exec sh -c 'dir=$$(dirname {} | sed "s|^\./||"); tag="$$dir/v$(TAG)"; git rev-parse "$$tag" >/dev/null 2>&1 || { echo "🔖 $$tag"; git tag "$$tag"; }' \;
+	@echo "📦 Creating main tag..."
+	@echo "🔖 v$(TAG)" && git tag "v$(TAG)"
+	@echo "✅ Tags created:" && git tag -l "*$(TAG)"
+	@read -p "Push tags? [y/N] " yn; case $$yn in [Yy]*) git push origin --tags;; esac
+
 ### Utils
 
 .PHONY: docs
