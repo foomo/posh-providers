@@ -100,13 +100,15 @@ release:
 	@echo "✅ Tags created:" && git tag -l "*$(TAG)"
 	@read -p "Push tags? [y/N] " yn; case $$yn in [Yy]*) git push origin --tags;; esac
 
-### Utils
+### Documentation
 
-.PHONY: docs
+.PHONY: godocs
 ## Open go docs
-docs:
+godocs:
 	@echo "〉starting go docs"
 	@go doc -http
+
+### Utils
 
 .PHONY: help
 ## Show help text
