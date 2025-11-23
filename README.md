@@ -1,9 +1,10 @@
-[![Build Status](https://github.com/foomo/posh-providers/actions/workflows/test.yml/badge.svg?branch=main&event=push)](https://github.com/foomo/posh-providers/actions/workflows/test.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/foomo/posh-providers)](https://goreportcard.com/report/github.com/foomo/posh-providers)
+[![GitHub Release](https://img.shields.io/github/release/foomo/posh-providers.svg?style=flat-square)](https://github.com/foomo/posh-providers/releases)
+[![Github All Releases](https://img.shields.io/github/downloads/foomo/posh-providers/total.svg?style=flat-square)](https://github.com/foomo/posh-providers/releases)
+[![GitHub stars](https://img.shields.io/github/stars/foomo/posh-providers.svg?style=flat-square)](https://github.com/foomo/posh-providers)
 [![GoDoc](https://godoc.org/github.com/foomo/posh-providers?status.svg)](https://godoc.org/github.com/foomo/posh-providers)
 
 <p align="center">
-  <img alt="POSH" src="docs/public/posh.png"/>
+  <img alt="foomo/posh-providers" src="docs/public/posh.png" width="400" height="400"/>
 </p>
 
 # Project Oriented SHELL (posh) providers
@@ -16,6 +17,6 @@ Contributions are welcome! Please read the [contributing guide](docs/CONTRIBUTIN
 
 ## License
 
-Distributed under MIT License, please read the [license file](LICENSE) for more details.
+Distributed under MIT License, please read the [license](LICENSE) file for more details.
 
 _Made with ♥ [foomo](https://www.foomo.org) by [bestbytes](https://www.bestbytes.com)_

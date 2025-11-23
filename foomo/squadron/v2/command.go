@@ -176,6 +176,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Default().Bool("no-render", false, "don't render the config template")
 				fs.Default().Bool("raw", false, "print raw output without highlighting")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
+				fs.Default().String("output", "", "path to write the output to")
 
 				return nil
 			},
@@ -242,7 +243,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				commonFlags(fs)
 				fs.Default().Bool("raw", false, "print raw output without highlighting")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
-				fs.Default().String("output", "", "output json file")
+				fs.Default().String("output", "", "path to write the output to")
 
 				return nil
 			},
@@ -311,6 +312,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Default().Bool("raw", false, "print raw output without highlighting")
 				fs.Default().Int64("parallel", 1, "number of parallel processes")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
+				fs.Default().String("output", "", "path to write the output to")
 				fs.Internal().String("tag", "", "image tag")
 
 				return nil
@@ -355,6 +357,7 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 				fs.Default().Bool("push", false, "push image")
 				fs.Default().Int64("parallel", 1, "number of parallel processes")
 				fs.Default().String("tags", "", "list of tags to include or exclude")
+				fs.Default().String("output", "", "path to write the output to")
 				// bake args
 				fs.Internal().StringSlice("push-args", nil, "additional docker push args")
 				fs.Internal().StringSlice("build-args", nil, "additional docker buildx bake args")
