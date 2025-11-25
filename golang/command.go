@@ -135,11 +135,13 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 				Description: "Run golangci lint",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					fs.Default().Duration("timeout", 0, "Timeout for total work")
-					fs.Default().Bool("fast", false, "Run only fast linters from enabled linters set")
+					fs.Default().Bool("fast-only", false, "Run only fast linters from enabled linters set")
 					fs.Default().Bool("new", false, "Show only new issues")
 					fs.Default().Bool("fix", false, "Fix found issue")
 					fs.Default().String("out-format", "", "Formats of output")
 					fs.Default().Int("concurrency", 0, "Number of CPUs to use")
+					fs.Default().StringSlice("build-tags", []string{"safe"}, "Build tag")
+
 					fs.Internal().Int("parallel", 0, "Number of parallel processes")
 
 					return nil
@@ -397,7 +399,8 @@ func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
-	fsd := r.FlagSets().Default()
+	fs := r.FlagSets().Default()
+	fsi := r.FlagSets().Internal()
 
 	var paths []string
 	if r.Args().HasIndex(1) {
@@ -413,7 +416,7 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 	ctx, wg := c.wg(ctx, r)
 	c.l.Info("Running golangci-lint run...")
 
-	if value, _ := r.FlagSets().Internal().GetInt("parallel"); value != 0 {
+	if value, _ := fsi.GetInt("parallel"); value != 0 {
 		args = append(args, "--allow-parallel-runners")
 	}
 
@@ -421,11 +424,10 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 
-			return shell.New(ctx, c.l,
-				"golangci-lint", "run",
-			).
+			return shell.New(ctx, c.l, "golangci-lint", "run").
 				Args(args...).
-				Args(fsd.Visited().Args()...).
+				Args(fs.Visited().Args()...).
+				Args(r.Flags()...).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()
