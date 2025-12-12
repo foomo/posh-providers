@@ -152,7 +152,7 @@ func (c *Command) runAll(ctx context.Context, r *readline.Readline) error {
 	c.l.Infof("Running script %q in...", script)
 
 	for _, dir := range c.paths(ctx) {
-		if dir := dir; dir != "." {
+		if dir != "." {
 			wg.Go(func() error {
 				c.l.Info("└ " + dir)
 
