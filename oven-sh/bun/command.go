@@ -378,7 +378,7 @@ func (c *Command) paths(ctx context.Context) []string {
 				return []string{}
 			}
 
-			for _, s := range value.Workspaces {
+			for _, s := range value.Workspaces.Packages {
 				roots = append(roots, strings.TrimSuffix(s, "/*"))
 			}
 		}

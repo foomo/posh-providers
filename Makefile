@@ -95,10 +95,10 @@ release:
 	@git rev-parse "v$(TAG)" >/dev/null 2>&1 && { echo "❌ Tag v$(TAG) already exists"; exit 1; } || true
 	@echo "📦 Creating submodule tags..."
 	@find . -type f -name 'go.mod' -mindepth 2 -not -path './examples/*' -not -path './vendor/*' -exec sh -c 'dir=$$(dirname {} | sed "s|^\./||"); tag="$$dir/v$(TAG)"; git rev-parse "$$tag" >/dev/null 2>&1 || { echo "🔖 $$tag"; git tag "$$tag"; }' \;
+	@read -p "Push submodule tags? [y/N] " yn; case $$yn in [Yy]*) git push origin --tags;; esac
 	@echo "📦 Creating main tag..."
 	@echo "🔖 v$(TAG)" && git tag "v$(TAG)"
-	@echo "✅ Tags created:" && git tag -l "*$(TAG)"
-	@read -p "Push tags? [y/N] " yn; case $$yn in [Yy]*) git push origin --tags;; esac
+	@read -p "Push main tag? [y/N] " yn; case $$yn in [Yy]*) git push origin --tags;; esac
 
 ### Documentation
 
