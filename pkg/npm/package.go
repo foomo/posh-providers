@@ -20,7 +20,7 @@ type Package struct {
 	Main             string            `json:"main"`
 	PackageManager   string            `json:"packageManager"`
 	Scripts          map[string]string `json:"scripts"`
-	Exports          []string          `json:"exports"`
+	Exports          map[string]string `json:"exports"`
 	OS               []string          `json:"os"`
 	CPU              []string          `json:"cpu"`
 	Private          bool              `json:"private"`
