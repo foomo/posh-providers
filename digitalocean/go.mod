@@ -10,7 +10,7 @@ replace (
 )
 
 require (
-	github.com/digitalocean/godo v1.166.0
+	github.com/digitalocean/godo v1.170.0
 	github.com/foomo/go v0.0.3
 	github.com/foomo/posh v0.15.0
 	github.com/foomo/posh-providers/kubernetes v0.0.0-00010101000000-000000000000
