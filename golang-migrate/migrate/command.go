@@ -213,12 +213,20 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	switch r.Args().At(2) {
 	case "up":
-		if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		if err := m.Up(); err != nil {
+			if errors.Is(err, migrate.ErrNoChange) {
+				c.l.Info("no change")
+				return nil
+			}
 			return err
 		}
 		return nil
 	case "up-by-one":
-		if err := m.Steps(1); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		if err := m.Steps(1); err != nil {
+			if errors.Is(err, migrate.ErrNoChange) {
+				c.l.Info("no change")
+				return nil
+			}
 			return err
 		}
 		return nil
