@@ -107,7 +107,7 @@ schema:
 			$(shell find . -name config.schema.json -print | sed 's/^/--resolve /' | tr '\n' ' ') \
 			--without-id \
 			--http \
-			> posh.schema.json || true
+			> posh.schema.json
 	@rm merged.schema.json
 
 ### Release
