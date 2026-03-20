@@ -13,7 +13,7 @@ endef
 # --- Targets -----------------------------------------------------------------
 
 # This allows us to accept extra arguments
-%: .mise .husky go.work
+%: .mise .lefthook
 	@:
 
 # Ensure go.work file
@@ -25,23 +25,22 @@ go.work:
 
 .PHONY: .mise
 # Install dependencies
-.mise: msg := $(br)$(br)Please ensure you have 'mise' installed and activated!$(br)$(br)$$ brew update$(br)$$ brew install mise$(br)$(br)See the documentation: https://mise.jdx.dev/getting-started.html$(br)$(br)
 .mise:
 ifeq (, $(shell command -v mise))
-	$(error ${msg})
+	$(error $(br)$(br)Please ensure you have 'mise' installed and activated!$(br)$(br)  $$ brew update$(br)  $$ brew install mise$(br)$(br)See the documentation: https://mise.jdx.dev/getting-started.html)
 endif
 	@mise install
 
-.PHONY: .husky
-# Configure git hooks for husky
-.husky:
-	@git config core.hooksPath .husky
+.PHONY: .lefthook
+# Configure git hooks for lefthook
+.lefthook:
+	@lefthook install --reset-hooks-path
 
 ### Tasks
 
 .PHONY: check
-## Run tidy, schema, lint & tests
-check: tidy schema lint test
+## Run tidy, generate, schema, lint & tests
+check: tidy generate schema lint test
 
 .PHONY: tidy
 ## Run go mod tidy
@@ -63,15 +62,39 @@ lint.fix:
 
 .PHONY: test
 ## Run tests
-test:
+test: go.work
 	@echo "〉go test"
+	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -tags=safe work
+
+.PHONY: test.race
+## Run tests
+test.race: go.work
+	@echo "〉go test with -race"
 	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -tags=safe -race work
+
+.PHONY: test.nocache
+## Run tests with -count=1
+test.nocache: go.work
+	@echo "〉go test -count=1"
+	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -tags=safe -count=1 work
 
 .PHONY: outdated
 ## Show outdated direct dependencies
 outdated:
 	@echo "〉go mod outdated"
-	@go list -u -m -json all | go-mod-outdated -update -direct
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go list -u -m -json all | go-mod-outdated -update -direct) &&) true
+
+.PHONY: upgrade
+## Upgrade dependencies
+upgrade:
+	@echo "〉go get -u"
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go get -u all) &&) true
+
+.PHONY: generate
+## Run go generate
+generate: go.work
+	@echo "〉go generate"
+	@go generate work
 
 .PHONY: schema
 ## Generate JSON schema
@@ -86,6 +109,8 @@ schema:
 			--http \
 			> posh.schema.json
 	@rm merged.schema.json
+
+### Release
 
 .PHONY: release
 ## Create release TAG=1.0.0
