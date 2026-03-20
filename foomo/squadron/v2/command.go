@@ -522,7 +522,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		)
 	}
 
-	if slices.Contains([]string{"up", "down"}, cmd) && cfgCluster.Confirm {
+	if slices.Contains([]string{"up", "down", "rollback"}, cmd) && cfgCluster.Confirm {
 		result, err := pterm.DefaultInteractiveConfirm.Show(fmt.Sprintf("Are you sure you want to run the command against: '%s:%s'?", cluster, fleet))
 		if err != nil {
 			return err

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"slices"
 	"strings"
 
 	prompt2 "github.com/c-bata/go-prompt"
@@ -186,11 +187,12 @@ func (c *Command) edit(ctx context.Context, r *readline.Readline) error {
 
 	{ // edit file
 		d := "vim"
-		if value := os.Getenv("EDITOR"); value != "" {
+
+		if value := os.Getenv("EDITOR"); slices.Contains([]string{"vim", "nvim", "nano", "code", "micro", "emacs"}, value) {
 			d = value
 		}
 
-		editor := exec.CommandContext(ctx, d, filename)
+		editor := exec.CommandContext(ctx, d, filename) //nolint:gosec // checked above
 		editor.Stdin = os.Stdin
 		editor.Stdout = os.Stdout
 

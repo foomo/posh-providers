@@ -218,8 +218,10 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 				c.l.Info("no change")
 				return nil
 			}
+
 			return err
 		}
+
 		return nil
 	case "up-by-one":
 		if err := m.Steps(1); err != nil {
@@ -227,8 +229,10 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 				c.l.Info("no change")
 				return nil
 			}
+
 			return err
 		}
+
 		return nil
 	case "down":
 		return m.Down()
