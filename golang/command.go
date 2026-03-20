@@ -2,8 +2,10 @@ package golang
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"slices"
 	"strings"
@@ -388,7 +390,15 @@ func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
 
 	data.WriteString(")")
 
-	return os.WriteFile(path.Join(os.Getenv("PROJECT_ROOT"), "go.work"), []byte(data.String()), 0600)
+	root := os.Getenv("PROJECT_ROOT")
+	fullPath := path.Join(root, "go.work")
+
+	cleanPath := filepath.Clean(fullPath)
+	if !strings.HasPrefix(cleanPath, root) {
+		return fmt.Errorf("path traversal attempt")
+	}
+
+	return os.WriteFile(cleanPath, []byte(data.String()), 0600)
 }
 
 func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {

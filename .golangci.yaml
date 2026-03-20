@@ -1,3 +1,4 @@
+# https://golangci-lint.run/usage/configuration/
 # yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
 version: "2"
 
@@ -75,7 +76,7 @@ linters:
       replace-local: true
       tool-forbidden: true
       toolchain-forbidden: true
-      go-version-pattern: '\d\.\d+'
+      go-version-pattern: '\d\.\d+(\.0)?'
       replace-allow-list:
         - github.com/c-bata/go-prompt
         - github.com/pkg/term
@@ -93,8 +94,12 @@ linters:
           - unused
           - gosec
     paths:
-      - docs
-      - tmp
+      - bin$
+      - tmp$
+      - docs$
+      - devops$
+      - devtools$
+      - node_modules$
 
 # https://golangci-lint.run/docs/formatters/
 formatters:
