@@ -103,11 +103,11 @@ schema:
 	@yq eval-all '. as $$item ireduce ({}; . *+ $$item)' base.schema.json \
 		$(shell find . -name config.base.json -print | tr '\n' ' ') \
 		> merged.schema.json
-	@jsonschema bundle merged.schema.json \
+	@-jsonschema bundle merged.schema.json \
 			$(shell find . -name config.schema.json -print | sed 's/^/--resolve /' | tr '\n' ' ') \
 			--without-id \
 			--http \
-			> posh.schema.json
+			> posh.schema.json || true
 	@rm merged.schema.json
 
 ### Release
