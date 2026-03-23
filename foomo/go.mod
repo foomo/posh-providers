@@ -24,7 +24,7 @@ require (
 	github.com/invopop/jsonschema v0.13.0
 	github.com/knadh/koanf/parsers/yaml v1.1.0
 	github.com/knadh/koanf/providers/file v1.2.1
-	github.com/knadh/koanf/v2 v2.3.3
+	github.com/knadh/koanf/v2 v2.3.4
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.83
 	github.com/samber/lo v1.53.0
