@@ -351,12 +351,14 @@ func (c *Command) authEnv(r *readline.Readline, workspace string) ([]string, err
 		}, nil
 	}
 
-	// User account (az CLI) auth — inject subscription ID if configured
+	// No SP selected — let the provider use its default auth chain
+	// (CLI locally, managed identity on Azure VMs, OIDC in CI, etc.)
+	var env []string
 	if sub, err := c.cfg.Subscription(workspace); err == nil {
-		return []string{"ARM_SUBSCRIPTION_ID=" + sub.ID}, nil
+		env = append(env, "ARM_SUBSCRIPTION_ID="+sub.ID)
 	}
 
-	return nil, nil
+	return env, nil
 }
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
