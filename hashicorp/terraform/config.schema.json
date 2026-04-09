@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/hashicorp/terraform",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Backend": {
+      "properties": {
+        "resourceGroupName": {
+          "type": "string",
+          "description": "Resource group containing the storage account"
+        },
+        "storageAccountName": {
+          "type": "string",
+          "description": "Storage account name"
+        },
+        "containerName": {
+          "type": "string",
+          "description": "Blob container name"
+        },
+        "key": {
+          "type": "string",
+          "description": "State file key (defaults to \u003cworkspace\u003e.tfstate)"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Config": {
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "subscriptions": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Subscription"
+          },
+          "type": "object"
+        },
+        "servicePrincipals": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ServicePrincipal"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ServicePrincipal": {
+      "properties": {
+        "tenantId": {
+          "type": "string",
+          "description": "Tenant ID"
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Application client ID"
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "Application client secret"
+        },
+        "subscriptionId": {
+          "type": "string",
+          "description": "Azure subscription ID"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Subscription": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Azure subscription ID"
+        },
+        "backend": {
+          "$ref": "#/$defs/Backend",
+          "description": "Backend state storage configuration"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}

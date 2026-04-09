@@ -15,6 +15,14 @@
     {
       "type": "object",
       "properties": {
+        "terraform": {
+          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
         "cdktf": {
           "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1cdktf"
         }
@@ -438,6 +446,91 @@
             },
             "config": {
               "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/hashicorp/terraform": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform/$defs/Config",
+      "$defs": {
+        "Backend": {
+          "type": "object",
+          "properties": {
+            "resourceGroupName": {
+              "description": "Resource group containing the storage account",
+              "type": "string"
+            },
+            "storageAccountName": {
+              "description": "Storage account name",
+              "type": "string"
+            },
+            "containerName": {
+              "description": "Blob container name",
+              "type": "string"
+            },
+            "key": {
+              "description": "State file key (defaults to <workspace>.tfstate)",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "subscriptions": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform/$defs/Subscription"
+              }
+            },
+            "servicePrincipals": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform/$defs/ServicePrincipal"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "ServicePrincipal": {
+          "type": "object",
+          "properties": {
+            "tenantId": {
+              "description": "Tenant ID",
+              "type": "string"
+            },
+            "clientId": {
+              "description": "Application client ID",
+              "type": "string"
+            },
+            "clientSecret": {
+              "description": "Application client secret",
+              "type": "string"
+            },
+            "subscriptionId": {
+              "description": "Azure subscription ID",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Subscription": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Azure subscription ID",
+              "type": "string"
+            },
+            "backend": {
+              "description": "Backend state storage configuration",
+              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform/$defs/Backend"
             }
           },
           "additionalProperties": false
