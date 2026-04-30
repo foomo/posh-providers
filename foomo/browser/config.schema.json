@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/foomo/browser",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "environments": {
+          "additionalProperties": {
+            "$ref": "#/$defs/EnvironmentConfig"
+          },
+          "type": "object",
+          "description": "Named environments, each with an optional proxy and default URL"
+        },
+        "configPath": {
+          "type": "string",
+          "description": "Directory for browser profile dirs (e.g. .posh/browser); created on startup"
+        },
+        "proxy": {
+          "type": "string",
+          "description": "Provider-level default proxy (fallback when env has no proxy set)"
+        },
+        "command": {
+          "type": "string",
+          "description": "Browser binary path; defaults to Chrome on macOS, google-chrome on Linux"
+        },
+        "incognito": {
+          "type": "boolean",
+          "description": "Open in incognito mode"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "EnvironmentConfig": {
+      "properties": {
+        "proxy": {
+          "type": "string",
+          "description": "Named SSH proxy from the global proxies config"
+        },
+        "url": {
+          "type": "string",
+          "description": "Default URL to open when no URL argument is given"
+        },
+        "incognito": {
+          "type": "boolean",
+          "description": "Open in incognito mode (visual only; session is already isolated via temp profile dir)"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
