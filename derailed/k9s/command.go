@@ -6,12 +6,14 @@ import (
 
 	"github.com/foomo/posh-providers/foomo/squadron"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh-providers/pkg/proxy"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/spf13/viper"
 )
 
 type (
@@ -19,6 +21,7 @@ type (
 		l                   log.Logger
 		kubectl             *kubectl.Kubectl
 		squadron            squadron.Squadron
+		proxyCfg            proxy.Config
 		commandTree         tree.Root
 		squadronNamespaceFn NamespaceFn
 	}
@@ -69,6 +72,8 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 			opt(inst)
 		}
 	}
+
+	_ = viper.UnmarshalKey("proxies", &inst.proxyCfg)
 
 	args := tree.Args{
 		{
@@ -149,6 +154,18 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
+	env := []string{c.kubectl.Cluster(cluster).Env(profile)}
+
+	if proxyName := c.kubectl.Config().ClusterProxy(cluster); proxyName != "" {
+		proxyEnv, stop, err := c.proxyCfg.Start(ctx, c.l, proxyName)
+		if err != nil {
+			return err
+		}
+		defer stop()
+
+		env = append(env, proxyEnv...)
+	}
+
 	if value := c.squadronNamespaceFn(cluster, fleet, squad); value == "all" {
 		args = append(args, "--all-namespaces")
 	} else if value != "" {
@@ -156,7 +173,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	}
 
 	return shell.New(ctx, c.l, "k9s", "--logoless").
-		Env(c.kubectl.Cluster(cluster).Env(profile)).
+		Env(env...).
 		Args(args...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).

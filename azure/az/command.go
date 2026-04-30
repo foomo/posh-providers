@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh-providers/pkg/proxy"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -11,6 +12,7 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 type (
@@ -19,6 +21,7 @@ type (
 		name          string
 		az            *AZ
 		kubectl       *kubectl.Kubectl
+		proxyCfg      proxy.Config
 		commandTree   tree.Root
 		clusterNameFn ClusterNameFn
 	}
@@ -63,6 +66,8 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 		}
 	}
 
+	_ = viper.UnmarshalKey("proxies", &inst.proxyCfg)
+
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
 		Description: "Manage azure resources",
@@ -72,12 +77,7 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 				Description: "Log in to Azure",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					fs.Internal().String("service-principal", "", "Service principal to use for authentication")
-
-					if err := fs.Internal().SetValues("service-principal", inst.az.Config().ServicePrincipalNames()...); err != nil {
-						return err
-					}
-
-					return nil
+					return fs.Internal().SetValues("service-principal", inst.az.Config().ServicePrincipalNames()...)
 				},
 				Execute: inst.login,
 			},
@@ -182,6 +182,24 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
+func (c *Command) startProxy(ctx context.Context, name string) ([]string, func(), error) {
+	if name == "" {
+		return nil, func() {}, nil
+	}
+
+	return c.proxyCfg.Start(ctx, c.l, name)
+}
+
+// startProxyWithDocker is like startProxy but also configures Docker Desktop.
+// Docker Desktop ignores HTTPS_PROXY env vars — it reads proxy from the docker config.
+func (c *Command) startProxyWithDocker(ctx context.Context, name string) ([]string, func(), error) {
+	if name == "" {
+		return nil, func() {}, nil
+	}
+
+	return c.proxyCfg.StartWithDockerProxy(ctx, c.l, name)
+}
+
 func (c *Command) artifactory(ctx context.Context, r *readline.Readline) error {
 	sub, err := c.az.cfg.Subscription(r.Args().At(1))
 	if err != nil {
@@ -193,10 +211,17 @@ func (c *Command) artifactory(ctx context.Context, r *readline.Readline) error {
 		return errors.Errorf("failed to retrieve artifactoy for: %q", r.Args().At(2))
 	}
 
+	proxyEnv, stop, err := c.startProxyWithDocker(ctx, sub.Proxy)
+	if err != nil {
+		return err
+	}
+	defer stop()
+
 	if err := shell.New(ctx, c.l, "az", "acr", "login").
 		Args("--name", acr.Name).
 		Args("--resource-group", acr.ResourceGroup).
 		Args("--subscription", sub.Name).
+		Env(proxyEnv...).
 		Run(); err != nil {
 		return err
 	}
@@ -226,18 +251,26 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
+	proxyEnv, stop, err := c.startProxy(ctx, sub.Proxy)
+	if err != nil {
+		return err
+	}
+	defer stop()
+
 	if err := shell.New(ctx, c.l, "az", "aks", "get-credentials").
 		Args("--name", k8s.Name).
 		Args("--resource-group", k8s.ResourceGroup).
 		Args("--subscription", sub.Name).
 		Args("--overwrite-existing").
 		Env(kubectlCluster.Env(profile)).
+		Env(proxyEnv...).
 		Run(); err != nil {
 		return err
 	}
 
 	return shell.New(ctx, c.l, "kubelogin", "convert-kubeconfig", "-l", "azurecli").
 		Env(kubectlCluster.Env(profile)).
+		Env(proxyEnv...).
 		Run()
 }
 
@@ -280,10 +313,17 @@ func (c *Command) login(ctx context.Context, r *readline.Readline) error {
 		)
 	}
 
+	proxyEnv, stop, err := c.startProxy(ctx, c.az.cfg.Proxy)
+	if err != nil {
+		return err
+	}
+	defer stop()
+
 	return shell.New(ctx, c.l, "az", "login").
 		Args(args...).
 		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
+		Env(proxyEnv...).
 		Run()
 }

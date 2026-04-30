@@ -6,6 +6,7 @@ import (
 
 	"github.com/foomo/posh-providers/foomo/squadron"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh-providers/pkg/proxy"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -24,6 +25,7 @@ type (
 		configKey   string
 		kubectl     *kubectl.Kubectl
 		squadron    squadron.Squadron
+		proxyCfg    proxy.Config
 		commandTree tree.Root
 		namespaceFn NamespaceFn
 	}
@@ -80,6 +82,10 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 	}
 
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
+		return nil, err
+	}
+
+	if err := viper.UnmarshalKey("proxies", &inst.proxyCfg); err != nil {
 		return nil, err
 	}
 
@@ -268,13 +274,24 @@ func (c *Command) tail(ctx context.Context, r *readline.Readline, args ...string
 		return err
 	}
 
-	cmd := shell.New(ctx, c.l, "stern").
-		Env(c.kubectl.Cluster(cluster).Env(profile)).
+	env := []string{c.kubectl.Cluster(cluster).Env(profile)}
+
+	if proxyName := c.kubectl.Config().ClusterProxy(cluster); proxyName != "" {
+		proxyEnv, stop, err := c.proxyCfg.Start(ctx, c.l, proxyName)
+		if err != nil {
+			return err
+		}
+		defer stop()
+
+		env = append(env, proxyEnv...)
+	}
+
+	return shell.New(ctx, c.l, "stern").
+		Env(env...).
 		Args(args...).
 		Args(fs.Visited().Args()...).
-		Args(r.AdditionalArgs()...)
-
-	return cmd.Run()
+		Args(r.AdditionalArgs()...).
+		Run()
 }
 
 func (c *Command) tailQuery(ctx context.Context, r *readline.Readline) error {

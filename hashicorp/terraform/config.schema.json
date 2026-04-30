@@ -30,6 +30,10 @@
         "path": {
           "type": "string"
         },
+        "tenantId": {
+          "type": "string",
+          "description": "Azure tenant ID — sets ARM_TENANT_ID for all workspaces; required for CLI auth via az login --allow-no-subscriptions"
+        },
         "subscriptions": {
           "additionalProperties": {
             "$ref": "#/$defs/Subscription"
@@ -77,6 +81,10 @@
         "backend": {
           "$ref": "#/$defs/Backend",
           "description": "Backend state storage configuration"
+        },
+        "proxy": {
+          "type": "string",
+          "description": "Named SSH proxy for this workspace"
         }
       },
       "additionalProperties": false,

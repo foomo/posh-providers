@@ -484,6 +484,10 @@
             "path": {
               "type": "string"
             },
+            "tenantId": {
+              "description": "Azure tenant ID — sets ARM_TENANT_ID for all workspaces; required for CLI auth via az login --allow-no-subscriptions",
+              "type": "string"
+            },
             "subscriptions": {
               "type": "object",
               "additionalProperties": {
@@ -531,6 +535,10 @@
             "backend": {
               "description": "Backend state storage configuration",
               "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform/$defs/Backend"
+            },
+            "proxy": {
+              "description": "Named SSH proxy for this workspace",
+              "type": "string"
             }
           },
           "additionalProperties": false
@@ -596,6 +604,10 @@
               "description": "Tenant id",
               "type": "string"
             },
+            "proxy": {
+              "description": "Named SSH proxy for az login (tenant-level commands)",
+              "type": "string"
+            },
             "subscriptions": {
               "description": "Subscription configurations",
               "type": "object",
@@ -648,6 +660,10 @@
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Artifactory"
               }
+            },
+            "proxy": {
+              "description": "Named SSH proxy for all commands in this subscription",
+              "type": "string"
             }
           },
           "additionalProperties": false
@@ -1805,11 +1821,27 @@
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubectl/$defs/Config",
       "$defs": {
+        "ClusterConfig": {
+          "type": "object",
+          "properties": {
+            "proxy": {
+              "description": "Named SSH proxy from the top-level proxies map",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "Config": {
           "type": "object",
           "properties": {
             "configPath": {
               "type": "string"
+            },
+            "clusters": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubectl/$defs/ClusterConfig"
+              }
             }
           },
           "additionalProperties": false

@@ -17,6 +17,7 @@ require (
 	github.com/foomo/go v0.4.0
 	github.com/foomo/gokazi v0.1.6
 	github.com/foomo/posh v0.15.0
+	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
 	github.com/foomo/posh-providers/cloudflare v0.46.2
 	github.com/foomo/posh-providers/kubernetes v0.46.2
 	github.com/foomo/posh-providers/onepassword v0.46.2

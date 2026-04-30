@@ -11,7 +11,9 @@ import (
 )
 
 type Config struct {
-	Path              string                      `json:"path" yaml:"path"`
+	Path string `json:"path" yaml:"path"`
+	// Azure tenant ID — sets ARM_TENANT_ID for all workspaces; required for CLI auth via az login --allow-no-subscriptions
+	TenantID          string                      `json:"tenantId,omitempty" yaml:"tenantId,omitempty"`
 	Subscriptions     map[string]Subscription     `json:"subscriptions" yaml:"subscriptions"`
 	ServicePrincipals map[string]ServicePrincipal `json:"servicePrincipals" yaml:"servicePrincipals"`
 }
@@ -21,6 +23,8 @@ type Subscription struct {
 	ID string `json:"id" yaml:"id"`
 	// Backend state storage configuration
 	Backend Backend `json:"backend" yaml:"backend"`
+	// Named SSH proxy for this workspace
+	Proxy string `json:"proxy" yaml:"proxy"`
 }
 
 type Backend struct {
