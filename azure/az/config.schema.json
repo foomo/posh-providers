@@ -39,6 +39,10 @@
           "type": "string",
           "description": "Tenant id"
         },
+        "proxy": {
+          "type": "string",
+          "description": "Named SSH proxy for az login (tenant-level commands)"
+        },
         "subscriptions": {
           "additionalProperties": {
             "$ref": "#/$defs/Subscription"
@@ -91,6 +95,10 @@
             "$ref": "#/$defs/Artifactory"
           },
           "type": "object"
+        },
+        "proxy": {
+          "type": "string",
+          "description": "Named SSH proxy for all commands in this subscription"
         }
       },
       "additionalProperties": false,

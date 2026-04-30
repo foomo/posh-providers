@@ -12,6 +12,8 @@ type Config struct {
 	ConfigPath string `json:"configPath" yaml:"configPath"`
 	// Tenant id
 	TenantID string `json:"tenantId" yaml:"tenantId"`
+	// Named SSH proxy for az login (tenant-level commands)
+	Proxy string `json:"proxy,omitempty" yaml:"proxy,omitempty"`
 	// Subscription configurations
 	Subscriptions map[string]Subscription `json:"subscriptions" yaml:"subscriptions"`
 	// Authentication service principals

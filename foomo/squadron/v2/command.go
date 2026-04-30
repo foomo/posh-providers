@@ -9,6 +9,7 @@ import (
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
+	"github.com/foomo/posh-providers/pkg/proxy"
 	"github.com/foomo/posh-providers/slack-go/slack"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
@@ -22,6 +23,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	slackgo "github.com/slack-go/slack"
+	"github.com/spf13/viper"
 )
 
 const All = "all"
@@ -38,6 +40,7 @@ type (
 		cache          cache.Namespace
 		kubectl        *kubectl.Kubectl
 		squadron       *Squadron
+		proxyCfg       proxy.Config
 		commandTree    tree.Root
 		namespaceFn    NamespaceFn
 	}
@@ -111,6 +114,8 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *
 			opt(inst)
 		}
 	}
+
+	_ = viper.UnmarshalKey("proxies", &inst.proxyCfg)
 
 	inst.l = l.Named(inst.name)
 	inst.cache = cache.Get(inst.name)
@@ -520,6 +525,16 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 			c.kubectl.Cluster(cluster).Env(profile),
 			fmt.Sprintf("GIT_DIR=%s", env2.ProjectRoot()),
 		)
+	}
+
+	if proxyName := c.kubectl.Config().ClusterProxy(cluster); proxyName != "" {
+		proxyEnv, stop, err := c.proxyCfg.StartWithDockerProxy(ctx, c.l, proxyName)
+		if err != nil {
+			return err
+		}
+		defer stop()
+
+		env = append(env, proxyEnv...)
 	}
 
 	if slices.Contains([]string{"up", "down", "rollback"}, cmd) && cfgCluster.Confirm {

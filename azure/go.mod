@@ -12,6 +12,7 @@ replace (
 require (
 	github.com/foomo/go v0.4.0
 	github.com/foomo/posh v0.15.0
+	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
 	github.com/foomo/posh-providers/kubernetes v0.46.2
 	github.com/invopop/jsonschema v0.13.0
 	github.com/pkg/errors v0.9.1
