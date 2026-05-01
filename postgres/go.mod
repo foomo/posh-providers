@@ -11,7 +11,7 @@ replace (
 )
 
 require (
-	github.com/foomo/posh v0.15.0
+	github.com/foomo/posh v0.16.0
 	github.com/foomo/posh-providers/arbitrary v0.48.0
 	github.com/pkg/errors v0.9.1
 )
@@ -26,9 +26,9 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/containerd/console v1.0.5 // indirect
 	github.com/foomo/posh-providers/onepassword v0.48.0 // indirect
-	github.com/fsnotify/fsnotify v1.9.0 // indirect
+	github.com/fsnotify/fsnotify v1.10.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
-	github.com/gookit/color v1.6.0 // indirect
+	github.com/gookit/color v1.6.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -37,7 +37,7 @@ require (
 	github.com/mattn/go-tty v0.0.8 // indirect
 	github.com/neilotoole/slogt v1.1.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.3.0 // indirect
+	github.com/pelletier/go-toml/v2 v2.3.1 // indirect
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/pterm/pterm v0.12.83 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect

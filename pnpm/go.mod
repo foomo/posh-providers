@@ -9,7 +9,7 @@ replace (
 )
 
 require (
-	github.com/foomo/posh v0.15.0
+	github.com/foomo/posh v0.16.0
 	github.com/foomo/posh-providers v0.48.0
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
@@ -23,7 +23,7 @@ require (
 	github.com/charlievieth/fastwalk v1.0.14 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/containerd/console v1.0.5 // indirect
-	github.com/gookit/color v1.6.0 // indirect
+	github.com/gookit/color v1.6.1 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
