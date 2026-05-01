@@ -6,4 +6,4 @@ lefthook = "2.1.6"
 # https://mise-tools.jdx.dev/tools/jsonschema
 jsonschema = "15.2.0"
 # https://mise-tools.jdx.dev/tools/golangci-lint
-golangci-lint = "2.11.4"
+golangci-lint = "2.12.0"
