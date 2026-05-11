@@ -13,7 +13,6 @@ func LoadFromFile(path string) (*api.Config, error) {
 }
 
 func Write(c *api.Config, dirname string) error {
-
 	if err := files.MkdirAll(dirname); err != nil {
 		return err
 	}
