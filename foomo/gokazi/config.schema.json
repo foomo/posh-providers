@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/foomo/gokazi",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "cleanup": {
+          "type": "boolean",
+          "description": "Cleanup will stop all processes if last posh is closed"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
