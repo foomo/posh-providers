@@ -16,6 +16,7 @@ func Checker(gk *gokazi.Gokazi) check.Checker {
 		}
 
 		var ret []check.Info
+
 		for key, task := range ls {
 			if task.Running {
 				ret = append(ret, check.NewSuccessInfo(" ", key, task.Config.Description))

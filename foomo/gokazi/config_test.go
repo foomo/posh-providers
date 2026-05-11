@@ -1,4 +1,4 @@
-package browser_test
+package gokazi_test
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 
 	testingx "github.com/foomo/go/testing"
 	tagx "github.com/foomo/go/testing/tag"
-	"github.com/foomo/posh-providers/foomo/browser"
+	"github.com/foomo/posh-providers/foomo/gokazi"
 	"github.com/invopop/jsonschema"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -24,9 +24,9 @@ func TestConfig(t *testing.T) {
 
 	reflector := new(jsonschema.Reflector)
 	reflector.RequiredFromJSONSchemaTags = true
-	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/foomo/browser", "./"))
-	schema := reflector.Reflect(&browser.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/foomo/browser"
+	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/foomo/gokazi", "./"))
+	schema := reflector.Reflect(&gokazi.Config{})
+	schema.ID = "https://github.com/foomo/posh-providers/foomo/gokazi"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 
