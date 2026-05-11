@@ -4,21 +4,18 @@ import (
 	"context"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
-	"github.com/foomo/posh-providers/pkg/proxy"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
-	"github.com/spf13/viper"
 )
 
 type (
 	Command struct {
 		l           log.Logger
 		kubectl     *kubectl.Kubectl
-		proxyCfg    proxy.Config
 		commandTree tree.Root
 	}
 	CommandOption func(*Command)
@@ -39,8 +36,6 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 			opt(inst)
 		}
 	}
-
-	_ = viper.UnmarshalKey("proxies", &inst.proxyCfg)
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "kubeprompt",
@@ -106,16 +101,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	cluster := r.Args().At(0)
 	env := []string{c.kubectl.Cluster(cluster).Env(profile)}
-
-	if proxyName := c.kubectl.Config().ClusterProxy(cluster); proxyName != "" {
-		proxyEnv, stop, err := c.proxyCfg.Start(ctx, c.l, proxyName)
-		if err != nil {
-			return err
-		}
-		defer stop()
-
-		env = append(env, proxyEnv...)
-	}
 
 	return shell.New(ctx, c.l, "kube-prompt").
 		Args(r.AdditionalArgs()...).

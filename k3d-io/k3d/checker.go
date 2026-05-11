@@ -33,6 +33,7 @@ func ClusterChecker(inst *K3d) check.Checker {
 				if cluster.ServersRunning == 0 {
 					return []check.Info{check.NewNoteInfo("", title, "Paused")}
 				}
+
 				return []check.Info{check.NewSuccessInfo("", title, "127.0.0.1:"+inst.cfg.Registry.Port)}
 			}
 		}
