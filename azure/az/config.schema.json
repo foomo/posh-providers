@@ -24,6 +24,10 @@
         "resourceGroup": {
           "type": "string",
           "description": "Cluster resource group name"
+        },
+        "proxyUrl": {
+          "type": "string",
+          "description": "ProxyURL"
         }
       },
       "additionalProperties": false,
@@ -95,10 +99,6 @@
             "$ref": "#/$defs/Artifactory"
           },
           "type": "object"
-        },
-        "proxy": {
-          "type": "string",
-          "description": "Named SSH proxy for all commands in this subscription"
         }
       },
       "additionalProperties": false,

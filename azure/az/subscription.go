@@ -9,8 +9,6 @@ type Subscription struct {
 	Name          string                 `json:"name" yaml:"name"`
 	Clusters      map[string]Cluster     `json:"clusters" yaml:"clusters"`
 	Artifactories map[string]Artifactory `json:"artifactories" yaml:"artifactories"`
-	// Named SSH proxy for all commands in this subscription
-	Proxy string `json:"proxy" yaml:"proxy"`
 }
 
 func (c Subscription) Cluster(name string) (Cluster, error) {

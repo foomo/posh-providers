@@ -3,16 +3,16 @@ package az
 import (
 	"context"
 
+	"github.com/foomo/posh-providers/kubernetes/kubeconfig"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
-	"github.com/foomo/posh-providers/pkg/proxy"
 	"github.com/foomo/posh/pkg/command/tree"
+	pkgexec "github.com/foomo/posh/pkg/exec"
+	"github.com/foomo/posh/pkg/exec/middleware"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
-	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 )
 
 type (
@@ -20,11 +20,12 @@ type (
 		l             log.Logger
 		name          string
 		az            *AZ
+		envFn         EnvFn
 		kubectl       *kubectl.Kubectl
-		proxyCfg      proxy.Config
 		commandTree   tree.Root
 		clusterNameFn ClusterNameFn
 	}
+	EnvFn         func(ctx context.Context, subscription string) []string
 	ClusterNameFn func(name string, cluster Cluster) string
 	CommandOption func(*Command)
 )
@@ -36,6 +37,12 @@ type (
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
+	}
+}
+
+func CommandWithEnvFn(v EnvFn) CommandOption {
+	return func(o *Command) {
+		o.envFn = v
 	}
 }
 
@@ -55,6 +62,9 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 		name:    "az",
 		az:      az,
 		kubectl: kubectl,
+		envFn: func(ctx context.Context, subscription string) []string {
+			return nil
+		},
 		clusterNameFn: func(name string, cluster Cluster) string {
 			return name
 		},
@@ -66,8 +76,6 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 		}
 	}
 
-	_ = viper.UnmarshalKey("proxies", &inst.proxyCfg)
-
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
 		Description: "Manage azure resources",
@@ -77,7 +85,12 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 				Description: "Log in to Azure",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					fs.Internal().String("service-principal", "", "Service principal to use for authentication")
-					return fs.Internal().SetValues("service-principal", inst.az.Config().ServicePrincipalNames()...)
+
+					if err := fs.Internal().SetValues("service-principal", inst.az.Config().ServicePrincipalNames()...); err != nil {
+						return err
+					}
+
+					return nil
 				},
 				Execute: inst.login,
 			},
@@ -182,24 +195,6 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) startProxy(ctx context.Context, name string) ([]string, func(), error) {
-	if name == "" {
-		return nil, func() {}, nil
-	}
-
-	return c.proxyCfg.Start(ctx, c.l, name)
-}
-
-// startProxyWithDocker is like startProxy but also configures Docker Desktop.
-// Docker Desktop ignores HTTPS_PROXY env vars — it reads proxy from the docker config.
-func (c *Command) startProxyWithDocker(ctx context.Context, name string) ([]string, func(), error) {
-	if name == "" {
-		return nil, func() {}, nil
-	}
-
-	return c.proxyCfg.StartWithDockerProxy(ctx, c.l, name)
-}
-
 func (c *Command) artifactory(ctx context.Context, r *readline.Readline) error {
 	sub, err := c.az.cfg.Subscription(r.Args().At(1))
 	if err != nil {
@@ -211,23 +206,15 @@ func (c *Command) artifactory(ctx context.Context, r *readline.Readline) error {
 		return errors.Errorf("failed to retrieve artifactoy for: %q", r.Args().At(2))
 	}
 
-	proxyEnv, stop, err := c.startProxyWithDocker(ctx, sub.Proxy)
-	if err != nil {
-		return err
-	}
-	defer stop()
-
-	if err := shell.New(ctx, c.l, "az", "acr", "login").
-		Args("--name", acr.Name).
-		Args("--resource-group", acr.ResourceGroup).
-		Args("--subscription", sub.Name).
-		Env(proxyEnv...).
-		Run(); err != nil {
-		return err
-	}
-
-	return nil
+	return pkgexec.NewCommand(ctx, "az", "acr", "login",
+		"--name", acr.Name,
+		"--subscription", sub.Name,
+		"--resource-group", acr.ResourceGroup,
+	).
+		Middleware(middleware.WithEnv(c.envFn(ctx, r.Args().At(1))...)).
+		Run()
 }
+
 func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 	ifs := r.FlagSets().Internal()
 
@@ -251,31 +238,51 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	proxyEnv, stop, err := c.startProxy(ctx, sub.Proxy)
-	if err != nil {
-		return err
-	}
-	defer stop()
+	c.l.Info("retrieved kubectl cluster config")
 
-	if err := shell.New(ctx, c.l, "az", "aks", "get-credentials").
-		Args("--name", k8s.Name).
-		Args("--resource-group", k8s.ResourceGroup).
-		Args("--subscription", sub.Name).
-		Args("--overwrite-existing").
+	if err := pkgexec.NewCommand(ctx, "az", "aks", "get-credentials",
+		"--name", k8s.Name,
+		"--subscription", sub.Name,
+		"--resource-group", k8s.ResourceGroup,
+		"--overwrite-existing",
+	).
+		Middleware(middleware.WithEnv(c.envFn(ctx, r.Args().At(1))...)).
 		Env(kubectlCluster.Env(profile)).
-		Env(proxyEnv...).
 		Run(); err != nil {
 		return err
 	}
 
-	return shell.New(ctx, c.l, "kubelogin", "convert-kubeconfig", "-l", "azurecli").
+	c.l.Info("converted kubectl cluster config using kubelogin")
+
+	if err := pkgexec.NewCommand(ctx, "kubelogin", "convert-kubeconfig",
+		"-l", "azurecli",
+	).
 		Env(kubectlCluster.Env(profile)).
-		Env(proxyEnv...).
-		Run()
+		Run(); err != nil {
+		return err
+	}
+
+	if k8s.ProxyURL != "" {
+		c.l.Info("setting proxy URL:", k8s.ProxyURL)
+
+		kc, err := kubeconfig.LoadFromFile(kubectlCluster.Config(profile))
+		if err != nil {
+			return err
+		}
+
+		if kc.Clusters[kc.Contexts[kc.CurrentContext].Cluster].ProxyURL != k8s.ProxyURL {
+			kc.Clusters[kc.Contexts[kc.CurrentContext].Cluster].ProxyURL = k8s.ProxyURL
+			if err := kubeconfig.WriteToFile(kc, kubectlCluster.Config(profile)); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (c *Command) exec(ctx context.Context, r *readline.Readline) error {
-	return shell.New(ctx, c.l, "az").
+	return pkgexec.NewCommand(ctx, "az").
 		Args(r.Args()...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
@@ -313,17 +320,10 @@ func (c *Command) login(ctx context.Context, r *readline.Readline) error {
 		)
 	}
 
-	proxyEnv, stop, err := c.startProxy(ctx, c.az.cfg.Proxy)
-	if err != nil {
-		return err
-	}
-	defer stop()
-
-	return shell.New(ctx, c.l, "az", "login").
+	return pkgexec.NewCommand(ctx, "az", "login").
 		Args(args...).
 		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
-		Env(proxyEnv...).
 		Run()
 }
