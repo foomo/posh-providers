@@ -30,7 +30,7 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func CommandWithSquadrn(v squadron.Squadron) CommandOption {
+func CommandWithSquadron(v squadron.Squadron) CommandOption {
 	return func(o *Command) {
 		o.squadron = v
 	}
@@ -151,23 +151,13 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	env := []string{c.kubectl.Cluster(cluster).Env(profile)}
 
-	// if proxyName := c.kubectl.Config().ClusterProxy(cluster); proxyName != "" {
-	// 	proxyEnv, stop, err := c.proxyCfg.Start(ctx, proxyName)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	defer stop()
-	//
-	// 	env = append(env, proxyEnv...)
-	// }
-
 	if value := c.squadronNamespaceFn(cluster, fleet, squad); value == "all" {
 		args = append(args, "--all-namespaces")
 	} else if value != "" {
-		args = append(args, "--namespace", value)
+		args = append(args, "--namespace="+value)
 	}
 
-	return shell.New(ctx, c.l, "k9s", "--logoless").
+	return shell.New(ctx, c.l, "k9s", "--logoless", "--splashless").
 		Env(env...).
 		Args(args...).
 		Args(r.AdditionalArgs()...).
