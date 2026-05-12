@@ -32,6 +32,7 @@ github.com/foomo/go v0.11.0/go.mod h1:jeSB/atkoqSoJ3+ak0+b/Xtj7IMyDj1odzJroudT7D
 github.com/foomo/gokazi v0.2.0 h1:At8wZKNH0q7+6lJRhI2Z8Eu6n8EyUwwI+GhP0oOMedM=
 github.com/foomo/gokazi v0.2.0/go.mod h1:ipPwYNpDpU3j/C+cNbtpDhgeMVCPoA4Cz/2ZuJ25r4Y=
 github.com/foomo/posh v0.18.0 h1:JSYoIKFeToNbRzXC9DVk2Y+WbKSgtQUXtQMssFVcqno=
+github.com/foomo/posh v0.18.0/go.mod h1:NyK32CMwyOrxY267fgsSVyj2HtobbWZNHoTlGmDJMhk=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=

@@ -22,6 +22,8 @@ github.com/ebitengine/purego v0.10.0 h1:QIw4xfpWT6GWTzaW5XEKy3HXoqrJGx1ijYHzTF0/
 github.com/ebitengine/purego v0.10.0/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
 github.com/foomo/go v0.11.0 h1:YSKHryh9+F/b9NKxmwySZGYdzINsNZNFHwaGZU3pmng=
 github.com/foomo/go v0.11.0/go.mod h1:jeSB/atkoqSoJ3+ak0+b/Xtj7IMyDj1odzJroudT7Dw=
+github.com/foomo/gokazi v0.2.0 h1:At8wZKNH0q7+6lJRhI2Z8Eu6n8EyUwwI+GhP0oOMedM=
+github.com/foomo/gokazi v0.2.0/go.mod h1:ipPwYNpDpU3j/C+cNbtpDhgeMVCPoA4Cz/2ZuJ25r4Y=
 github.com/foomo/posh v0.18.0 h1:JSYoIKFeToNbRzXC9DVk2Y+WbKSgtQUXtQMssFVcqno=
 github.com/foomo/posh v0.18.0/go.mod h1:NyK32CMwyOrxY267fgsSVyj2HtobbWZNHoTlGmDJMhk=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
