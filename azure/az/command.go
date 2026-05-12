@@ -3,12 +3,13 @@ package az
 import (
 	"context"
 
+	"github.com/foomo/posh-providers/kubernetes/kubeconfig"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
+	pkgexec "github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
-	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
@@ -20,6 +21,7 @@ type (
 		az            *AZ
 		kubectl       *kubectl.Kubectl
 		commandTree   tree.Root
+		middlewares   []pkgexec.Middleware
 		clusterNameFn ClusterNameFn
 	}
 	ClusterNameFn func(name string, cluster Cluster) string
@@ -33,6 +35,12 @@ type (
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
+	}
+}
+
+func CommandWithMiddlewares(v ...pkgexec.Middleware) CommandOption {
+	return func(o *Command) {
+		o.middlewares = append(o.middlewares, v...)
 	}
 }
 
@@ -193,16 +201,13 @@ func (c *Command) artifactory(ctx context.Context, r *readline.Readline) error {
 		return errors.Errorf("failed to retrieve artifactoy for: %q", r.Args().At(2))
 	}
 
-	if err := shell.New(ctx, c.l, "az", "acr", "login").
-		Args("--name", acr.Name).
-		Args("--resource-group", acr.ResourceGroup).
-		Args("--subscription", sub.Name).
-		Run(); err != nil {
-		return err
-	}
-
-	return nil
+	return c.cmd(ctx, "acr", "login",
+		"--name", acr.Name,
+		"--subscription", sub.Name,
+		"--resource-group", acr.ResourceGroup,
+	).Run()
 }
+
 func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 	ifs := r.FlagSets().Internal()
 
@@ -226,24 +231,50 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	if err := shell.New(ctx, c.l, "az", "aks", "get-credentials").
-		Args("--name", k8s.Name).
-		Args("--resource-group", k8s.ResourceGroup).
-		Args("--subscription", sub.Name).
-		Args("--overwrite-existing").
+	c.l.Success("retrieved kubectl cluster config")
+
+	if err := c.cmd(ctx, "aks", "get-credentials",
+		"--name", k8s.Name,
+		"--subscription", sub.Name,
+		"--resource-group", k8s.ResourceGroup,
+		"--overwrite-existing",
+	).
 		Env(kubectlCluster.Env(profile)).
 		Run(); err != nil {
 		return err
 	}
 
-	return shell.New(ctx, c.l, "kubelogin", "convert-kubeconfig", "-l", "azurecli").
+	c.l.Success("converted kubectl cluster config using kubelogin")
+
+	if err := pkgexec.NewCommand(ctx, "kubelogin", "convert-kubeconfig",
+		"-l", "azurecli",
+	).
 		Env(kubectlCluster.Env(profile)).
-		Run()
+		Run(); err != nil {
+		return err
+	}
+
+	if k8s.ProxyURL != "" {
+		c.l.Info("setting proxy URL:", k8s.ProxyURL)
+
+		kc, err := kubeconfig.LoadFromFile(kubectlCluster.Config(profile))
+		if err != nil {
+			return err
+		}
+
+		if kc.Clusters[kc.Contexts[kc.CurrentContext].Cluster].ProxyURL != k8s.ProxyURL {
+			kc.Clusters[kc.Contexts[kc.CurrentContext].Cluster].ProxyURL = k8s.ProxyURL
+			if err := kubeconfig.WriteToFile(kc, kubectlCluster.Config(profile)); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (c *Command) exec(ctx context.Context, r *readline.Readline) error {
-	return shell.New(ctx, c.l, "az").
-		Args(r.Args()...).
+	return c.cmd(ctx, r.Args()...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
@@ -280,10 +311,14 @@ func (c *Command) login(ctx context.Context, r *readline.Readline) error {
 		)
 	}
 
-	return shell.New(ctx, c.l, "az", "login").
+	return c.cmd(ctx, "login").
 		Args(args...).
 		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()
+}
+
+func (c *Command) cmd(ctx context.Context, args ...string) *pkgexec.Command {
+	return pkgexec.NewCommand(ctx, "az", args...).Middleware(c.middlewares...)
 }

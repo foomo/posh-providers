@@ -26,7 +26,7 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func CommandWithConfigKey(v string) Option {
+func WithConfigKey(v string) Option {
 	return func(o *AZ) error {
 		o.configKey = v
 		return nil

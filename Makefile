@@ -38,7 +38,7 @@ go.work:
 
 .PHONY: check
 ## Run tidy, generate, schema, lint & tests
-check: tidy generate schema lint test audit
+check: tidy generate schema lint.fix test audit
 
 .PHONY: lint
 ## Run linter
@@ -74,19 +74,19 @@ schema:
 
 .PHONY: test
 ## Run tests
-test: go.work
+test:
 	@echo "〉go test"
 	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -tags=safe work
 
 .PHONY: test.race
 ## Run tests
-test.race: go.work
+test.race:
 	@echo "〉go test with -race"
 	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -tags=safe -race work
 
 .PHONY: test.nocache
 ## Run tests with -count=1
-test.nocache: go.work
+test.nocache:
 	@echo "〉go test -count=1"
 	@GO_TEST_TAGS=-skip go test -coverprofile=coverage.out -tags=safe -count=1 work
 
@@ -112,14 +112,34 @@ tidy:
 ## Show outdated direct dependencies
 outdated:
 	@echo "〉go mod outdated"
-	@find . -name 'go.mod' -exec dirname {} \; | xargs -I {} sh -c 'cd {} && go list -u -m -json all' \; | go-mod-outdated -update -direct
+	@go list -u -m -json all | go-mod-outdated -update -direct
 
 .PHONY: upgrade
-## Show outdated direct dependencies
+## Upgrade dependencies
 upgrade:
 	@echo "〉go mod upgrade"
-	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go get -u ./...) &&) true
+	@go list -u -m -f '{{if and (not .Indirect) .Update}}{{.Path}}{{end}}' all | xargs -n1 -I{} go get {}@latest
 	@$(MAKE) tidy
+
+.PHONY: generate
+## Run go generate
+generate:
+	@echo "〉go generate"
+	@go generate work
+
+.PHONY: schema
+## Generate JSON schema
+schema:
+	@echo "〉generating schema"
+	@yq eval-all '. as $$item ireduce ({}; . *+ $$item)' base.schema.json \
+		$(shell find . -name config.base.json -print | tr '\n' ' ') \
+		> merged.schema.json
+	@-jsonschema bundle merged.schema.json \
+			$(shell find . -name config.schema.json -print | sed 's/^/--resolve /' | tr '\n' ' ') \
+			--without-id \
+			--http \
+			> posh.schema.json
+	@rm merged.schema.json
 
 ### Release
 
@@ -156,23 +176,32 @@ godocs:
 ### Utils
 
 .PHONY: help
+# https://patorjk.com/software/taag/#p=display&f=Tmplr&t=posh+providers&x=none&v=4&h=4&w=80&we=false
+help: g=\033[0;32m
+help: b=\033[0;34m
+help: w=\033[0;90m
+help: e=\033[0m
 ## Show help text
 help:
-	@echo ""
-	@echo "Project Oriented SHELL (posh) Providers"
-	@echo ""
-	@echo "Usage:\n  make [task]"
+	@echo "$(g)"
+	@echo "     ┓           • ┓"
+	@echo "┏┓┏┓┏┣┓  ┏┓┏┓┏┓┓┏┓┏┫┏┓┏┓┏"
+	@echo "┣┛┗┛┛┛┗  ┣┛┛ ┗┛┗┛┗┗┻┗ ┛ ┛"
+	@echo "┛        ┛"
+	@echo "with ❤ foomo by bestbytes"
+	@echo "$(e)"
+	@echo "$(b)Usage:$(e)\n  make [task]"
 	@awk '{ \
 		if($$0 ~ /^### /){ \
-			if(help) printf "%-23s %s\n\n", cmd, help; help=""; \
-			printf "\n%s:\n", substr($$0,5); \
+			if(help) printf "  %-21s $(w)%s$(e)\n\n", cmd, help; help=""; \
+			printf "$(b)\n%s:$(e)\n", substr($$0,5); \
 		} else if($$0 ~ /^[a-zA-Z0-9._-]+:/){ \
 			cmd = substr($$0, 1, index($$0, ":")-1); \
-			if(help) printf "  %-23s %s\n", cmd, help; help=""; \
+			if(help) printf "  %-21s $(w)%s$(e)\n", cmd, help; help=""; \
 		} else if($$0 ~ /^##/){ \
 			help = help ? help "\n                        " substr($$0,3) : substr($$0,3); \
 		} else if(help){ \
-			print "\n                        " help "\n"; help=""; \
+			print "\n                        $(w)" help "$(e)\n"; help=""; \
 		} \
 	}' $(MAKEFILE_LIST)
-
+	@echo ""

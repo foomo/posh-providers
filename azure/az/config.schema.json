@@ -24,6 +24,10 @@
         "resourceGroup": {
           "type": "string",
           "description": "Cluster resource group name"
+        },
+        "proxyUrl": {
+          "type": "string",
+          "description": "ProxyURL"
         }
       },
       "additionalProperties": false,
@@ -38,6 +42,10 @@
         "tenantId": {
           "type": "string",
           "description": "Tenant id"
+        },
+        "proxy": {
+          "type": "string",
+          "description": "Named SSH proxy for az login (tenant-level commands)"
         },
         "subscriptions": {
           "additionalProperties": {

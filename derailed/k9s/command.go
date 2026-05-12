@@ -30,7 +30,7 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func CommandWithSquadrn(v squadron.Squadron) CommandOption {
+func CommandWithSquadron(v squadron.Squadron) CommandOption {
 	return func(o *Command) {
 		o.squadron = v
 	}
@@ -149,14 +149,16 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
+	env := []string{c.kubectl.Cluster(cluster).Env(profile)}
+
 	if value := c.squadronNamespaceFn(cluster, fleet, squad); value == "all" {
 		args = append(args, "--all-namespaces")
 	} else if value != "" {
-		args = append(args, "--namespace", value)
+		args = append(args, "--namespace="+value)
 	}
 
-	return shell.New(ctx, c.l, "k9s", "--logoless").
-		Env(c.kubectl.Cluster(cluster).Env(profile)).
+	return shell.New(ctx, c.l, "k9s", "--logoless", "--splashless").
+		Env(env...).
 		Args(args...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).

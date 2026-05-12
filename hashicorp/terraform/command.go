@@ -7,10 +7,10 @@ import (
 
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
+	pkgexec "github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
-	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
@@ -22,6 +22,7 @@ type (
 		name        string
 		cache       cache.Namespace
 		configKey   string
+		middlewares []pkgexec.Middleware
 		commandTree tree.Root
 	}
 	CommandOption func(*Command)
@@ -34,6 +35,12 @@ type (
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
+	}
+}
+
+func CommandWithMiddlewares(v ...pkgexec.Middleware) CommandOption {
+	return func(o *Command) {
+		o.middlewares = append(o.middlewares, v...)
 	}
 }
 
@@ -354,6 +361,10 @@ func (c *Command) authEnv(r *readline.Readline, workspace string) ([]string, err
 	// No SP selected — let the provider use its default auth chain
 	// (CLI locally, managed identity on Azure VMs, OIDC in CI, etc.)
 	var env []string
+	if c.cfg.TenantID != "" {
+		env = append(env, "ARM_TENANT_ID="+c.cfg.TenantID)
+	}
+
 	if sub, err := c.cfg.Subscription(workspace); err == nil {
 		env = append(env, "ARM_SUBSCRIPTION_ID="+sub.ID)
 	}
@@ -370,7 +381,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	cmd := shell.New(ctx, c.l, "terraform", command).
+	cmd := c.cmd(ctx, command).
 		Dir(c.cfg.WorkspacePath(workspace)).
 		Args(r.FlagSets().Default().Visited().Args()...).
 		Args(r.AdditionalArgs()...).
@@ -402,7 +413,7 @@ func (c *Command) executeState(ctx context.Context, r *readline.Readline) error 
 		return err
 	}
 
-	return shell.New(ctx, c.l, "terraform", "state", subcommand).
+	return c.cmd(ctx, "state", subcommand).
 		Dir(c.cfg.WorkspacePath(workspace)).
 		Args(r.Args().From(3)...).
 		Args(r.FlagSets().Default().Visited().Args()...).
@@ -421,7 +432,7 @@ func (c *Command) unlock(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	return shell.New(ctx, c.l, "terraform", "force-unlock").
+	return c.cmd(ctx, "force-unlock").
 		Dir(c.cfg.WorkspacePath(workspace)).
 		Args(r.FlagSets().Default().Visited().Args()...).
 		Args(lockID).
@@ -440,4 +451,8 @@ func (c *Command) getWorkspaces(ctx context.Context, r *readline.Readline) []gop
 
 		return suggests.List(workspaces)
 	})
+}
+
+func (c *Command) cmd(ctx context.Context, args ...string) *pkgexec.Command {
+	return pkgexec.NewCommand(ctx, "terraform", args...).Middleware(c.middlewares...)
 }

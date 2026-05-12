@@ -3,10 +3,26 @@
   "$id": "https://github.com/foomo/posh-providers/kubernetes/kubectl",
   "$ref": "#/$defs/Config",
   "$defs": {
+    "ClusterConfig": {
+      "properties": {
+        "proxy": {
+          "type": "string",
+          "description": "Named SSH proxy from the top-level proxies map"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "Config": {
       "properties": {
         "configPath": {
           "type": "string"
+        },
+        "clusters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ClusterConfig"
+          },
+          "type": "object"
         }
       },
       "additionalProperties": false,

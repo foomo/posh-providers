@@ -12,21 +12,31 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 )
 
-type Command struct {
-	l           log.Logger
-	kubectl     *kubectl.Kubectl
-	commandTree tree.Root
-}
+type (
+	Command struct {
+		l           log.Logger
+		kubectl     *kubectl.Kubectl
+		commandTree tree.Root
+	}
+	CommandOption func(*Command)
+)
 
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
+func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:       l.Named("kubeprompt"),
 		kubectl: kubectl,
 	}
+
+	for _, opt := range opts {
+		if opt != nil {
+			opt(inst)
+		}
+	}
+
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "kubeprompt",
 		Description: "Open the kubectl prompt",
@@ -89,9 +99,12 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
+	cluster := r.Args().At(0)
+	env := []string{c.kubectl.Cluster(cluster).Env(profile)}
+
 	return shell.New(ctx, c.l, "kube-prompt").
 		Args(r.AdditionalArgs()...).
-		Env(c.kubectl.Cluster(r.Args().At(0)).Env(profile)).
+		Env(env...).
 		Run()
 }
 
