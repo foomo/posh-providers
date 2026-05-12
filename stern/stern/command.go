@@ -268,14 +268,13 @@ func (c *Command) tail(ctx context.Context, r *readline.Readline, args ...string
 		return err
 	}
 
-	env := []string{c.kubectl.Cluster(cluster).Env(profile)}
-
-	return shell.New(ctx, c.l, "stern").
-		Env(env...).
+	cmd := shell.New(ctx, c.l, "stern").
+		Env(c.kubectl.Cluster(cluster).Env(profile)).
 		Args(args...).
 		Args(fs.Visited().Args()...).
-		Args(r.AdditionalArgs()...).
-		Run()
+		Args(r.AdditionalArgs()...)
+
+	return cmd.Run()
 }
 
 func (c *Command) tailQuery(ctx context.Context, r *readline.Readline) error {

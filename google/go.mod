@@ -17,7 +17,6 @@ require (
 	github.com/foomo/posh-providers/onepassword v0.46.2
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
-	github.com/pterm/pterm v0.12.83
 	github.com/samber/lo v1.53.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
@@ -50,6 +49,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.3.1 // indirect
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/pterm/pterm v0.12.83 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
