@@ -5,13 +5,12 @@ import (
 	"errors"
 	"os/exec"
 
-	"github.com/foomo/posh-providers/pkg/proxy"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
+	pkgexec "github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
-	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
@@ -20,10 +19,10 @@ type (
 	Command struct {
 		l           log.Logger
 		cfg         Config
-		proxyCfg    proxy.Config
 		name        string
 		cache       cache.Namespace
 		configKey   string
+		middlewares []pkgexec.Middleware
 		commandTree tree.Root
 	}
 	CommandOption func(*Command)
@@ -36,6 +35,12 @@ type (
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
+	}
+}
+
+func CommandWithMiddlewares(v ...pkgexec.Middleware) CommandOption {
+	return func(o *Command) {
+		o.middlewares = append(o.middlewares, v...)
 	}
 }
 
@@ -64,10 +69,6 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 	}
 
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
-		return nil, err
-	}
-
-	if err := viper.UnmarshalKey("proxies", &inst.proxyCfg); err != nil {
 		return nil, err
 	}
 
@@ -337,15 +338,6 @@ func (c *Command) addAuthFlags(ctx context.Context, r *readline.Readline, fs *re
 	return fs.Internal().SetValues("service-principal", c.cfg.ServicePrincipalNames()...)
 }
 
-func (c *Command) startProxy(ctx context.Context, workspace string) ([]string, func(), error) {
-	sub, _ := c.cfg.Subscription(workspace)
-	if sub.Proxy == "" {
-		return nil, func() {}, nil
-	}
-
-	return c.proxyCfg.Start(ctx, c.l, sub.Proxy)
-}
-
 func (c *Command) authEnv(r *readline.Readline, workspace string) ([]string, error) {
 	sp, err := r.FlagSets().Internal().GetString("service-principal")
 	if err != nil {
@@ -389,15 +381,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	proxyEnv, stop, err := c.startProxy(ctx, workspace)
-	if err != nil {
-		return err
-	}
-	defer stop()
-
-	env = append(env, proxyEnv...)
-
-	cmd := shell.New(ctx, c.l, "terraform", command).
+	cmd := c.cmd(ctx, command).
 		Dir(c.cfg.WorkspacePath(workspace)).
 		Args(r.FlagSets().Default().Visited().Args()...).
 		Args(r.AdditionalArgs()...).
@@ -429,15 +413,7 @@ func (c *Command) executeState(ctx context.Context, r *readline.Readline) error 
 		return err
 	}
 
-	proxyEnv, stop, err := c.startProxy(ctx, workspace)
-	if err != nil {
-		return err
-	}
-	defer stop()
-
-	env = append(env, proxyEnv...)
-
-	return shell.New(ctx, c.l, "terraform", "state", subcommand).
+	return c.cmd(ctx, "state", subcommand).
 		Dir(c.cfg.WorkspacePath(workspace)).
 		Args(r.Args().From(3)...).
 		Args(r.FlagSets().Default().Visited().Args()...).
@@ -456,15 +432,7 @@ func (c *Command) unlock(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	proxyEnv, stop, err := c.startProxy(ctx, workspace)
-	if err != nil {
-		return err
-	}
-	defer stop()
-
-	env = append(env, proxyEnv...)
-
-	return shell.New(ctx, c.l, "terraform", "force-unlock").
+	return c.cmd(ctx, "force-unlock").
 		Dir(c.cfg.WorkspacePath(workspace)).
 		Args(r.FlagSets().Default().Visited().Args()...).
 		Args(lockID).
@@ -483,4 +451,8 @@ func (c *Command) getWorkspaces(ctx context.Context, r *readline.Readline) []gop
 
 		return suggests.List(workspaces)
 	})
+}
+
+func (c *Command) cmd(ctx context.Context, args ...string) *pkgexec.Command {
+	return pkgexec.NewCommand(ctx, "terraform", args...).Middleware(c.middlewares...)
 }
