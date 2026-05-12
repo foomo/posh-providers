@@ -7,7 +7,6 @@ import (
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
 	pkgexec "github.com/foomo/posh/pkg/exec"
-	"github.com/foomo/posh/pkg/exec/middleware"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
@@ -20,12 +19,11 @@ type (
 		l             log.Logger
 		name          string
 		az            *AZ
-		envFn         EnvFn
 		kubectl       *kubectl.Kubectl
 		commandTree   tree.Root
+		middlewares   []pkgexec.Middleware
 		clusterNameFn ClusterNameFn
 	}
-	EnvFn         func(ctx context.Context, subscription string) []string
 	ClusterNameFn func(name string, cluster Cluster) string
 	CommandOption func(*Command)
 )
@@ -40,9 +38,9 @@ func CommandWithName(v string) CommandOption {
 	}
 }
 
-func CommandWithEnvFn(v EnvFn) CommandOption {
+func CommandWithMiddlewares(v ...pkgexec.Middleware) CommandOption {
 	return func(o *Command) {
-		o.envFn = v
+		o.middlewares = append(o.middlewares, v...)
 	}
 }
 
@@ -62,9 +60,6 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 		name:    "az",
 		az:      az,
 		kubectl: kubectl,
-		envFn: func(ctx context.Context, subscription string) []string {
-			return nil
-		},
 		clusterNameFn: func(name string, cluster Cluster) string {
 			return name
 		},
@@ -206,13 +201,11 @@ func (c *Command) artifactory(ctx context.Context, r *readline.Readline) error {
 		return errors.Errorf("failed to retrieve artifactoy for: %q", r.Args().At(2))
 	}
 
-	return pkgexec.NewCommand(ctx, "az", "acr", "login",
+	return c.cmd(ctx, "acr", "login",
 		"--name", acr.Name,
 		"--subscription", sub.Name,
 		"--resource-group", acr.ResourceGroup,
-	).
-		Middleware(middleware.WithEnv(c.envFn(ctx, r.Args().At(1))...)).
-		Run()
+	).Run()
 }
 
 func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
@@ -238,21 +231,20 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	c.l.Info("retrieved kubectl cluster config")
+	c.l.Success("retrieved kubectl cluster config")
 
-	if err := pkgexec.NewCommand(ctx, "az", "aks", "get-credentials",
+	if err := c.cmd(ctx, "aks", "get-credentials",
 		"--name", k8s.Name,
 		"--subscription", sub.Name,
 		"--resource-group", k8s.ResourceGroup,
 		"--overwrite-existing",
 	).
-		Middleware(middleware.WithEnv(c.envFn(ctx, r.Args().At(1))...)).
 		Env(kubectlCluster.Env(profile)).
 		Run(); err != nil {
 		return err
 	}
 
-	c.l.Info("converted kubectl cluster config using kubelogin")
+	c.l.Success("converted kubectl cluster config using kubelogin")
 
 	if err := pkgexec.NewCommand(ctx, "kubelogin", "convert-kubeconfig",
 		"-l", "azurecli",
@@ -282,8 +274,7 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) exec(ctx context.Context, r *readline.Readline) error {
-	return pkgexec.NewCommand(ctx, "az").
-		Args(r.Args()...).
+	return c.cmd(ctx, r.Args()...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
@@ -320,10 +311,14 @@ func (c *Command) login(ctx context.Context, r *readline.Readline) error {
 		)
 	}
 
-	return pkgexec.NewCommand(ctx, "az", "login").
+	return c.cmd(ctx, "login").
 		Args(args...).
 		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
 		Run()
+}
+
+func (c *Command) cmd(ctx context.Context, args ...string) *pkgexec.Command {
+	return pkgexec.NewCommand(ctx, "az", args...).Middleware(c.middlewares...)
 }
