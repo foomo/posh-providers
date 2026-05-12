@@ -1,17 +1,18 @@
 .*
-*.zip
-*.tar
-*.tgz
-*.pem
-*.out
 *.log
+*.pid
+*.retry
+*.out
+*.tgz
+*.zip
+*.pem
 bin/
-dist/
 tmp/
 
 ## Git
-!.gitignore
 !.gitkeep
+!.gitignore
+!.gitattributes
 
 ## GitHub
 !.github/
@@ -31,21 +32,12 @@ tmp/
 ## Editorconfig
 !.editorconfig
 
-## TypeScript
-*.tsbuildinfo
-
-### Golang
-/go.work
-/go.work.sum
+## Golang
+go.work
+go.work.sum
 !.golangci.yaml
 !.goreleaser.yaml
 
-## Node
-!.npmrc
-**/node_modules/
-
 ## Vitepress
+node_modules/
 !docs/.vitepress
-docs/.vitepress/*
-!docs/.vitepress/theme/
-!docs/.vitepress/config.mts

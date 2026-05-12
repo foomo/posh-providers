@@ -4,7 +4,6 @@ go 1.26.0
 
 replace (
 	github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
-	github.com/foomo/gokazi => ../../../foomo/gokazi
 	github.com/foomo/posh-providers => ../
 	github.com/foomo/posh-providers/cloudflare => ../cloudflare
 	github.com/foomo/posh-providers/kubernetes => ../kubernetes
@@ -18,10 +17,10 @@ require (
 	github.com/foomo/go v0.11.0
 	github.com/foomo/gokazi v0.2.0
 	github.com/foomo/posh v0.18.0
-	github.com/foomo/posh-providers/cloudflare v0.46.2
-	github.com/foomo/posh-providers/kubernetes v0.46.2
-	github.com/foomo/posh-providers/onepassword v0.46.2
-	github.com/foomo/posh-providers/slack-go v0.46.2
+	github.com/foomo/posh-providers/cloudflare v0.48.0
+	github.com/foomo/posh-providers/kubernetes v0.48.0
+	github.com/foomo/posh-providers/onepassword v0.48.0
+	github.com/foomo/posh-providers/slack-go v0.48.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/knadh/koanf/parsers/yaml v1.1.0
 	github.com/knadh/koanf/providers/file v1.2.1
@@ -29,7 +28,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.83
 	github.com/samber/lo v1.53.0
-	github.com/slack-go/slack v0.19.0
+	github.com/slack-go/slack v0.23.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.20.0

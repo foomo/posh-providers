@@ -238,7 +238,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 			return err
 		}
 
-		return m.Migrate(uint(i)) //nolint:gosec
+		return m.Migrate(uint(i))
 	case "force":
 		i, err := strconv.Atoi(r.Args().At(3))
 		if err != nil {

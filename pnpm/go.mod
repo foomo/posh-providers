@@ -10,7 +10,7 @@ replace (
 
 require (
 	github.com/foomo/posh v0.18.0
-	github.com/foomo/posh-providers v0.46.2
+	github.com/foomo/posh-providers v0.48.0
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
 )

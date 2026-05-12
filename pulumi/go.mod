@@ -15,9 +15,9 @@ replace (
 require (
 	github.com/foomo/go v0.11.0
 	github.com/foomo/posh v0.18.0
-	github.com/foomo/posh-providers/azure v0.46.2
-	github.com/foomo/posh-providers/google v0.46.2
-	github.com/foomo/posh-providers/onepassword v0.46.2
+	github.com/foomo/posh-providers/azure v0.48.0
+	github.com/foomo/posh-providers/google v0.48.0
+	github.com/foomo/posh-providers/onepassword v0.48.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.21.0
@@ -36,7 +36,7 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/containerd/console v1.0.5 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/foomo/posh-providers/kubernetes v0.46.2 // indirect
+	github.com/foomo/posh-providers/kubernetes v0.48.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect

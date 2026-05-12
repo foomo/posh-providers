@@ -3,7 +3,6 @@ atomicgo.dev/assert v0.0.2/go.mod h1:ut4NcI3QDdJtlmAxQULOmA13Gz6e2DWbSAS8RUOmNYQ
 atomicgo.dev/cursor v0.2.0 h1:H6XN5alUJ52FZZUkI7AlJbUc1aW38GWZalpYRPpoPOw=
 atomicgo.dev/cursor v0.2.0/go.mod h1:Lr4ZJB3U7DfPPOkbH7/6TOtJ4vFGHlgj1nc+n900IpU=
 atomicgo.dev/keyboard v0.2.10 h1:v7mvUKUZLHIggxULEIuWbT+WkkyQSgdbA201EziAhHU=
-atomicgo.dev/keyboard v0.2.10/go.mod h1:ap/z5ilnhLqYq852m6kPeTq5Z6aESGWu5mzRpJlC6aI=
 atomicgo.dev/schedule v0.1.0 h1:nTthAbhZS5YZmgYbb2+DH8uQIZcTlIrd4eYr3UQxEjs=
 atomicgo.dev/schedule v0.1.0/go.mod h1:xeUa3oAkiuHYh8bKiQBRojqAMq3PXXbJujjb0hw8pEU=
 github.com/MarvinJWendt/testza v0.5.2 h1:53KDo64C1z/h/d/stCYCPY69bt/OSwjq5KpFNwi+zB4=
@@ -18,7 +17,6 @@ github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ3
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/foomo/posh v0.18.0 h1:JSYoIKFeToNbRzXC9DVk2Y+WbKSgtQUXtQMssFVcqno=
-github.com/foomo/posh v0.18.0/go.mod h1:NyK32CMwyOrxY267fgsSVyj2HtobbWZNHoTlGmDJMhk=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5/go.mod h1:+syUfnvYJUO5A+6QMQYXAyzkxHMNlj9dH2LIeQfBSjc=
 github.com/gookit/assert v0.1.1 h1:lh3GcawXe/p+cU7ESTZ5Ui3Sm/x8JWpIis4/1aF0mY0=

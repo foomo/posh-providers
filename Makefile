@@ -32,9 +32,7 @@ endif
 # Ensure go.work file
 go.work:
 	@echo "〉initializing go work"
-	@go work init
-	@go work use -r .
-	@go work sync
+	@go work init && go work use -r . && go work sync
 
 ### Tasks
 
@@ -53,6 +51,26 @@ lint:
 lint.fix:
 	@echo "〉golangci-lint run fix"
 	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && golangci-lint run --fix) &&) true
+
+.PHONY: generate
+## Run go generate
+generate:
+	@echo "〉go generate"
+	@go generate work
+
+.PHONY: schema
+## Generate JSON schema
+schema:
+	@echo "〉generating schema"
+	@yq eval-all '. as $$item ireduce ({}; . *+ $$item)' base.schema.json \
+		$(shell find . -name config.base.json -print | tr '\n' ' ') \
+		> merged.schema.json
+	@-jsonschema bundle merged.schema.json \
+			$(shell find . -name config.schema.json -print | sed 's/^/--resolve /' | tr '\n' ' ') \
+			--without-id \
+			--http \
+			> posh.schema.json
+	@rm merged.schema.json
 
 .PHONY: test
 ## Run tests
@@ -79,7 +97,7 @@ test.nocache:
 audit:
 	@echo "〉security audit"
 	@go install golang.org/x/vuln/cmd/govulncheck@latest
-	@govulncheck ./...
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && govulncheck ./...) &&) true
 
 ### Dependencies
 
@@ -88,7 +106,7 @@ audit:
 tidy:
 	@echo "〉go mod tidy"
 	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go mod tidy) &&) true
-	@go work sync
+	@go work use -r . && go work sync
 
 .PHONY: outdated
 ## Show outdated direct dependencies
@@ -125,20 +143,29 @@ schema:
 
 ### Release
 
-.PHONY: release
-## Create release TAG=1.0.0
-release:
-	@echo "$(TAG)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "❌ TAG must be X.Y.Z format"; exit 1; }
-	@git diff-index --quiet HEAD -- || { echo "❌ Uncommitted changes detected"; exit 1; }
-	@git rev-parse "v$(TAG)" >/dev/null 2>&1 && { echo "❌ Tag v$(TAG) already exists"; exit 1; } || true
-	@echo "📦 Creating submodule tags..."
-	@find . -type f -name 'go.mod' -mindepth 2 -not -path './examples/*' -not -path './vendor/*' -exec sh -c 'dir=$$(dirname {} | sed "s|^\./||"); tag="$$dir/v$(TAG)"; git rev-parse "$$tag" >/dev/null 2>&1 || { echo "🔖 $$tag"; git tag "$$tag"; }' \;
-	@read -p "Push submodule tags? [y/N] " yn; case $$yn in [Yy]*) git push origin --tags;; esac
-	@echo "📦 Creating main tag..."
-	@echo "🔖 v$(TAG)" && git tag "v$(TAG)"
-	@read -p "Push main tag? [y/N] " yn; case $$yn in [Yy]*) git push origin --tags;; esac
+.PHONY: tag.submodules
+## Create tags for submodules TAG=1.0.0
+tag.submodules:
+	@echo "$(TAG)" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "❌ TAG must be vX.Y.Z format"; exit 1; }
+	@git rev-parse "$(TAG)" >/dev/null 2>&1 || { echo "❌ Tag $(TAG) does not exist"; exit 1; }
+	@echo "🔖 Creating submodule tags..."
+	@find . -type f -name 'go.mod' -mindepth 2 -not -path './vendor/*' -exec sh -c 'dir=$$(dirname {} | sed "s|^\./||"); tag="$$dir/$(TAG)"; git rev-parse "$$tag" >/dev/null 2>&1 || { echo "🔖 $$tag"; git tag "$$tag"; }' \;
+	@echo "🔖 Pushing tags..."
+	@git push origin --tags
 
 ### Documentation
+
+.PHONY: docs
+## Open docs
+docs:
+	@echo "〉starting docs"
+	@cd docs && bun install && bun run dev
+
+.PHONY: docs.build
+## Open docs
+docs.build:
+	@echo "〉building docs"
+	@cd docs && bun install && bun run build
 
 .PHONY: godocs
 ## Open go docs

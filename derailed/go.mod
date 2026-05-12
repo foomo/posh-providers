@@ -12,8 +12,8 @@ replace (
 
 require (
 	github.com/foomo/posh v0.18.0
-	github.com/foomo/posh-providers/foomo v0.46.2
-	github.com/foomo/posh-providers/kubernetes v0.46.2
+	github.com/foomo/posh-providers/foomo v0.48.0
+	github.com/foomo/posh-providers/kubernetes v0.48.0
 )
 
 require (

@@ -12,12 +12,12 @@ replace (
 require (
 	github.com/foomo/go v0.11.0
 	github.com/foomo/posh v0.18.0
-	github.com/foomo/posh-providers/onepassword v0.46.2
+	github.com/foomo/posh-providers/onepassword v0.48.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	go.uber.org/zap v1.27.1
+	go.uber.org/zap v1.28.0
 )
 
 require (
