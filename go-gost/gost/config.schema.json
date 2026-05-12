@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/go-gost/gost",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object"
+    }
+  }
+}

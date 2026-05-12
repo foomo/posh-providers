@@ -589,6 +589,10 @@
             "resourceGroup": {
               "description": "Cluster resource group name",
               "type": "string"
+            },
+            "proxyUrl": {
+              "description": "ProxyURL",
+              "type": "string"
             }
           },
           "additionalProperties": false
@@ -660,10 +664,6 @@
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Artifactory"
               }
-            },
-            "proxy": {
-              "description": "Named SSH proxy for all commands in this subscription",
-              "type": "string"
             }
           },
           "additionalProperties": false

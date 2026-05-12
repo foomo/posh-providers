@@ -16,6 +16,7 @@ func Checker() check.Checker {
 	gk.Add("dockprox", gokaziconfig.Task{
 		Name: "dockprox",
 	})
+
 	return func(ctx context.Context, l log.Logger) []check.Info {
 		name := "Dockprox"
 
