@@ -26,17 +26,19 @@ func ClusterChecker(inst *K3d) check.Checker {
 			ServersRunning int    `json:"serversRunning"`
 		}
 		if err := json.Unmarshal(res, &clusters); err != nil {
-			return []check.Info{check.NewFailureInfo("⚠", title, "Unkown")}
+			return []check.Info{check.NewFailureInfo("⚠", title, "Unknown")}
 		}
 
 		for _, cluster := range clusters {
 			if slices.Contains(inst.cfg.ClusterNames(), cluster.Name) {
 				c, _ := inst.cfg.Cluster(cluster.Name)
 				note := "127.0.0.1:" + c.Port
+
 				title += "(" + c.Alias + ")"
 				if cluster.ServersRunning == 0 {
 					return []check.Info{check.NewNoteInfo("", title, note)}
 				}
+
 				return []check.Info{check.NewSuccessInfo("", title, note)}
 			}
 		}
@@ -58,7 +60,7 @@ func RegistryChecker(inst *K3d) check.Checker {
 			Name string `json:"name"`
 		}
 		if err := json.Unmarshal(res, &registries); err != nil {
-			return []check.Info{check.NewFailureInfo("⚠", title, "Unkown")}
+			return []check.Info{check.NewFailureInfo("⚠", title, "Unknown")}
 		}
 
 		for _, registry := range registries {

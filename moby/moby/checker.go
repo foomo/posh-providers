@@ -10,7 +10,7 @@ import (
 	"github.com/moby/moby/client"
 )
 
-const socket = "/var/run/docker.sock"
+var Socket = "/var/run/docker.sock"
 
 func APIChecker(ctx context.Context, l log.Logger) []check.Info {
 	title := "Docker"
@@ -32,9 +32,11 @@ func APIChecker(ctx context.Context, l log.Logger) []check.Info {
 func SocketChecker(ctx context.Context, l log.Logger) []check.Info {
 	title := "Docker"
 
-	conn, err := net.DialTimeout("unix", socket, 500*time.Millisecond)
+	d := &net.Dialer{Timeout: 500 * time.Millisecond}
+
+	conn, err := d.DialContext(ctx, "unix", Socket)
 	if err != nil {
-		return []check.Info{check.NewNoteInfo("⚓︎", title, "Not running ("+socket+")")}
+		return []check.Info{check.NewNoteInfo("⚓︎", title, "Not running ("+Socket+")")}
 	}
 	defer conn.Close()
 
