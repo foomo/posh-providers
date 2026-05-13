@@ -12,9 +12,9 @@ func AuthChecker(p *Teleport) check.Checker {
 		name := "Teleport"
 
 		if p.IsAuthenticated(ctx) {
-			return []check.Info{check.NewSuccessInfo("\uF084", name, p.Config().Hostname)}
+			return []check.Info{check.NewSuccessInfo("✌︎", name, p.Config().Hostname)}
 		} else {
-			return []check.Info{check.NewNoteInfo("\uEB11", name, "Unauthenticated")}
+			return []check.Info{check.NewNoteInfo("✌︎", name, "Unauthenticated")}
 		}
 	}
 }

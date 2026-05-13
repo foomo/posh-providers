@@ -22,13 +22,13 @@ func Checker() check.Checker {
 
 		t, err := gk.Find(ctx, "dockprox")
 		if err != nil {
-			return []check.Info{check.NewFailureInfo("", name, err.Error())}
+			return []check.Info{check.NewFailureInfo("⚠", name, err.Error())}
 		}
 
 		if t.Running {
-			return []check.Info{check.NewSuccessInfo("", name, "Running")}
+			return []check.Info{check.NewSuccessInfo("⚓︎", name, "Running")}
 		}
 
-		return []check.Info{check.NewNoteInfo("", name, "Stopped")}
+		return []check.Info{check.NewNoteInfo("⚓︎", name, "Stopped")}
 	}
 }
