@@ -1,4 +1,4 @@
-module github.com/foomo/posh-providers/moby
+module github.com/foomo/posh-providers/docker
 
 go 1.26.0
 
