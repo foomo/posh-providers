@@ -14,9 +14,9 @@ func AccessChecker(cf *Cloudflared, access Access) check.Checker {
 
 		note := fmt.Sprintf("%s:%d", access.Hostname, access.Port)
 		if cf.IsConnected(ctx, access) {
-			return []check.Info{check.NewSuccessInfo("\uF084", name, note)}
+			return []check.Info{check.NewSuccessInfo("✌︎", name, note)}
 		}
 
-		return []check.Info{check.NewNoteInfo("\uEB11", name, note)}
+		return []check.Info{check.NewNoteInfo("✌︎", name, note)}
 	}
 }

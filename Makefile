@@ -121,26 +121,6 @@ upgrade:
 	@go list -u -m -f '{{if and (not .Indirect) .Update}}{{.Path}}{{end}}' all | xargs -n1 -I{} go get {}@latest
 	@$(MAKE) tidy
 
-.PHONY: generate
-## Run go generate
-generate:
-	@echo "〉go generate"
-	@go generate work
-
-.PHONY: schema
-## Generate JSON schema
-schema:
-	@echo "〉generating schema"
-	@yq eval-all '. as $$item ireduce ({}; . *+ $$item)' base.schema.json \
-		$(shell find . -name config.base.json -print | tr '\n' ' ') \
-		> merged.schema.json
-	@-jsonschema bundle merged.schema.json \
-			$(shell find . -name config.schema.json -print | sed 's/^/--resolve /' | tr '\n' ' ') \
-			--without-id \
-			--http \
-			> posh.schema.json
-	@rm merged.schema.json
-
 ### Release
 
 .PHONY: tag.submodules

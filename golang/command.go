@@ -2,13 +2,8 @@ package golang
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"path"
-	"path/filepath"
-	"runtime"
 	"slices"
-	"strings"
 
 	prompt2 "github.com/c-bata/go-prompt"
 	"github.com/foomo/posh/pkg/cache"
@@ -93,6 +88,16 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 						Args:    []*tree.Arg{pathModArg},
 						Execute: inst.modOutdated,
 					},
+					{
+						Name:        "upgrade",
+						Description: "Show go mod upgrade",
+						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+							fs.Internal().Int("parallel", 0, "Number of parallel processes")
+							return nil
+						},
+						Args:    []*tree.Arg{pathModArg},
+						Execute: inst.modUpgrade,
+					},
 				},
 			},
 			{
@@ -103,6 +108,11 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 						Name:        "init",
 						Description: "Generate go.work file",
 						Execute:     inst.workInit,
+					},
+					{
+						Name:        "sync",
+						Description: "Sync go.work file",
+						Execute:     inst.workSync,
 					},
 					{
 						Name:        "use",
@@ -128,9 +138,35 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 				Execute: inst.generate,
 			},
 			{
-				Name:        "clean-lint-cache",
+				Name:        "clean",
 				Description: "Run golangci lint cache clean",
-				Execute:     inst.cleanLintCache,
+				Nodes: tree.Nodes{
+					{
+						Name:        "lint",
+						Description: "Lint cache",
+						Execute:     inst.cleanLintCache,
+					},
+					{
+						Name:        "build",
+						Description: "Build cache",
+						Execute:     inst.cleanBuildCache,
+					},
+					{
+						Name:        "mod",
+						Description: "Mod cache",
+						Execute:     inst.cleanModCache,
+					},
+					{
+						Name:        "fuzz",
+						Description: "Fuzz cache",
+						Execute:     inst.cleanFuzzCache,
+					},
+					{
+						Name:        "test",
+						Description: "Test cache",
+						Execute:     inst.cleanTestCache,
+					},
+				},
 			},
 			{
 				Name:        "lint",
@@ -366,10 +402,40 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 
-			return shell.New(ctx, c.l,
-				"go", "list",
-				"-u", "-m", "-json", "all",
-				"|", "go-mod-outdated", "-update", "-direct",
+			return shell.New(ctx, c.l, "go",
+				"list", "-u", "-m", "-json", "all",
+				"|",
+				"go-mod-outdated", "-update", "-direct",
+			).
+				Dir(value).
+				Run()
+		})
+	}
+
+	return wg.Wait()
+}
+
+func (c *Command) modUpgrade(ctx context.Context, r *readline.Readline) error {
+	var paths []string
+	if r.Args().HasIndex(2) {
+		paths = []string{r.Args().At(2)}
+	} else {
+		paths = c.paths(ctx, "go.mod", true)
+	}
+
+	slices.Sort(paths)
+
+	ctx, wg := c.wg(ctx, r)
+	c.l.Info("Running go mod outdated...")
+
+	for _, value := range paths {
+		wg.Go(func() error {
+			c.l.Info("└ " + value)
+
+			return shell.New(ctx, c.l, "go",
+				"list", "-u", "-m", "-f", "'{{if and (not .Indirect) .Update}}{{.Path}}{{end}}'", "all",
+				"|",
+				"xargs", "-n1", "-I{}", "go", "get", "{}@latest",
 			).
 				Dir(value).
 				Run()
@@ -380,25 +446,19 @@ func (c *Command) modOutdated(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) workInit(ctx context.Context, r *readline.Readline) error {
-	var data strings.Builder
-
-	data.WriteString("go " + strings.TrimPrefix(runtime.Version(), "go") + "\n\nuse (\n")
-
-	for _, value := range c.paths(ctx, "go.mod", true) {
-		data.WriteString("\t" + strings.TrimSuffix(value, "/go.mod") + "\n")
+	if err := shell.New(ctx, c.l, "go", "work", "init").Run(); err != nil {
+		return err
 	}
 
-	data.WriteString(")")
-
-	root := os.Getenv("PROJECT_ROOT")
-	fullPath := path.Join(root, "go.work")
-
-	cleanPath := filepath.Clean(fullPath)
-	if !strings.HasPrefix(cleanPath, root) {
-		return fmt.Errorf("path traversal attempt")
+	if err := shell.New(ctx, c.l, "go", "work", "use", "-r", ".").Run(); err != nil {
+		return err
 	}
 
-	return os.WriteFile(cleanPath, []byte(data.String()), 0600)
+	if err := shell.New(ctx, c.l, "go", "work", "sync").Run(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {
@@ -406,6 +466,18 @@ func (c *Command) workUse(ctx context.Context, r *readline.Readline) error {
 		Args(r.Args()...).
 		Args(r.AdditionalArgs()...).
 		Run()
+}
+
+func (c *Command) workSync(ctx context.Context, r *readline.Readline) error {
+	if err := shell.New(ctx, c.l, "go", "work", "use", "-r", ".").Run(); err != nil {
+		return err
+	}
+
+	if err := shell.New(ctx, c.l, "go", "work", "sync").Run(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
@@ -445,6 +517,22 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 	}
 
 	return wg.Wait()
+}
+
+func (c *Command) cleanBuildCache(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "go", "clean", "-cache").Run()
+}
+
+func (c *Command) cleanTestCache(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "go", "clean", "-testcache").Run()
+}
+
+func (c *Command) cleanModCache(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "go", "clean", "-modcache").Run()
+}
+
+func (c *Command) cleanFuzzCache(ctx context.Context, r *readline.Readline) error {
+	return shell.New(ctx, c.l, "go", "clean", "-fuzzcache").Run()
 }
 
 func (c *Command) cleanLintCache(ctx context.Context, r *readline.Readline) error {
