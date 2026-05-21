@@ -12,7 +12,7 @@ replace (
 require (
 	github.com/foomo/go v0.11.0
 	github.com/foomo/posh v0.18.0
-	github.com/foomo/posh-providers/onepassword v0.48.0
+	github.com/foomo/posh-providers/onepassword v0.49.1
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
