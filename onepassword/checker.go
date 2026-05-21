@@ -14,9 +14,9 @@ func AuthChecker(op *OnePassword) check.Checker {
 
 		err := exec.CommandContext(ctx, "op", "whoami", "--account", op.cfg.Account).Run()
 		if err != nil {
-			return []check.Info{check.NewNoteInfo("✌︎", name, "Unauthenticated")}
+			return []check.Info{check.NewNoteInfo("⛹", name, "Disconnected")}
 		}
 
-		return []check.Info{check.NewSuccessInfo("✌︎", name, op.cfg.Account)}
+		return []check.Info{check.NewSuccessInfo("⛹", name, op.cfg.Account)}
 	}
 }

@@ -13,17 +13,17 @@ import (
 var Socket = "/var/run/docker.sock"
 
 func APIChecker(ctx context.Context, l log.Logger) []check.Info {
-	title := "Docker"
+	title := "Docker API"
 
 	cli, err := client.New()
 	if err != nil {
-		return []check.Info{check.NewNoteInfo("⚓︎", title, "Not running (api)")}
+		return []check.Info{check.NewNoteInfo("⚓︎", title, "Stopped")}
 	}
 	defer cli.Close()
 
 	_, err = cli.Ping(ctx, client.PingOptions{})
 	if err != nil {
-		return []check.Info{check.NewNoteInfo("⚓︎", title, "Not running")}
+		return []check.Info{check.NewNoteInfo("⚓︎", title, "Stopped")}
 	}
 
 	return []check.Info{check.NewSuccessInfo("⚓︎", title, "Running")}
@@ -36,9 +36,9 @@ func SocketChecker(ctx context.Context, l log.Logger) []check.Info {
 
 	conn, err := d.DialContext(ctx, "unix", Socket)
 	if err != nil {
-		return []check.Info{check.NewNoteInfo("⚓︎", title, "Not running ("+Socket+")")}
+		return []check.Info{check.NewNoteInfo("⚓︎", title, Socket)}
 	}
 	defer conn.Close()
 
-	return []check.Info{check.NewSuccessInfo("⚓︎", title, "Running")}
+	return []check.Info{check.NewSuccessInfo("⚓︎", title, Socket)}
 }
