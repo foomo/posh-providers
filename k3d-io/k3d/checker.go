@@ -29,14 +29,18 @@ func ClusterChecker(inst *K3d) check.Checker {
 		}
 
 		var ret []check.Info
+
 		for _, name := range inst.cfg.ClusterNames() {
 			var found bool
+
 			c, _ := inst.cfg.Cluster(name)
 			title += " (" + c.Alias + ")"
 			note := "127.0.0.1:" + c.Port
+
 			for _, cluster := range clusters {
 				if cluster.Name == name {
 					found = true
+
 					if cluster.ServersRunning == 0 {
 						ret = append(ret, check.NewNoteInfo("☸", title, note))
 					} else {
@@ -44,6 +48,7 @@ func ClusterChecker(inst *K3d) check.Checker {
 					}
 				}
 			}
+
 			if !found {
 				ret = append(ret, check.NewNoteInfo("☸", title, "Stopped"))
 			}
