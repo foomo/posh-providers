@@ -15,14 +15,14 @@ func AuthChecker(ctx context.Context, l log.Logger) []check.Info {
 
 	out, err := shell.New(ctx, l, "az", "account", "list", "--output", "json").CombinedOutput()
 	if err != nil {
-		return []check.Info{check.NewNoteInfo("✌︎", name, "Unauthorized")}
+		return []check.Info{check.NewNoteInfo("⛹", name, "Unauthorized")}
 	}
 
 	var note string
 
 	var res []map[string]any
 	if err := json.Unmarshal(out, &res); err != nil || len(res) == 0 {
-		return []check.Info{check.NewNoteInfo("✌︎", name, "Unauthorized")}
+		return []check.Info{check.NewNoteInfo("⛹", name, "Unauthorized")}
 	}
 
 	if res[0]["user"] != nil {
@@ -31,5 +31,5 @@ func AuthChecker(ctx context.Context, l log.Logger) []check.Info {
 		}
 	}
 
-	return []check.Info{check.NewSuccessInfo("✌︎", name, note)}
+	return []check.Info{check.NewSuccessInfo("⛹", name, note)}
 }

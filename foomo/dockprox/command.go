@@ -66,7 +66,7 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 	inst.gk.Add("dockprox", gokaziconfig.Task{
 		Name:        "dockprox",
 		Description: inst.cfg.Config,
-		Args:        []string{"serve"},
+		Args:        []string{inst.cfg.Config},
 	})
 
 	inst.commandTree = tree.New(&tree.Node{
@@ -82,6 +82,11 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 				Name:        "stop",
 				Description: "Stop a dockprox process",
 				Execute:     inst.stop,
+			},
+			{
+				Name:        "menubar",
+				Description: "Start global dockprox as menubar",
+				Execute:     inst.menubar,
 			},
 		},
 	})
@@ -118,9 +123,15 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) start(ctx context.Context, r *readline.Readline) error {
-	c.l.Info("starting dockprox process:")
+	c.l.Info("starting dockprox")
 
 	return c.gk.Start(ctx, "dockprox", exec.CommandContext(ctx, "dockprox", "serve", "--config", c.cfg.Config))
+}
+
+func (c *Command) menubar(ctx context.Context, r *readline.Readline) error {
+	c.l.Info("starting dockprox menubar")
+
+	return c.gk.Start(ctx, "dockprox", exec.CommandContext(ctx, "dockprox", "menubar"))
 }
 
 func (c *Command) stop(ctx context.Context, r *readline.Readline) error {

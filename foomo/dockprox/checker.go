@@ -22,7 +22,7 @@ func Checker() check.Checker {
 
 		t, err := gk.Find(ctx, "dockprox")
 		if err != nil {
-			return []check.Info{check.NewFailureInfo("⚠", name, err.Error())}
+			return []check.Info{check.NewFailureInfo("⚡︎", name, err.Error())}
 		}
 
 		if t.Running {
