@@ -73,6 +73,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 	if err := viper.UnmarshalKey(inst.configKey, &inst.cfg); err != nil {
 		return nil, err
 	}
+
 	if len(inst.findIgnore) == 0 {
 		inst.findIgnore = inst.cfg.FindIgnore
 	}
@@ -193,7 +194,7 @@ func (c *Command) completePaths(ctx context.Context, t tree.Root, r *readline.Re
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context) []string {
 	return c.cache.Get("paths", func() any {
-		if value, err := findPaths(ctx, ".", c.findIgnore); err != nil {
+		if value, err := FindPaths(ctx, ".", c.findIgnore); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return []string{}
 		} else {
@@ -202,15 +203,18 @@ func (c *Command) paths(ctx context.Context) []string {
 	}).([]string)
 }
 
-func findPaths(ctx context.Context, root string, findIgnore []string) ([]string, error) {
+func FindPaths(ctx context.Context, root string, findIgnore []string) ([]string, error) {
 	var opts []files.FindOption
 	if len(findIgnore) > 0 {
 		opts = append(opts, files.FindWithIgnore(findIgnore...))
 	}
+
 	paths, err := files.Find(ctx, root, "sqlc.yaml", opts...)
 	if err != nil {
 		return nil, err
 	}
+
 	slices.Sort(paths)
+
 	return paths, nil
 }

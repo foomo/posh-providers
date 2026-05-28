@@ -48,6 +48,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 		cache:      cache.Get("go"),
 		findIgnore: []string{`^(node_modules|\.\w*)$`},
 	}
+
 	for _, opt := range opts {
 		if opt != nil {
 			opt(inst)
@@ -501,7 +502,7 @@ func (c *Command) completePaths(ctx context.Context, filename string, dir bool) 
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context, filename string, dir bool) []string {
 	return c.cache.Get("paths-"+filename, func() any {
-		if value, err := findPaths(ctx, ".", filename, dir, c.findIgnore); err != nil {
+		if value, err := FindPaths(ctx, ".", filename, dir, c.findIgnore); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return []string{}
 		} else {
@@ -510,21 +511,25 @@ func (c *Command) paths(ctx context.Context, filename string, dir bool) []string
 	}).([]string)
 }
 
-func findPaths(ctx context.Context, root, filename string, dir bool, findIgnore []string) ([]string, error) {
+func FindPaths(ctx context.Context, root, filename string, dir bool, findIgnore []string) ([]string, error) {
 	var opts []files.FindOption
 	if len(findIgnore) > 0 {
 		opts = append(opts, files.FindWithIgnore(findIgnore...))
 	}
+
 	value, err := files.Find(ctx, root, filename, opts...)
 	if err != nil {
 		return nil, err
 	}
+
 	if dir {
 		for i, s := range value {
 			value[i] = path.Dir(s)
 		}
 	}
+
 	slices.Sort(value)
+
 	return value, nil
 }
 
