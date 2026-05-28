@@ -1,6 +1,7 @@
 package k3d
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -19,10 +20,10 @@ func ClusterChecker(inst *K3d) check.Checker {
 		if err != nil {
 			return []check.Info{check.NewFailureInfo("⚡︎", title, "Down")}
 		}
+		res = bytes.TrimSpace(bytes.Trim(res, "\n"))
 
 		var clusters []struct {
-			Name           string `json:"name"`
-			ServersRunning int    `json:"serversRunning"`
+			Name string `json:"name"`
 		}
 		if err := json.Unmarshal(res, &clusters); err != nil {
 			return []check.Info{check.NewFailureInfo("⚡︎", title, "Unknown")}
@@ -38,14 +39,10 @@ func ClusterChecker(inst *K3d) check.Checker {
 			note := "127.0.0.1:" + c.Port
 
 			for _, cluster := range clusters {
-				if cluster.Name == name {
+				if cluster.Name == c.Alias {
 					found = true
 
-					if cluster.ServersRunning == 0 {
-						ret = append(ret, check.NewNoteInfo("☸", title, note))
-					} else {
-						ret = append(ret, check.NewSuccessInfo("☸", title, note))
-					}
+					ret = append(ret, check.NewSuccessInfo("☸", title, note))
 				}
 			}
 
@@ -66,6 +63,7 @@ func RegistryChecker(inst *K3d) check.Checker {
 		if err != nil {
 			return []check.Info{check.NewFailureInfo("⚡︎", title, "Down")}
 		}
+		res = bytes.TrimSpace(bytes.Trim(res, "\n"))
 
 		var registries []struct {
 			Name string `json:"name"`
@@ -74,8 +72,9 @@ func RegistryChecker(inst *K3d) check.Checker {
 			return []check.Info{check.NewFailureInfo("⚡︎", title, "Unknown")}
 		}
 
+		name := fmt.Sprintf("k3d-%s", inst.cfg.Registry.Name)
 		for _, registry := range registries {
-			if registry.Name == fmt.Sprintf("k3d-%s", inst.cfg.Registry.Name) {
+			if registry.Name == name {
 				ips, err := net.DefaultResolver.LookupIPAddr(ctx, registry.Name)
 				if err != nil {
 					return []check.Info{check.NewFailureInfo("⚡︎", title, err.Error())}
