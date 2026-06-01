@@ -1,6 +1,6 @@
 module github.com/foomo/posh-providers/foomo
 
-go 1.26.0
+go 1.26.3
 
 replace (
 	github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
@@ -14,21 +14,21 @@ replace (
 
 require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
-	github.com/foomo/go v0.11.0
+	github.com/foomo/go v0.12.0
 	github.com/foomo/gokazi v0.2.0
-	github.com/foomo/posh v0.18.0
+	github.com/foomo/posh v0.19.0
 	github.com/foomo/posh-providers/cloudflare v0.48.0
 	github.com/foomo/posh-providers/kubernetes v0.48.0
-	github.com/foomo/posh-providers/onepassword v0.49.1
+	github.com/foomo/posh-providers/onepassword v0.49.2
 	github.com/foomo/posh-providers/slack-go v0.48.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/knadh/koanf/parsers/yaml v1.1.0
 	github.com/knadh/koanf/providers/file v1.2.1
-	github.com/knadh/koanf/v2 v2.3.4
+	github.com/knadh/koanf/v2 v2.3.5
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.83
 	github.com/samber/lo v1.53.0
-	github.com/slack-go/slack v0.23.1
+	github.com/slack-go/slack v0.24.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.20.0
@@ -57,9 +57,9 @@ require (
 	github.com/knadh/koanf/maps v0.1.2 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/lufia/plan9stats v0.0.0-20260330125221-c963978e514e // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
-	github.com/mattn/go-runewidth v0.0.23 // indirect
+	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/mattn/go-tty v0.0.8 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
@@ -87,8 +87,8 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
-	golang.org/x/net v0.53.0 // indirect
-	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/term v0.42.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/term v0.43.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 )

@@ -1,6 +1,6 @@
 module github.com/foomo/posh-providers/digitalocean
 
-go 1.26.0
+go 1.26.3
 
 replace (
 	github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
@@ -10,10 +10,10 @@ replace (
 )
 
 require (
-	github.com/digitalocean/godo v1.192.0
-	github.com/foomo/go v0.11.0
-	github.com/foomo/posh v0.18.0
-	github.com/foomo/posh-providers/kubernetes v0.49.1
+	github.com/digitalocean/godo v1.193.0
+	github.com/foomo/go v0.12.0
+	github.com/foomo/posh v0.19.0
+	github.com/foomo/posh-providers/kubernetes v0.49.2
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.53.0
@@ -35,15 +35,14 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
-	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/gookit/color v1.6.1 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
-	github.com/mattn/go-runewidth v0.0.23 // indirect
+	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/mattn/go-tty v0.0.8 // indirect
 	github.com/neilotoole/slogt v1.1.0 // indirect
 	github.com/pb33f/ordered-map/v2 v2.3.1 // indirect
@@ -60,8 +59,8 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/term v0.42.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/term v0.43.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 )

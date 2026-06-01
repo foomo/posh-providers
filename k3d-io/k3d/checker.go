@@ -20,6 +20,7 @@ func ClusterChecker(inst *K3d) check.Checker {
 		if err != nil {
 			return []check.Info{check.NewFailureInfo("⚡︎", title, "Down")}
 		}
+
 		res = bytes.TrimSpace(bytes.Trim(res, "\n"))
 
 		var clusters []struct {
@@ -63,6 +64,7 @@ func RegistryChecker(inst *K3d) check.Checker {
 		if err != nil {
 			return []check.Info{check.NewFailureInfo("⚡︎", title, "Down")}
 		}
+
 		res = bytes.TrimSpace(bytes.Trim(res, "\n"))
 
 		var registries []struct {

@@ -1,6 +1,6 @@
 module github.com/foomo/posh-providers/google
 
-go 1.26.0
+go 1.26.3
 
 replace (
 	github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
@@ -11,10 +11,10 @@ replace (
 )
 
 require (
-	github.com/foomo/go v0.11.0
-	github.com/foomo/posh v0.18.0
-	github.com/foomo/posh-providers/kubernetes v0.49.1
-	github.com/foomo/posh-providers/onepassword v0.49.1
+	github.com/foomo/go v0.12.0
+	github.com/foomo/posh v0.19.0
+	github.com/foomo/posh-providers/kubernetes v0.49.2
+	github.com/foomo/posh-providers/onepassword v0.49.2
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.53.0
@@ -39,9 +39,9 @@ require (
 	github.com/gookit/color v1.6.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
-	github.com/mattn/go-runewidth v0.0.23 // indirect
+	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/mattn/go-tty v0.0.8 // indirect
 	github.com/neilotoole/slogt v1.1.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
@@ -62,8 +62,8 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/term v0.42.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/term v0.43.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
