@@ -21,17 +21,33 @@ import (
 type Command struct {
 	l           log.Logger
 	cache       cache.Namespace
+	findIgnore  []string
 	commandTree tree.Root
 }
+
+type CommandOption func(*Command)
 
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, cache cache.Cache) *Command {
+func CommandWithFindIgnore(v ...string) CommandOption {
+	return func(o *Command) {
+		o.findIgnore = v
+	}
+}
+
+func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command {
 	inst := &Command{
-		l:     l.Named("go"),
-		cache: cache.Get("go"),
+		l:          l.Named("go"),
+		cache:      cache.Get("go"),
+		findIgnore: []string{`^(node_modules|\.\w*)$`},
+	}
+
+	for _, opt := range opts {
+		if opt != nil {
+			opt(inst)
+		}
 	}
 
 	pathModArg := &tree.Arg{
@@ -574,19 +590,35 @@ func (c *Command) completePaths(ctx context.Context, filename string, dir bool) 
 //nolint:forcetypeassert
 func (c *Command) paths(ctx context.Context, filename string, dir bool) []string {
 	return c.cache.Get("paths-"+filename, func() any {
-		if value, err := files.Find(ctx, ".", filename, files.FindWithIgnore(`^(node_modules|\.\w*)$`)); err != nil {
+		if value, err := FindPaths(ctx, ".", filename, dir, c.findIgnore); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return []string{}
-		} else if dir {
-			for i, s := range value {
-				value[i] = path.Dir(s)
-			}
-
-			return value
 		} else {
 			return value
 		}
 	}).([]string)
+}
+
+func FindPaths(ctx context.Context, root, filename string, dir bool, findIgnore []string) ([]string, error) {
+	var opts []files.FindOption
+	if len(findIgnore) > 0 {
+		opts = append(opts, files.FindWithIgnore(findIgnore...))
+	}
+
+	value, err := files.Find(ctx, root, filename, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	if dir {
+		for i, s := range value {
+			value[i] = path.Dir(s)
+		}
+	}
+
+	slices.Sort(value)
+
+	return value, nil
 }
 
 func (c *Command) wg(ctx context.Context, r *readline.Readline) (context.Context, *errgroup.Group) {

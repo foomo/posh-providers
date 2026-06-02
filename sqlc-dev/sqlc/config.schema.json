@@ -10,6 +10,13 @@
         },
         "cacheDir": {
           "type": "string"
+        },
+        "findIgnore": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "FindIgnore contains regular expressions for file and directory names to skip when discovering sqlc.yaml files."
         }
       },
       "additionalProperties": false,
