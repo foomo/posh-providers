@@ -10,7 +10,9 @@ replace (
 
 require (
 	github.com/c-bata/go-prompt v0.2.6
-	github.com/foomo/posh v0.19.0
+	github.com/foomo/go v0.12.0
+	github.com/foomo/posh v0.20.0
+	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
 	golang.org/x/sync v0.20.0
 	k8s.io/utils v0.0.0-20260507154919-ff6756f316d2
 )

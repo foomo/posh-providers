@@ -11,7 +11,7 @@ replace (
 )
 
 require (
-	github.com/foomo/posh v0.19.0
+	github.com/foomo/posh v0.20.0
 	github.com/foomo/posh-providers/arbitrary v0.48.0
 	github.com/pkg/errors v0.9.1
 )

@@ -1,7 +1,10 @@
 module github.com/foomo/posh-providers
 
-go 1.26
+go 1.26.3
 
 replace github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
 
-require github.com/pkg/errors v0.9.1
+require (
+	github.com/foomo/posh v0.20.0
+	github.com/pkg/errors v0.9.1
+)

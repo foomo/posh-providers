@@ -11,7 +11,7 @@ replace (
 require (
 	github.com/1Password/connect-sdk-go v1.5.3
 	github.com/foomo/go v0.12.0
-	github.com/foomo/posh v0.19.0
+	github.com/foomo/posh v0.20.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1

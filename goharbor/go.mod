@@ -10,7 +10,7 @@ replace (
 
 require (
 	github.com/foomo/go v0.12.0
-	github.com/foomo/posh v0.19.0
+	github.com/foomo/posh v0.20.0
 	github.com/google/go-github/v47 v47.1.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
