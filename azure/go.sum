@@ -27,6 +27,7 @@ github.com/emicklei/go-restful/v3 v3.13.0/go.mod h1:6n3XBCmQQb25CM2LCACGz8ukIrRr
 github.com/foomo/go v0.12.0 h1:Y5mKeLVll1yzM8UGsPdNc/z7Rrr4J7QVwNVO65ZbnE0=
 github.com/foomo/go v0.12.0/go.mod h1:jeSB/atkoqSoJ3+ak0+b/Xtj7IMyDj1odzJroudT7Dw=
 github.com/foomo/posh v0.20.0 h1:MopFe0slp8gtjancFISTVhNtr3mOumfkCWSlg4knCzA=
+github.com/foomo/posh v0.20.0/go.mod h1:xJt6Omkelbn7YE2VSsd+OBt22gjRLwMpTt5P955kBR4=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=

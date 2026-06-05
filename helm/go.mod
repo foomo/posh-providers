@@ -10,6 +10,7 @@ replace (
 )
 
 require (
+	github.com/foomo/go v0.12.0
 	github.com/foomo/posh v0.20.0
 	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
 	github.com/foomo/posh-providers/kubernetes v0.49.2
@@ -36,7 +37,6 @@ require (
 	github.com/pelletier/go-toml/v2 v2.3.1 // indirect
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/pterm/pterm v0.12.83 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
@@ -48,5 +48,4 @@ require (
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/term v0.43.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
