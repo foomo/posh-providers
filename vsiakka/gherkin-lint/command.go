@@ -1,25 +1,26 @@
-package lint
+package gherkinlint
 
 import (
 	"context"
-	"slices"
+	"path"
 
 	"github.com/foomo/go/options"
-	"github.com/foomo/posh/pkg/command"
+	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
+	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
+	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
-	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 )
 
 type Command struct {
-	l           log.Logger
-	name        string
-	commands    command.Commands
-	commandTree tree.Root
+	l               log.Logger
+	name            string
+	cache           cache.Namespace
+	execGherkinLint exec.CommandProvider
+	commandTree     tree.Root
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -32,34 +33,40 @@ func CommandWithName(v string) options.Option[*Command] {
 	}
 }
 
+func CommandWithExecGherkinLint(v exec.CommandProvider) options.Option[*Command] {
+	return func(o *Command) {
+		o.execGherkinLint = v
+	}
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, commands command.Commands, opts ...options.Option[*Command]) *Command {
+func NewCommand(l log.Logger, c cache.Cache, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
-		l:        l.Named("lint"),
-		name:     "lint",
-		commands: commands,
+		l:     l.Named("gherkin-lint"),
+		name:  "gherkin-lint",
+		cache: c.Get("gherkin-lint"),
+		execGherkinLint: func(ctx context.Context, args ...string) *exec.Command {
+			return exec.NewCommand(ctx, "gherkin-lint", args...)
+		},
 	}
 
 	options.Apply(inst, opts...)
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Lint your code",
+		Description: "Run gherkin-lint",
 		Args: tree.Args{
 			{
-				Name:     "name",
+				Name:     "path",
 				Optional: true,
+				Repeat:   true,
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-					return suggests.List(inst.linterNames())
+					return suggests.List(inst.paths(ctx))
 				},
 			},
-		},
-		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-			fs.Default().Bool("fix", false, "run quick fix")
-			return nil
 		},
 		Execute: inst.execute,
 	})
@@ -91,70 +98,51 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
 
+func (c *Command) Lint(ctx context.Context, _ bool) error {
+	return c.run(ctx, c.paths(ctx))
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
-	fs := r.FlagSets().Default()
-	linters := c.linters()
-
-	fix, err := fs.GetBool("fix")
-	if err != nil {
-		return err
+	paths := r.Args().From(0)
+	if len(paths) == 0 {
+		paths = c.paths(ctx)
 	}
 
-	if r.Args().LenGt(0) {
-		names := r.Args().From(0)
-		linters = []Linter{}
-
-		for _, lt := range c.linters() {
-			if slices.Contains(names, lt.Name()) {
-				linters = append(linters, lt)
-			}
-		}
-
-		if len(linters) == 0 {
-			return errors.Errorf("unknown linter: %s", names)
-		}
-	}
-
-	wg, ctx := errgroup.WithContext(ctx)
-
-	for _, lt := range linters {
-		c.l.Info("Linting with " + lt.Name() + " ...")
-
-		wg.Go(func() error {
-			return lt.Lint(ctx, fix)
-		})
-	}
-
-	return wg.Wait()
+	return c.run(ctx, paths)
 }
 
-// ------------------------------------------------------------------------------------------------
-// ~ Private methods
-// ------------------------------------------------------------------------------------------------
+func (c *Command) run(ctx context.Context, paths []string) error {
+	c.l.Info("Running gherkin-lint ...")
 
-func (c *Command) linters() []Linter {
-	var ret []Linter
+	for _, dir := range paths {
+		c.l.Info("└ " + dir)
 
-	for _, value := range c.commands.List() {
-		if v, ok := value.(Linter); ok {
-			ret = append(ret, v)
+		if err := c.execGherkinLint(ctx, dir).Run(); err != nil {
+			return err
 		}
 	}
 
-	return ret
+	return nil
 }
 
-func (c *Command) linterNames() []string {
-	var ret []string
-	for _, linter := range c.linters() {
-		ret = append(ret, linter.Name())
-	}
+//nolint:forcetypeassert
+func (c *Command) paths(ctx context.Context) []string {
+	return c.cache.Get("paths", func() any {
+		matches, err := files.Find(ctx, ".", "wdio.conf.ts", files.FindWithIgnore(`^(node_modules|\.\w*)$`))
+		if err != nil {
+			c.l.Debug("failed to walk files", err.Error())
+			return []string{}
+		}
 
-	slices.Sort(ret)
+		out := make([]string, 0, len(matches))
+		for _, m := range matches {
+			out = append(out, path.Dir(m))
+		}
 
-	return ret
+		return out
+	}).([]string)
 }

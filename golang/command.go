@@ -6,8 +6,10 @@ import (
 	"slices"
 
 	prompt2 "github.com/c-bata/go-prompt"
+	"github.com/foomo/go/options"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
+	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
@@ -19,20 +21,36 @@ import (
 )
 
 type Command struct {
-	l           log.Logger
-	cache       cache.Namespace
-	commandTree tree.Root
+	l                log.Logger
+	cache            cache.Namespace
+	commandTree      tree.Root
+	execGolangciLint exec.CommandProvider
+}
+
+// ------------------------------------------------------------------------------------------------
+// ~ Options
+// ------------------------------------------------------------------------------------------------
+
+func CommandWithExecGolangciLint(v exec.CommandProvider) options.Option[*Command] {
+	return func(c *Command) {
+		c.execGolangciLint = v
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, cache cache.Cache) *Command {
+func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:     l.Named("go"),
 		cache: cache.Get("go"),
+		execGolangciLint: func(ctx context.Context, args ...string) *exec.Command {
+			return exec.NewCommand(ctx, "golangci-lint", args...)
+		},
 	}
+
+	options.Apply(inst, opts...)
 
 	pathModArg := &tree.Arg{
 		Name:     "path",
@@ -235,6 +253,25 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+func (c *Command) Lint(ctx context.Context, fix bool) error {
+	c.l.Info("Running golangci-lint run...")
+
+	args := []string{"run"}
+	if fix {
+		args = append(args, "--fix")
+	}
+
+	for _, value := range c.paths(ctx, "go.mod", true) {
+		c.l.Info("└ " + value)
+
+		if err := c.execGolangciLint(ctx, args...).Dir(value).Run(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -506,7 +543,7 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 		wg.Go(func() error {
 			c.l.Info("└ " + value)
 
-			return shell.New(ctx, c.l, "golangci-lint", "run").
+			return c.execGolangciLint(ctx, "run").
 				Args(args...).
 				Args(fs.Visited().Args()...).
 				Args(r.Flags()...).
@@ -536,7 +573,7 @@ func (c *Command) cleanFuzzCache(ctx context.Context, r *readline.Readline) erro
 }
 
 func (c *Command) cleanLintCache(ctx context.Context, r *readline.Readline) error {
-	return shell.New(ctx, c.l, "golangci-lint", "cache", "clean").Run()
+	return c.execGolangciLint(ctx, "cache", "clean").Run()
 }
 
 func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
