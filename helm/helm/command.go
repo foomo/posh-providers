@@ -3,33 +3,38 @@ package helm
 import (
 	"context"
 
+	"github.com/foomo/go/options"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command/tree"
+	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
-	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
 
-type (
-	Command struct {
-		l           log.Logger
-		name        string
-		kubectl     *kubectl.Kubectl
-		commandTree tree.Root
-	}
-	CommandOption func(*Command)
-)
+type Command struct {
+	l           log.Logger
+	name        string
+	kubectl     *kubectl.Kubectl
+	execHelm    exec.CommandProvider
+	commandTree tree.Root
+}
 
 // ------------------------------------------------------------------------------------------------
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func CommandWithName(v string) CommandOption {
+func CommandWithName(v string) options.Option[*Command] {
 	return func(o *Command) {
 		o.name = v
+	}
+}
+
+func CommandWithExecHelm(v exec.CommandProvider) options.Option[*Command] {
+	return func(o *Command) {
+		o.execHelm = v
 	}
 }
 
@@ -37,12 +42,17 @@ func CommandWithName(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, kubectl *kubectl.Kubectl) *Command {
+func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:       l.Named("helm"),
 		name:    "helm",
 		kubectl: kubectl,
+		execHelm: func(ctx context.Context, args ...string) *exec.Command {
+			return exec.NewCommand(ctx, "helm", args...)
+		},
 	}
+
+	options.Apply(inst, opts...)
 
 	allFlags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 		fs.Default().Bool("help", false, "help for helm")
@@ -301,7 +311,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	return shell.New(ctx, c.l, "helm").
+	return c.execHelm(ctx).
 		Args(args...).
 		Args(fs.Visited().Args()...).
 		Args(r.AdditionalArgs()...).

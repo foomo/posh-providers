@@ -2,322 +2,33 @@ package lint
 
 import (
 	"context"
-	"path"
-	"strings"
+	"slices"
 
-	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/go/options"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
-	"github.com/foomo/posh/pkg/shell"
-	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 )
 
-type Linter string
-
-type (
-	Command struct {
-		l           log.Logger
-		name        string
-		cache       cache.Namespace
-		commandTree tree.Root
-	}
-	CommandOption func(command *Command)
-)
+type Command struct {
+	l           log.Logger
+	name        string
+	commands    command.Commands
+	commandTree tree.Root
+}
 
 // ------------------------------------------------------------------------------------------------
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
-func CommandWithName(v string) CommandOption {
+func CommandWithName(v string) options.Option[*Command] {
 	return func(o *Command) {
 		o.name = v
-	}
-}
-
-func CommandWithGo() CommandOption {
-	return func(o *Command) {
-		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
-			Name:        "go",
-			Description: "Run golangci-lint",
-			Args:        tree.Args{o.pathArg("go.mod")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-				fs.Default().Bool("fix", false, "run quick fix")
-				fs.Default().String("timeout", "1m", "max excution timeout")
-				fs.Default().String("out-format", "github-actions", "output format")
-				fs.Default().Int("concurrency", 1, "num of concurrent processes")
-
-				return nil
-			},
-			Execute: func(ctx context.Context, r *readline.Readline) error {
-				o.l.Info("Running golangci-lint ...")
-
-				for _, dir := range o.dirs(ctx, r, "go.mod", 1) {
-					o.l.Info("└  " + dir)
-
-					if out, err := shell.New(ctx, o.l, "golangci-lint", "run").
-						Args("--path-prefix", dir).
-						Args(r.Flags()...).
-						Args(r.AdditionalArgs()...).
-						Dir(dir).
-						Output(); err != nil {
-						return errors.Wrap(err, string(out))
-					}
-				}
-
-				return nil
-			},
-		})
-	}
-}
-
-func CommandWithTSC() CommandOption {
-	return func(o *Command) {
-		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
-			Name:        "tsc",
-			Description: "Run tsc",
-			Args:        tree.Args{o.pathArg("tsconfig.json")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-				fs.Default().Bool("fix", false, "run quick fix")
-				return nil
-			},
-			Execute: func(ctx context.Context, r *readline.Readline) error {
-				o.l.Info("Running tsc ...")
-
-				for _, dir := range o.dirs(ctx, r, "tsconfig.json", 1) {
-					o.l.Info("└  " + dir)
-
-					if out, err := shell.New(ctx, o.l, "tsc", "--noEmit").
-						Args(r.Flags()...).
-						Args(r.AdditionalArgs()...).
-						Dir(dir).
-						Output(); err != nil {
-						return errors.Wrap(err, string(out))
-					}
-				}
-
-				return nil
-			},
-		})
-	}
-}
-
-func CommandWithHelm() CommandOption {
-	return func(o *Command) {
-		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
-			Name:        "helm",
-			Description: "Run helm lint",
-			Args:        tree.Args{o.pathArg("Chart.yaml")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-				fs.Default().Bool("fix", false, "run quick fix")
-				return nil
-			},
-			Execute: func(ctx context.Context, r *readline.Readline) error {
-				o.l.Info("Running helm ...")
-
-				for _, dir := range o.dirs(ctx, r, "Chart.yaml", 1) {
-					o.l.Info("└  " + dir)
-
-					if out, err := shell.New(ctx, o.l, "helm", "lint", dir).
-						Args(r.Flags()...).
-						Args(r.AdditionalArgs()...).
-						Output(); err != nil {
-						return errors.Wrap(err, string(out))
-					}
-				}
-
-				return nil
-			},
-		})
-	}
-}
-
-func CommandWithESLint() CommandOption {
-	return func(o *Command) {
-		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
-			Name:        "eslint",
-			Description: "Run eslint",
-			Args:        tree.Args{o.pathArg("package.json")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-				fs.Default().Bool("fix", false, "run quick fix")
-				fs.Default().Bool("cache", false, "use cache")
-
-				return nil
-			},
-			Execute: func(ctx context.Context, r *readline.Readline) error {
-				o.l.Info("Running eslint ...")
-
-				for _, dir := range o.dirs(ctx, r, "package.json", 1) {
-					o.l.Info("└  " + dir)
-
-					if out, err := shell.New(ctx, o.l, "eslint", "--quiet", ".").
-						Args(r.Flags()...).
-						Args(r.AdditionalArgs()...).
-						Dir(dir).
-						Output(); err != nil {
-						return errors.Wrap(err, string(out))
-					}
-				}
-
-				return nil
-			},
-		})
-	}
-}
-
-func CommandWithGherkin() CommandOption {
-	return func(o *Command) {
-		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
-			Name:        "gherkin",
-			Description: "Run gherkin lint",
-			Args:        tree.Args{o.pathArg("wdio.conf.ts")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-				fs.Default().Bool("fix", false, "run quick fix")
-				return nil
-			},
-			Execute: func(ctx context.Context, r *readline.Readline) error {
-				o.l.Info("Running gherkin ...")
-
-				for _, dir := range o.dirs(ctx, r, "wdio.conf.ts", 1) {
-					o.l.Info("└  " + dir)
-
-					if out, err := shell.New(ctx, o.l, "gherkin-lint", dir).
-						Args(r.Flags()...).
-						Args(r.AdditionalArgs()...).
-						Output(); err != nil {
-						return errors.Wrap(err, string(out))
-					}
-				}
-
-				return nil
-			},
-		})
-	}
-}
-
-func CommandWithTerraform() CommandOption {
-	return func(o *Command) {
-		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
-			Name:        "terraform",
-			Description: "Run tflint lint",
-			Args:        tree.Args{o.pathArg("main.tf")},
-			Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-				fs.Default().Bool("fix", false, "run quick fix")
-				return nil
-			},
-			Execute: func(ctx context.Context, r *readline.Readline) error {
-				o.l.Info("Running tflint ...")
-
-				for _, dir := range o.dirs(ctx, r, "main.tf", 1) {
-					o.l.Info("└  " + dir)
-
-					if out, err := shell.New(ctx, o.l, "tflint").
-						Dir(dir).
-						Args(r.Flags()...).
-						Args(r.AdditionalArgs()...).
-						Output(); err != nil {
-						return errors.Wrap(err, string(out))
-					}
-				}
-
-				return nil
-			},
-		})
-	}
-}
-
-func CommandWithTerrascan() CommandOption {
-	return func(o *Command) {
-		o.commandTree.Node().Nodes = append(o.commandTree.Node().Nodes, &tree.Node{
-			Name:        "terrascan",
-			Description: "Run terrascan",
-			Nodes: tree.Nodes{
-				{
-					Name:        "helm",
-					Description: "Run terrascan helm",
-					Args:        tree.Args{o.pathArg("Chart.yaml")},
-					Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-						fs.Default().Bool("fix", false, "run quick fix")
-						return nil
-					},
-					Execute: func(ctx context.Context, r *readline.Readline) error {
-						o.l.Info("Running terrascan helm ...")
-
-						for _, dir := range o.dirs(ctx, r, "Chart.yaml", 2) {
-							o.l.Info("└  " + dir)
-
-							if out, err := shell.New(ctx, o.l, "terrascan", "scan").
-								Args("--iac-dir", dir).
-								Args("--iac-type", "docker").
-								Args(r.Flags()...).
-								Args(r.AdditionalArgs()...).
-								Output(); err != nil {
-								return errors.Wrap(err, string(out))
-							}
-						}
-
-						return nil
-					},
-				},
-				{
-					Name:        "terraform",
-					Description: "Run terrascan terraform",
-					Args:        tree.Args{o.pathArg("main.tf")},
-					Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-						fs.Default().Bool("fix", false, "run quick fix")
-						return nil
-					},
-					Execute: func(ctx context.Context, r *readline.Readline) error {
-						o.l.Info("Running terrascan terraform ...")
-
-						for _, dir := range o.dirs(ctx, r, "main.tf", 2) {
-							o.l.Info("└  " + dir)
-
-							if out, err := shell.New(ctx, o.l, "terrascan", "scan").
-								Args("--iac-dir", dir).
-								Args("--iac-type", "docker").
-								Args(r.Flags()...).
-								Args(r.AdditionalArgs()...).
-								Output(); err != nil {
-								return errors.Wrap(err, string(out))
-							}
-						}
-
-						return nil
-					},
-				},
-				{
-					Name:        "docker",
-					Description: "Run terrascan docker",
-					Args:        tree.Args{o.pathArg("Dockerfile")},
-					Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-						fs.Default().Bool("fix", false, "run quick fix")
-						return nil
-					},
-					Execute: func(ctx context.Context, r *readline.Readline) error {
-						o.l.Info("Running terrascan docker ...")
-
-						for _, dir := range o.dirs(ctx, r, "Dockerfile", 2) {
-							o.l.Info("└  " + dir)
-
-							if out, err := shell.New(ctx, o.l, "terrascan", "scan").
-								Args("--iac-dir", dir).
-								Args("--iac-type", "docker").
-								Args(r.Flags()...).
-								Args(r.AdditionalArgs()...).
-								Output(); err != nil {
-								return errors.Wrap(err, string(out))
-							}
-						}
-
-						return nil
-					},
-				},
-			},
-		})
 	}
 }
 
@@ -325,23 +36,33 @@ func CommandWithTerrascan() CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
+func NewCommand(l log.Logger, commands command.Commands, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
-		l:     l.Named("lint"),
-		name:  "lint",
-		cache: c.Get("lint"),
-		commandTree: tree.New(&tree.Node{
-			Description: "Lint your code",
-		}),
+		l:        l.Named("lint"),
+		name:     "lint",
+		commands: commands,
 	}
 
-	for _, opt := range opts {
-		if opt != nil {
-			opt(inst)
-		}
-	}
+	options.Apply(inst, opts...)
 
-	inst.commandTree.Node().Name = inst.name
+	inst.commandTree = tree.New(&tree.Node{
+		Name:        inst.name,
+		Description: "Lint your code",
+		Args: tree.Args{
+			{
+				Name:     "name",
+				Optional: true,
+				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+					return suggests.List(inst.linterNames())
+				},
+			},
+		},
+		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+			fs.Default().Bool("fix", false, "run quick fix")
+			return nil
+		},
+		Execute: inst.execute,
+	})
 
 	return inst
 }
@@ -374,42 +95,66 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-//nolint:forcetypeassert
-func (c *Command) paths(ctx context.Context, filename string) []string {
-	return c.cache.Get("paths-"+strings.ToLower(filename), func() any {
-		if value, err := files.Find(ctx, ".", filename, files.FindWithIgnore(`^\.`, "dist", "node_modules")); err != nil {
-			c.l.Debug("failed to walk files", err.Error())
-			return nil
-		} else {
-			for i, s := range value {
-				value[i] = path.Dir(s)
+func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
+	fs := r.FlagSets().Default()
+	linters := c.linters()
+
+	fix, err := fs.GetBool("fix")
+	if err != nil {
+		return err
+	}
+
+	if r.Args().LenGt(0) {
+		names := r.Args().From(0)
+		linters = []Linter{}
+
+		for _, lt := range c.linters() {
+			if slices.Contains(names, lt.Name()) {
+				linters = append(linters, lt)
 			}
-
-			return value
 		}
-	}).([]string)
-}
 
-func (c *Command) pathArg(filename string) *tree.Arg {
-	return &tree.Arg{
-		Name:     "path",
-		Optional: true,
-		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-			return suggests.List(c.paths(ctx, filename))
-		},
+		if len(linters) == 0 {
+			return errors.Errorf("unknown linter: %s", names)
+		}
 	}
+
+	wg, ctx := errgroup.WithContext(ctx)
+
+	for _, lt := range linters {
+		c.l.Info("Linting with " + lt.Name() + " ...")
+
+		wg.Go(func() error {
+			return lt.Lint(ctx, fix)
+		})
+	}
+
+	return wg.Wait()
 }
 
-func (c *Command) dirs(ctx context.Context, r *readline.Readline, filename string, offset int) []string {
+// ------------------------------------------------------------------------------------------------
+// ~ Private methods
+// ------------------------------------------------------------------------------------------------
+
+func (c *Command) linters() []Linter {
+	var ret []Linter
+
+	for _, value := range c.commands.List() {
+		if v, ok := value.(Linter); ok {
+			ret = append(ret, v)
+		}
+	}
+
+	return ret
+}
+
+func (c *Command) linterNames() []string {
 	var ret []string
-
-	if r.Args().LenGt(offset) {
-		for _, value := range r.Args()[offset:] {
-			ret = append(ret, value)
-		}
-	} else {
-		ret = c.paths(ctx, filename)
+	for _, linter := range c.linters() {
+		ret = append(ret, linter.Name())
 	}
+
+	slices.Sort(ret)
 
 	return ret
 }

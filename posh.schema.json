@@ -345,6 +345,9 @@
             "history": {
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh~1refs~1heads~1main~1posh.schema.json/$defs/PromptHistory"
             },
+            "historySearch": {
+              "type": "boolean"
+            },
             "aliases": {
               "type": "object",
               "additionalProperties": {

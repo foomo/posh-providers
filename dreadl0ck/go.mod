@@ -9,7 +9,7 @@ replace (
 )
 
 require (
-	github.com/foomo/posh v0.19.0
+	github.com/foomo/posh v0.20.2
 	github.com/pkg/errors v0.9.1
 )
 

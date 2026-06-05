@@ -5,35 +5,49 @@ import (
 	"path"
 	"strings"
 
+	"github.com/foomo/go/options"
 	"github.com/foomo/posh-providers/pkg/npm"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
+	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
-	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
 )
 
-type (
-	Command struct {
-		l           log.Logger
-		cache       cache.Namespace
-		commandTree tree.Root
+type Command struct {
+	l           log.Logger
+	cache       cache.Namespace
+	execBun     exec.CommandProvider
+	commandTree tree.Root
+}
+
+// ------------------------------------------------------------------------------------------------
+// ~ Options
+// ------------------------------------------------------------------------------------------------
+
+func CommandWithExecBun(v exec.CommandProvider) options.Option[*Command] {
+	return func(c *Command) {
+		c.execBun = v
 	}
-	CommandOption func(*Command)
-)
+}
 
 // ------------------------------------------------------------------------------------------------
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, cache cache.Cache) *Command {
+func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:     l.Named("bun"),
 		cache: cache.Get("bun"),
+		execBun: func(ctx context.Context, args ...string) *exec.Command {
+			return exec.NewCommand(ctx, "bun", args...)
+		},
 	}
+
+	options.Apply(inst, opts...)
 
 	globalFlags := func(child func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error) func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 		return func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -324,21 +338,15 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-// func (c *Command) run(ctx context.Context, dirname, script string) error {
-// 	return shell.New(ctx, c.l, "bun", "run", script).
-// 		Dir(dirname).
-// 		Run()
-// }
-
 func (c *Command) run(ctx context.Context, r *readline.Readline) error {
-	return shell.New(ctx, c.l, "bun").
+	return c.execBun(ctx).
 		Args(r.Args()...).
 		Args(r.Flags()...).
 		Run()
 }
 
 func (c *Command) runWorkspace(ctx context.Context, r *readline.Readline) error {
-	return shell.New(ctx, c.l, "bun").
+	return c.execBun(ctx).
 		Dir(r.Args().At(1)).Args(r.Args().From(2)...).
 		Args(r.Flags()...).
 		Run()
