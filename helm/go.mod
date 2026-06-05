@@ -11,8 +11,7 @@ replace (
 
 require (
 	github.com/foomo/go v0.12.0
-	github.com/foomo/posh v0.20.0
-	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
+	github.com/foomo/posh v0.20.2
 	github.com/foomo/posh-providers/kubernetes v0.49.2
 	github.com/pkg/errors v0.9.1
 )

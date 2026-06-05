@@ -16,8 +16,8 @@ github.com/containerd/console v1.0.5 h1:R0ymNeydRqH2DmakFNdmjR2k0t7UPuiOV/N/27/q
 github.com/containerd/console v1.0.5/go.mod h1:YynlIjWYF8myEu6sdkwKIvGQq+cOckRm6So2avqoYAk=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/foomo/posh v0.20.0 h1:MopFe0slp8gtjancFISTVhNtr3mOumfkCWSlg4knCzA=
-github.com/foomo/posh v0.20.0/go.mod h1:xJt6Omkelbn7YE2VSsd+OBt22gjRLwMpTt5P955kBR4=
+github.com/foomo/posh v0.20.2 h1:z9bkvHJB0qKyRgZT/9L1PkW03kNJTwalQ2YgYUYyGro=
+github.com/foomo/posh v0.20.2/go.mod h1:xJt6Omkelbn7YE2VSsd+OBt22gjRLwMpTt5P955kBR4=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5/go.mod h1:+syUfnvYJUO5A+6QMQYXAyzkxHMNlj9dH2LIeQfBSjc=
 github.com/gookit/assert v0.1.1 h1:lh3GcawXe/p+cU7ESTZ5Ui3Sm/x8JWpIis4/1aF0mY0=
