@@ -68,6 +68,7 @@ func (c *CLI) LoadToken(ctx context.Context) error {
 	if err := exec.NewCommand(ctx, "gh", "auth", "token").Stdout(&s).Run(); err != nil {
 		return fmt.Errorf("failed to get github token: %w", err)
 	}
+
 	if err := os.Setenv("GITHUB_TOKEN", strings.Trim(s.String(), "\n")); err != nil {
 		return fmt.Errorf("failed to set github token: %w", err)
 	}
