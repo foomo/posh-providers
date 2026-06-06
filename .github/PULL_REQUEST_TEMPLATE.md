@@ -1,10 +1,10 @@
 ### Description
 
-<!-- Briefly describe what this PR does -->
+<!-- Required: Short, human readable summary of the PR within max 5 lines. -->
 
 ### Type of Change
 
-<!-- Check the relevant option -->
+<!-- Check the relevant option, keep unselected ones. -->
 
 - [ ] 🐛 Bug fix
 - [ ] ✨ New feature
@@ -15,13 +15,13 @@
 - [ ] ✅ Tests
 - [ ] 🔧 Build/CI
 
-### Related Issue
+### Related Issues
 
-<!-- Link related issues: Fixes #123, Closes #456 -->
+<!-- List of links to related issues: Fixes #123, Closes #456 -->
 
 ### Changes
 
-<!-- List key changes -->
+<!-- List of key changes worth mentioning -->
 
 ### Checklist
 
