@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/galaxy/gnat",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "theme": {
+          "type": "string",
+          "description": "Theme is the gnat color theme, passed to the CLI via -theme."
+        },
+        "urls": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object",
+          "description": "URLs maps a name to a NATS server URL; names autocomplete in the shell."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
