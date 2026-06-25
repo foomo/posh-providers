@@ -8,7 +8,7 @@ replace (
 )
 
 require (
-	github.com/foomo/go v0.12.0
+	github.com/foomo/go v0.14.0
 	github.com/foomo/gokazi v0.2.0
 	github.com/foomo/posh v0.20.2
 	github.com/invopop/jsonschema v0.14.0

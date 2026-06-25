@@ -20,8 +20,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/ebitengine/purego v0.10.0 h1:QIw4xfpWT6GWTzaW5XEKy3HXoqrJGx1ijYHzTF0/ISU=
 github.com/ebitengine/purego v0.10.0/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
-github.com/foomo/go v0.12.0 h1:Y5mKeLVll1yzM8UGsPdNc/z7Rrr4J7QVwNVO65ZbnE0=
-github.com/foomo/go v0.12.0/go.mod h1:jeSB/atkoqSoJ3+ak0+b/Xtj7IMyDj1odzJroudT7Dw=
+github.com/foomo/go v0.14.0 h1:L8XhJf1A7unXEWrqGmOT0VYXcqGralB96PHbqH+yukQ=
+github.com/foomo/go v0.14.0/go.mod h1:jeSB/atkoqSoJ3+ak0+b/Xtj7IMyDj1odzJroudT7Dw=
 github.com/foomo/gokazi v0.2.0 h1:At8wZKNH0q7+6lJRhI2Z8Eu6n8EyUwwI+GhP0oOMedM=
 github.com/foomo/gokazi v0.2.0/go.mod h1:ipPwYNpDpU3j/C+cNbtpDhgeMVCPoA4Cz/2ZuJ25r4Y=
 github.com/foomo/posh v0.20.2 h1:z9bkvHJB0qKyRgZT/9L1PkW03kNJTwalQ2YgYUYyGro=

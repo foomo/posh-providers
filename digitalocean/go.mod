@@ -10,10 +10,10 @@ replace (
 )
 
 require (
-	github.com/digitalocean/godo v1.193.0
-	github.com/foomo/go v0.12.0
+	github.com/digitalocean/godo v1.197.0
+	github.com/foomo/go v0.14.0
 	github.com/foomo/posh v0.20.2
-	github.com/foomo/posh-providers/kubernetes v0.49.2
+	github.com/foomo/posh-providers/kubernetes v0.51.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.53.0
