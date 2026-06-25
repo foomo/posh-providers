@@ -11,7 +11,7 @@ replace (
 require (
 	github.com/cloudrecipes/packagejson v1.0.0
 	github.com/foomo/posh v0.20.2
-	golang.org/x/sync v0.20.0
+	golang.org/x/sync v0.21.0
 )
 
 require (

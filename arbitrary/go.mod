@@ -11,17 +11,17 @@ replace (
 
 require (
 	github.com/c-bata/go-prompt v0.2.6
-	github.com/foomo/go v0.12.0
+	github.com/foomo/go v0.14.0
 	github.com/foomo/gokazi v0.2.0
 	github.com/foomo/posh v0.20.2
-	github.com/foomo/posh-providers/onepassword v0.49.2
+	github.com/foomo/posh-providers/onepassword v0.51.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.83
 	github.com/samber/lo v1.53.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/sync v0.20.0
+	golang.org/x/sync v0.21.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
