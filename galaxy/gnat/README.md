@@ -30,7 +30,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
     return nil, errors.Wrap(err, "failed to create gnat")
   }
 
-  inst.commands.Add(gnat.NewCommand(l, inst.cache, inst.gnat))
+  inst.commands.Add(gnat.NewCommand(l, inst.gnat))
 
   return inst, nil
 }
