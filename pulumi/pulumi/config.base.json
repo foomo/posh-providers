@@ -3,7 +3,7 @@
 		{
 			"type": "object",
 			"properties": {
-				"az": {
+				"pulumi": {
 					"oneOf": [
 						{
 							"$ref": "https://github.com/foomo/posh-providers/pulumi/pulumi/azure"
