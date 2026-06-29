@@ -127,6 +127,22 @@
     {
       "type": "object",
       "properties": {
+        "gh": {
+          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1cli~1cli"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "gnat": {
+          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1gnat"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
         "etcd": {
           "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1etcd-io~1etcd"
         }
@@ -199,7 +215,7 @@
     {
       "type": "object",
       "properties": {
-        "az": {
+        "pulumi": {
           "oneOf": [
             {
               "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1azure"
@@ -1176,6 +1192,51 @@
             },
             "port": {
               "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/cli/cli": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1cli~1cli/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "scopes": {
+              "description": "Required OAuth scopes per gh hostname.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/galaxy/gnat": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1gnat/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "theme": {
+              "description": "Theme is the gnat color theme, passed to the CLI via -theme.",
+              "type": "string"
+            },
+            "urls": {
+              "description": "URLs maps a name to a NATS server URL; names autocomplete in the shell.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           },
           "additionalProperties": false
