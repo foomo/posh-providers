@@ -420,13 +420,18 @@ func (c *Command) build(ctx context.Context, r *readline.Readline) error {
 	}
 
 	for i, value := range paths {
+		pkgs := c.packages(ctx, value)
+		if len(pkgs) == 0 {
+			continue
+		}
+
 		wg.Go(func() error {
 			c.l.Infof("🔧 | [%d|%d] %s", i+1, len(paths), value)
 
 			start := time.Now()
 			if err := shell.New(ctx, c.l, "go", "build", "-buildvcs=false", "-o", "/dev/null").
 				Args(args...).
-				Args("./...").
+				Args(pkgs...).
 				Env(envs...).
 				Dir(value).
 				Run(); err != nil {
