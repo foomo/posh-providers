@@ -14,6 +14,9 @@
         "environment": {
           "type": "string"
         },
+        "region": {
+          "type": "string"
+        },
         "contentTypes": {
           "items": {
             "type": "string"
