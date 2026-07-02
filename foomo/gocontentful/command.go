@@ -156,6 +156,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 		if err := shell.New(ctx, c.l, "gocontentful",
 			"-spaceid", cfg.SpaceID, "-cmakey", cfg.CMAKey, "-environment", cfg.Environment,
+			"-region", cfg.Region,
 			"-contenttypes", strings.Join(cfg.ContentTypes, ","), dir).
 			Args(r.AdditionalArgs()...).
 			Run(); err != nil {
