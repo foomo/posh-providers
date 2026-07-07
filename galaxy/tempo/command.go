@@ -1,4 +1,4 @@
-package gnat
+package tempo
 
 import (
 	"context"
@@ -45,9 +45,9 @@ func WithConfigKey(v string) CommandOption {
 
 func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
-		l:         l.Named("gnat"),
-		name:      "gnat",
-		configKey: "gnat",
+		l:         l.Named("tempo"),
+		name:      "tempo",
+		configKey: "tempo",
 	}
 
 	for _, opt := range opts {
@@ -62,11 +62,11 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Browse NATS JetStream servers",
+		Description: "Browse Temporal workflows",
 		Args: tree.Args{
 			{
 				Name:        "name",
-				Description: "Name of the configured server profile.",
+				Description: "Name of the configured connection profile.",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					var ret []goprompt.Suggest
 
@@ -120,9 +120,9 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	args := []string{"-url", profile.URL}
+	args := []string{"--address", profile.URL}
 	if theme := c.cfg.Theme; theme != "" {
-		args = append(args, "-theme", theme)
+		args = append(args, "--theme", theme)
 	}
 
 	var envs []string
@@ -130,11 +130,11 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		envs = append(envs, fmt.Sprintf("XDG_CONFIG_HOME=%s", dir))
 	}
 
-	return shell.New(ctx, c.l, "gnat").
+	return shell.New(ctx, c.l, "tempo").
 		Args(args...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
-		Args(envs...).
+		Env(envs...).
 		Run()
 }
