@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/google/chrome",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Directory for browser profile dirs (e.g. .posh/browser); created on startup"
+        },
+        "command": {
+          "type": "string",
+          "description": "Browser binary path; defaults to Chrome on macOS, google-chrome on Linux"
+        },
+        "incognito": {
+          "type": "boolean",
+          "description": "Open in incognito mode"
+        },
+        "profiles": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Profile"
+          },
+          "type": "object",
+          "description": "Named environments, each with an optional proxy and default URL"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Profile": {
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "Default URL to open when no URL argument is given"
+        },
+        "proxy": {
+          "type": "string",
+          "description": "Named SSH proxy from the global proxies config"
+        },
+        "incognito": {
+          "type": "boolean",
+          "description": "Open in incognito mode"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}

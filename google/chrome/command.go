@@ -64,9 +64,9 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 		return nil, err
 	}
 
-	if inst.cfg.ConfigPath != "" {
-		if err := files.MkdirAll(inst.cfg.ConfigPath); err != nil {
-			return nil, errors.Wrapf(err, "failed to create config path: %s", inst.cfg.ConfigPath)
+	if inst.cfg.Path != "" {
+		if err := files.MkdirAll(inst.cfg.Path); err != nil {
+			return nil, errors.Wrapf(err, "failed to create config path: %s", inst.cfg.Path)
 		}
 	}
 
@@ -75,10 +75,9 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 		Description: "Open a Google Chrome browser",
 		Args: tree.Args{
 			{
-				Name:     "env",
-				Optional: true,
+				Name: "profile",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-					return suggests.List(inst.cfg.EnvironmentNames())
+					return suggests.List(inst.cfg.ProfileNames())
 				},
 			},
 			{
@@ -121,14 +120,14 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
-	environ, err := c.cfg.Environment(r.Args().At(0))
+	profile, err := c.cfg.Profile(r.Args().At(0))
 	if err != nil {
 		return err
 	}
 
 	url := r.Args().At(1)
 	if url == "" {
-		url = environ.URL
+		url = profile.URL
 	}
 
 	binary := c.cfg.Command
@@ -137,25 +136,28 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	}
 
 	args := []string{
-
-		"--user-data-dir=" + env.Path(c.cfg.ConfigPath, r.Args().At(0)),
+		"--user-data-dir=" + env.Path(c.cfg.Path, r.Args().At(0)),
 		"--no-default-browser-check",
 		"--no-first-run",
 	}
 
-	if c.cfg.Incognito || environ.Incognito {
+	if c.cfg.Incognito || profile.Incognito {
 		args = append(args, "--incognito")
 	}
 
-	if environ.Proxy != "" {
-		args = append(args, "--proxy-server="+environ.Proxy)
+	if profile.Proxy != "" {
+		args = append(args, "--proxy-server="+profile.Proxy)
 	}
 
 	if url != "" {
-		args = append(args, url)
+		if profile.App {
+			args = append(args, "--app="+url)
+		} else {
+			args = append(args, url)
+		}
 	}
 
-	return exec.CommandContext(ctx, binary, args...).Run()
+	return exec.CommandContext(ctx, binary, args...).Start()
 }
 
 func defaultBrowserCommand() string {
