@@ -30,6 +30,10 @@
     },
     "Profile": {
       "properties": {
+        "app": {
+          "type": "boolean",
+          "description": "App indicates whether the application mode is enabled for the profile."
+        },
         "url": {
           "type": "string",
           "description": "Default URL to open when no URL argument is given"

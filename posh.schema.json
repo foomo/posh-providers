@@ -47,6 +47,14 @@
     {
       "type": "object",
       "properties": {
+        "chrome": {
+          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1chrome"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
         "terragrunt": {
           "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1gruntwork-io~1terragrunt"
         }
@@ -761,6 +769,59 @@
             },
             "field": {
               "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/google/chrome": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1chrome/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Directory for browser profile dirs (e.g. .posh/browser); created on startup",
+              "type": "string"
+            },
+            "command": {
+              "description": "Browser binary path; defaults to Chrome on macOS, google-chrome on Linux",
+              "type": "string"
+            },
+            "incognito": {
+              "description": "Open in incognito mode",
+              "type": "boolean"
+            },
+            "profiles": {
+              "description": "Named environments, each with an optional proxy and default URL",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1chrome/$defs/Profile"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Profile": {
+          "type": "object",
+          "properties": {
+            "app": {
+              "description": "App indicates whether the application mode is enabled for the profile.",
+              "type": "boolean"
+            },
+            "url": {
+              "description": "Default URL to open when no URL argument is given",
+              "type": "string"
+            },
+            "proxy": {
+              "description": "Named SSH proxy from the global proxies config",
+              "type": "string"
+            },
+            "incognito": {
+              "description": "Open in incognito mode",
+              "type": "boolean"
             }
           },
           "additionalProperties": false
