@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/galaxy/gnat",
+  "$id": "https://github.com/foomo/posh-providers/galaxy/tempo",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
       "properties": {
         "theme": {
           "type": "string",
-          "description": "Theme is the gnat color theme, passed to the CLI via -theme."
+          "description": "Theme is the tempo color theme, passed to the CLI via --theme."
         },
         "configDir": {
           "type": "string",
@@ -18,7 +18,7 @@
             "$ref": "#/$defs/Profile"
           },
           "type": "object",
-          "description": "Profiles maps a name to a NATS server profile; names autocomplete in the shell."
+          "description": "Profiles maps a name to a Temporal connection profile; names autocomplete in the shell."
         }
       },
       "additionalProperties": false,
@@ -28,7 +28,7 @@
       "properties": {
         "url": {
           "type": "string",
-          "description": "URL is the NATS server URL, passed to the CLI via -url."
+          "description": "URL is the Temporal server address (host:port), passed to the CLI via --address."
         },
         "description": {
           "type": "string",

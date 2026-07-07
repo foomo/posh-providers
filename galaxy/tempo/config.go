@@ -1,4 +1,4 @@
-package gnat
+package tempo
 
 import (
 	"github.com/pkg/errors"
@@ -6,11 +6,11 @@ import (
 )
 
 type Config struct {
-	// Theme is the gnat color theme, passed to the CLI via -theme.
+	// Theme is the tempo color theme, passed to the CLI via --theme.
 	Theme string `json:"theme,omitempty" yaml:"theme,omitempty"`
 	// ConfigDir specifies the $XDG_CONFIG_HOME where configuration files are stored.
 	ConfigDir string `json:"configDir" yaml:"configDir"`
-	// Profiles maps a name to a NATS server profile; names autocomplete in the shell.
+	// Profiles maps a name to a Temporal connection profile; names autocomplete in the shell.
 	Profiles map[string]Profile `json:"profiles" yaml:"profiles"`
 }
 

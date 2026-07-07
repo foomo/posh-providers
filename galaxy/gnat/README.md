@@ -2,8 +2,12 @@
 
 > [gnat](https://github.com/galaxy-io/gnat) — a NATS JetStream terminal UI client.
 
-Holds a color theme and a map of name → NATS server URL. The names autocomplete in the shell; the
-selected name resolves to its URL and is passed to the `gnat` CLI as `-url`, along with `-theme`.
+Holds a color theme and a map of name → NATS server profile. The names autocomplete in the shell
+(with their description); the selected name resolves to its profile and its URL is passed to the
+`gnat` CLI as `-url`, along with `-theme`.
+
+An optional `configDir` sets `$XDG_CONFIG_HOME` for the `gnat` process, so its configuration files
+can be kept alongside the project instead of the user's home directory.
 
 ## Usage
 
@@ -12,25 +16,21 @@ package main
 
 type Plugin struct {
   l        log.Logger
-  cache    cache.Cache
-  gnat     *gnat.GNAT
   commands command.Commands
 }
 
 func New(l log.Logger) (plugin.Plugin, error) {
-  var err error
   inst := &Plugin{
     l:        l,
-    cache:    &cache.MemoryCache{},
     commands: command.Commands{},
   }
 
-  inst.gnat, err = gnat.New(l, inst.cache)
+  cmd, err := gnat.NewCommand(l)
   if err != nil {
-    return nil, errors.Wrap(err, "failed to create gnat")
+    return nil, errors.Wrap(err, "failed to create gnat command")
   }
 
-  inst.commands.Add(gnat.NewCommand(l, inst.gnat))
+  inst.commands.Add(cmd)
 
   return inst, nil
 }
@@ -42,7 +42,12 @@ func New(l log.Logger) (plugin.Plugin, error) {
 ## gnat
 gnat:
   theme: tokyonight-night
-  urls:
-    local: nats://localhost:4222
-    prod: nats://nats.prod.example.com:4222
+  configDir: .posh/config/gnat
+  profiles:
+    local:
+      url: nats://localhost:4222
+      description: Local dev server
+    prod:
+      url: nats://nats.prod.example.com:4222
+      description: Production
 ```

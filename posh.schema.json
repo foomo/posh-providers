@@ -143,6 +143,14 @@
     {
       "type": "object",
       "properties": {
+        "tempo": {
+          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1tempo"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
         "gnat": {
           "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1gnat"
         }
@@ -1281,6 +1289,43 @@
         }
       }
     },
+    "https://github.com/foomo/posh-providers/galaxy/tempo": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1tempo/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "theme": {
+              "description": "Theme is the tempo color theme, passed to the CLI via --theme.",
+              "type": "string"
+            },
+            "profiles": {
+              "description": "Profiles maps a name to a Temporal connection profile; names autocomplete in the shell.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1tempo/$defs/Profile"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Profile": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "description": "URL is the Temporal server address (host:port), passed to the CLI via --address.",
+              "type": "string"
+            },
+            "description": {
+              "description": "Description is shown in shell autocompletion.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
     "https://github.com/foomo/posh-providers/galaxy/gnat": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1gnat/$defs/Config",
@@ -1292,12 +1337,26 @@
               "description": "Theme is the gnat color theme, passed to the CLI via -theme.",
               "type": "string"
             },
-            "urls": {
-              "description": "URLs maps a name to a NATS server URL; names autocomplete in the shell.",
+            "profiles": {
+              "description": "Profiles maps a name to a NATS server profile; names autocomplete in the shell.",
               "type": "object",
               "additionalProperties": {
-                "type": "string"
+                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1gnat/$defs/Profile"
               }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Profile": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "description": "URL is the NATS server URL, passed to the CLI via -url.",
+              "type": "string"
+            },
+            "description": {
+              "description": "Description is shown in shell autocompletion.",
+              "type": "string"
             }
           },
           "additionalProperties": false
@@ -1759,6 +1818,9 @@
               "type": "string"
             },
             "environment": {
+              "type": "string"
+            },
+            "region": {
               "type": "string"
             },
             "contentTypes": {
