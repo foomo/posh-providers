@@ -606,9 +606,11 @@
           "type": "object",
           "properties": {
             "name": {
+              "description": "Name of the artifactory",
               "type": "string"
             },
             "resourceGroup": {
+              "description": "ResourceGroup of the artifactory",
               "type": "string"
             }
           },
@@ -618,15 +620,15 @@
           "type": "object",
           "properties": {
             "name": {
-              "description": "Cluster",
+              "description": "Name of the cluster",
               "type": "string"
             },
             "resourceGroup": {
-              "description": "Cluster resource group name",
+              "description": "Resource group of the cluster",
               "type": "string"
             },
             "proxyUrl": {
-              "description": "ProxyURL",
+              "description": "ProxyURL to use for the kubeconfig",
               "type": "string"
             }
           },
@@ -664,6 +666,20 @@
           },
           "additionalProperties": false
         },
+        "KeyVault": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Name of the key vault",
+              "type": "string"
+            },
+            "resourceGroup": {
+              "description": "Resource group of the key vault",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "ServicePrincipal": {
           "type": "object",
           "properties": {
@@ -686,15 +702,25 @@
           "type": "object",
           "properties": {
             "name": {
+              "description": "Name of the subscription",
               "type": "string"
             },
             "clusters": {
+              "description": "Clusters available within the subscription",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Cluster"
               }
             },
+            "KeyVaults": {
+              "description": "KeyVaults available within the subscription",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/KeyVault"
+              }
+            },
             "artifactories": {
+              "description": "Artifactorys available within the subscription",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Artifactory"
@@ -1300,6 +1326,10 @@
               "description": "Theme is the tempo color theme, passed to the CLI via --theme.",
               "type": "string"
             },
+            "configDir": {
+              "description": "ConfigDir specifies the $XDG_CONFIG_HOME where configuration files are stored.",
+              "type": "string"
+            },
             "profiles": {
               "description": "Profiles maps a name to a Temporal connection profile; names autocomplete in the shell.",
               "type": "object",
@@ -1335,6 +1365,10 @@
           "properties": {
             "theme": {
               "description": "Theme is the gnat color theme, passed to the CLI via -theme.",
+              "type": "string"
+            },
+            "configDir": {
+              "description": "ConfigDir specifies the $XDG_CONFIG_HOME where configuration files are stored.",
               "type": "string"
             },
             "profiles": {

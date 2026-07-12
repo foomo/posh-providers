@@ -1,10 +1,10 @@
 package az
 
 type Cluster struct {
-	// Cluster
+	// Name of the cluster
 	Name string `json:"name" yaml:"name"`
-	// Cluster resource group name
+	// Resource group of the cluster
 	ResourceGroup string `json:"resourceGroup" yaml:"resourceGroup"`
-	// ProxyURL
+	// ProxyURL to use for the kubeconfig
 	ProxyURL string `json:"proxyUrl" yaml:"proxyUrl"`
 }

@@ -1,8 +1,8 @@
 package az
 
-type Artifactory struct {
-	// Name of the artifactory
+type Vault struct {
+	// Name of the key vault
 	Name string `json:"name" yaml:"name"`
-	// ResourceGroup of the artifactory
+	// Resource group of the key vault
 	ResourceGroup string `json:"resourceGroup" yaml:"resourceGroup"`
 }
