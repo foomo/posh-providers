@@ -27,6 +27,10 @@ az:
         dev:
           name: my-artifactory
           resourceGroup: my-resource-group
+      keyVaults:
+        dev:
+          name: my-key-vault
+          resourceGroup: my-resource-group
 ```
 
 ### Commands
@@ -42,6 +46,7 @@ Available Commands:
       login                         Log in to Azure
       logout                        Log out to remove access to Azure subscriptions
       configure                     Manage Azure CLI configuration
+      vault                         Manage key vault entries
       artifactory                   Login into the artifactory
       kubeconfig                    Retrieve credentials to access remote cluster
 ```
@@ -57,4 +62,32 @@ Available Commands:
 
 # Retrieve cluster kubeconfig
 > az kubeconfig <SUBSCRIPTION> <CLUSTER>
+```
+
+#### Key vault
+
+Manage keys, secrets and certificates of a configured key vault. Every command is scoped by
+`<SUBSCRIPTION>` and `<VAULT>` (both tab-completable from the config), followed by the entry type
+(`key`, `secret`, `certificate`) and the operation (`set`, `list`, `delete`).
+
+```shell
+# Create a new key (or key version)
+> az vault <SUBSCRIPTION> <VAULT> key set <NAME> --kty RSA --size 2048
+# List keys
+> az vault <SUBSCRIPTION> <VAULT> key list
+# Delete a key (name tab-completes from the vault)
+> az vault <SUBSCRIPTION> <VAULT> key delete <NAME>
+
+# Create or update a secret
+> az vault <SUBSCRIPTION> <VAULT> secret set <NAME> --value <VALUE>
+> az vault <SUBSCRIPTION> <VAULT> secret set <NAME> --file ./secret.txt
+# List / delete secrets
+> az vault <SUBSCRIPTION> <VAULT> secret list
+> az vault <SUBSCRIPTION> <VAULT> secret delete <NAME>
+
+# Import a certificate from a PEM or PFX file
+> az vault <SUBSCRIPTION> <VAULT> certificate set <NAME> --file ./cert.pfx --password <PASSWORD>
+# List / delete certificates
+> az vault <SUBSCRIPTION> <VAULT> certificate list
+> az vault <SUBSCRIPTION> <VAULT> certificate delete <NAME>
 ```

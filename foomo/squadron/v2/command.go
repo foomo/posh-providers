@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
-	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh-providers/slack-go/slack"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command/tree"
@@ -29,7 +28,6 @@ const All = "all"
 type (
 	Command struct {
 		l              log.Logger
-		op             *onepassword.OnePassword
 		name           string
 		bake           bool
 		slack          *slack.Slack
@@ -89,10 +87,9 @@ func CommandWithSlackWebhookID(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
-func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, op *onepassword.OnePassword, cache cache.Cache, opts ...CommandOption) *Command {
+func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, cache cache.Cache, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:              l,
-		op:             op,
 		name:           "squadron",
 		kubectl:        kubectl,
 		squadron:       squadron,
@@ -484,18 +481,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	if cmd == "build" && c.bake {
 		cmd = "bake"
-	}
-
-	{ // handle 1password
-		if c.op != nil {
-			if ok, _ := c.op.IsAuthenticated(ctx); !ok {
-				c.l.Info("missing 1password session, please login")
-
-				if err := c.op.SignIn(ctx); err != nil {
-					return err
-				}
-			}
-		}
 	}
 
 	{ // handle pass through flags
