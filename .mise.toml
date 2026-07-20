@@ -2,8 +2,8 @@
 # https://mise-tools.jdx.dev/tools/yq
 yq = "4.53.3"
 # https://mise-tools.jdx.dev/tools/lefthook
-lefthook = "2.1.9"
+lefthook = "2.1.10"
 # https://mise-tools.jdx.dev/tools/jsonschema
-jsonschema = "16.0.0"
+jsonschema = "16.1.0"
 # https://mise-tools.jdx.dev/tools/golangci-lint
 golangci-lint = "2.12.2"
