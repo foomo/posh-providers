@@ -68,26 +68,32 @@ Available Commands:
 
 Manage keys, secrets and certificates of a configured key vault. Every command is scoped by
 `<SUBSCRIPTION>` and `<VAULT>` (both tab-completable from the config), followed by the entry type
-(`key`, `secret`, `certificate`) and the operation (`set`, `list`, `delete`).
+(`key`, `secret`, `certificate`) and the operation (`set`, `list`, `show`, `delete`).
 
 ```shell
 # Create a new key (or key version)
 > az vault <SUBSCRIPTION> <VAULT> key set <NAME> --kty RSA --size 2048
 # List keys
 > az vault <SUBSCRIPTION> <VAULT> key list
+# Show a key (name tab-completes from the vault)
+> az vault <SUBSCRIPTION> <VAULT> key show <NAME>
+# list/show accept --output (json, jsonc, none, table, tsv, yaml, yamlc)
+> az vault <SUBSCRIPTION> <VAULT> key show <NAME> --output yaml
 # Delete a key (name tab-completes from the vault)
 > az vault <SUBSCRIPTION> <VAULT> key delete <NAME>
 
 # Create or update a secret
 > az vault <SUBSCRIPTION> <VAULT> secret set <NAME> --value <VALUE>
 > az vault <SUBSCRIPTION> <VAULT> secret set <NAME> --file ./secret.txt
-# List / delete secrets
+# List / show / delete secrets
 > az vault <SUBSCRIPTION> <VAULT> secret list
+> az vault <SUBSCRIPTION> <VAULT> secret show <NAME>
 > az vault <SUBSCRIPTION> <VAULT> secret delete <NAME>
 
 # Import a certificate from a PEM or PFX file
 > az vault <SUBSCRIPTION> <VAULT> certificate set <NAME> --file ./cert.pfx --password <PASSWORD>
-# List / delete certificates
+# List / show / delete certificates
 > az vault <SUBSCRIPTION> <VAULT> certificate list
+> az vault <SUBSCRIPTION> <VAULT> certificate show <NAME>
 > az vault <SUBSCRIPTION> <VAULT> certificate delete <NAME>
 ```

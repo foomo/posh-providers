@@ -13,8 +13,8 @@ replace (
 require (
 	github.com/foomo/go v0.14.0
 	github.com/foomo/posh v0.20.2
-	github.com/foomo/posh-providers/foomo v0.51.0
-	github.com/foomo/posh-providers/kubernetes v0.51.0
+	github.com/foomo/posh-providers/foomo v0.55.0
+	github.com/foomo/posh-providers/kubernetes v0.55.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.53.0
