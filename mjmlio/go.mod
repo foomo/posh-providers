@@ -12,7 +12,7 @@ require (
 	github.com/foomo/posh v0.20.2
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.53.0
-	golang.org/x/sync v0.21.0
+	golang.org/x/sync v0.22.0
 )
 
 require (

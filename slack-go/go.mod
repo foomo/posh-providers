@@ -12,11 +12,11 @@ replace (
 require (
 	github.com/foomo/go v0.14.0
 	github.com/foomo/posh v0.20.2
-	github.com/foomo/posh-providers/onepassword v0.51.0
+	github.com/foomo/posh-providers/onepassword v0.55.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.83
-	github.com/slack-go/slack v0.26.0
+	github.com/slack-go/slack v0.27.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 )
@@ -60,7 +60,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
 	golang.org/x/net v0.55.0 // indirect
-	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/term v0.43.0 // indirect
 	golang.org/x/text v0.37.0 // indirect

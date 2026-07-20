@@ -666,20 +666,6 @@
           },
           "additionalProperties": false
         },
-        "KeyVault": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "description": "Name of the key vault",
-              "type": "string"
-            },
-            "resourceGroup": {
-              "description": "Resource group of the key vault",
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
         "ServicePrincipal": {
           "type": "object",
           "properties": {
@@ -705,18 +691,18 @@
               "description": "Name of the subscription",
               "type": "string"
             },
+            "vaults": {
+              "description": "Vaults available within the subscription",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Vault"
+              }
+            },
             "clusters": {
               "description": "Clusters available within the subscription",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Cluster"
-              }
-            },
-            "KeyVaults": {
-              "description": "KeyVaults available within the subscription",
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/KeyVault"
               }
             },
             "artifactories": {
@@ -725,6 +711,20 @@
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Artifactory"
               }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Vault": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Name of the key vault",
+              "type": "string"
+            },
+            "resourceGroup": {
+              "description": "Resource group of the key vault",
+              "type": "string"
             }
           },
           "additionalProperties": false

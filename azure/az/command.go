@@ -144,7 +144,21 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 											{
 												Name:        "list",
 												Description: "List keys in the vault",
+												Flags:       inst.vaultOutputFlags,
 												Execute:     inst.vaultKeyList,
+											},
+											{
+												Name:        "show",
+												Description: "Show a key in the vault",
+												Args: tree.Args{
+													{
+														Name:        "name",
+														Description: "Name of the key",
+														Suggest:     inst.completeVaultEntries,
+													},
+												},
+												Flags:   inst.vaultOutputFlags,
+												Execute: inst.vaultKeyShow,
 											},
 											{
 												Name:        "delete",
@@ -185,7 +199,21 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 											{
 												Name:        "list",
 												Description: "List secrets in the vault",
+												Flags:       inst.vaultOutputFlags,
 												Execute:     inst.vaultSecretList,
+											},
+											{
+												Name:        "show",
+												Description: "Show a secret in the vault",
+												Args: tree.Args{
+													{
+														Name:        "name",
+														Description: "Name of the secret",
+														Suggest:     inst.completeVaultEntries,
+													},
+												},
+												Flags:   inst.vaultOutputFlags,
+												Execute: inst.vaultSecretShow,
 											},
 											{
 												Name:        "delete",
@@ -225,7 +253,21 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 											{
 												Name:        "list",
 												Description: "List certificates in the vault",
+												Flags:       inst.vaultOutputFlags,
 												Execute:     inst.vaultCertificateList,
+											},
+											{
+												Name:        "show",
+												Description: "Show a certificate in the vault",
+												Args: tree.Args{
+													{
+														Name:        "name",
+														Description: "Name of the certificate",
+														Suggest:     inst.completeVaultEntries,
+													},
+												},
+												Flags:   inst.vaultOutputFlags,
+												Execute: inst.vaultCertificateShow,
 											},
 											{
 												Name:        "delete",
@@ -477,6 +519,12 @@ func (c *Command) vaultTarget(r *readline.Readline) (Subscription, Vault, error)
 	return sub, vault, nil
 }
 
+func (c *Command) vaultOutputFlags(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+	fs.Default().String("output", "", "Output format")
+
+	return fs.Default().SetValues("output", "json", "jsonc", "none", "table", "tsv", "yaml", "yamlc")
+}
+
 func (c *Command) vaultKeyCreate(ctx context.Context, r *readline.Readline) error {
 	sub, vault, err := c.vaultTarget(r)
 	if err != nil {
@@ -517,6 +565,23 @@ func (c *Command) vaultKeyDelete(ctx context.Context, r *readline.Readline) erro
 	}
 
 	return c.cmd(ctx, "keyvault", "key", "delete",
+		"--name", r.Args().At(5),
+		"--vault-name", vault.Name,
+		"--subscription", sub.Name,
+	).
+		Args(r.FlagSets().Default().Visited().Args()...).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
+		Run()
+}
+
+func (c *Command) vaultKeyShow(ctx context.Context, r *readline.Readline) error {
+	sub, vault, err := c.vaultTarget(r)
+	if err != nil {
+		return err
+	}
+
+	return c.cmd(ctx, "keyvault", "key", "show",
 		"--name", r.Args().At(5),
 		"--vault-name", vault.Name,
 		"--subscription", sub.Name,
@@ -577,6 +642,23 @@ func (c *Command) vaultSecretDelete(ctx context.Context, r *readline.Readline) e
 		Run()
 }
 
+func (c *Command) vaultSecretShow(ctx context.Context, r *readline.Readline) error {
+	sub, vault, err := c.vaultTarget(r)
+	if err != nil {
+		return err
+	}
+
+	return c.cmd(ctx, "keyvault", "secret", "show",
+		"--name", r.Args().At(5),
+		"--vault-name", vault.Name,
+		"--subscription", sub.Name,
+	).
+		Args(r.FlagSets().Default().Visited().Args()...).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
+		Run()
+}
+
 func (c *Command) vaultCertificateSet(ctx context.Context, r *readline.Readline) error {
 	sub, vault, err := c.vaultTarget(r)
 	if err != nil {
@@ -617,6 +699,23 @@ func (c *Command) vaultCertificateDelete(ctx context.Context, r *readline.Readli
 	}
 
 	return c.cmd(ctx, "keyvault", "certificate", "delete",
+		"--name", r.Args().At(5),
+		"--vault-name", vault.Name,
+		"--subscription", sub.Name,
+	).
+		Args(r.FlagSets().Default().Visited().Args()...).
+		Args(r.AdditionalArgs()...).
+		Args(r.AdditionalFlags()...).
+		Run()
+}
+
+func (c *Command) vaultCertificateShow(ctx context.Context, r *readline.Readline) error {
+	sub, vault, err := c.vaultTarget(r)
+	if err != nil {
+		return err
+	}
+
+	return c.cmd(ctx, "keyvault", "certificate", "show",
 		"--name", r.Args().At(5),
 		"--vault-name", vault.Name,
 		"--subscription", sub.Name,
