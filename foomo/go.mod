@@ -17,10 +17,10 @@ require (
 	github.com/foomo/go v0.14.0
 	github.com/foomo/gokazi v0.2.0
 	github.com/foomo/posh v0.20.2
-	github.com/foomo/posh-providers/cloudflare v0.55.0
-	github.com/foomo/posh-providers/kubernetes v0.55.0
-	github.com/foomo/posh-providers/onepassword v0.55.0
-	github.com/foomo/posh-providers/slack-go v0.55.0
+	github.com/foomo/posh-providers/cloudflare v0.56.0
+	github.com/foomo/posh-providers/kubernetes v0.56.0
+	github.com/foomo/posh-providers/onepassword v0.56.0
+	github.com/foomo/posh-providers/slack-go v0.56.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/knadh/koanf/parsers/yaml v1.1.0
 	github.com/knadh/koanf/providers/file v1.2.1
