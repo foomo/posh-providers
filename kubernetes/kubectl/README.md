@@ -35,6 +35,21 @@ func New(l log.Logger) (plugin.Plugin, error) {
 }
 ```
 
+### Command
+
+Register the `kubectl` command to run kubectl against a cluster:
+
+```go
+inst.commands.Add(kubectl.NewCommand(l, inst.kubectl))
+```
+
+Usage — the `<cluster>` argument selects the kubeconfig, the optional `--profile` flag selects
+a profile, and all remaining args and flags are passed straight through to the `kubectl` CLI:
+
+```shell
+kubectl <cluster> [--profile <profile>] get pods -n <namespace>
+```
+
 ### Config
 
 ```yaml
