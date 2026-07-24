@@ -1,0 +1,118 @@
+package kubectl
+
+import (
+	"context"
+
+	"github.com/foomo/go/options"
+	"github.com/foomo/posh/pkg/command/tree"
+	"github.com/foomo/posh/pkg/exec"
+	"github.com/foomo/posh/pkg/log"
+	"github.com/foomo/posh/pkg/prompt/goprompt"
+	"github.com/foomo/posh/pkg/readline"
+	"github.com/foomo/posh/pkg/util/suggests"
+)
+
+type Command struct {
+	l           log.Logger
+	kubectl     *Kubectl
+	execKubectl exec.CommandProvider
+	commandTree tree.Root
+}
+
+// ------------------------------------------------------------------------------------------------
+// ~ Options
+// ------------------------------------------------------------------------------------------------
+
+func CommandWithExecKubectl(v exec.CommandProvider) options.Option[*Command] {
+	return func(c *Command) {
+		c.execKubectl = v
+	}
+}
+
+// ------------------------------------------------------------------------------------------------
+// ~ Constructor
+// ------------------------------------------------------------------------------------------------
+
+func NewCommand(l log.Logger, kubectl *Kubectl, opts ...options.Option[*Command]) *Command {
+	inst := &Command{
+		l:       l.Named("kubectl"),
+		kubectl: kubectl,
+		execKubectl: func(ctx context.Context, args ...string) *exec.Command {
+			return exec.NewCommand(ctx, "kubectl", args...)
+		},
+	}
+
+	options.Apply(inst, opts...)
+
+	inst.commandTree = tree.New(&tree.Node{
+		Name:        "kubectl",
+		Description: "Run kubectl against a cluster",
+		Args: tree.Args{
+			{
+				Name:    "cluster",
+				Suggest: inst.completeClusters,
+			},
+		},
+		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
+			if r.Args().HasIndex(0) {
+				fs.Internal().String("profile", "", "Profile to use.")
+
+				if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Execute: inst.execute,
+	})
+
+	return inst
+}
+
+// ------------------------------------------------------------------------------------------------
+// ~ Public methods
+// ------------------------------------------------------------------------------------------------
+
+func (c *Command) Name() string {
+	return c.commandTree.Node().Name
+}
+
+func (c *Command) Description() string {
+	return c.commandTree.Node().Description
+}
+
+func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
+	return c.commandTree.Complete(ctx, r)
+}
+
+func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
+	return c.commandTree.Execute(ctx, r)
+}
+
+func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
+	return c.commandTree.Help(ctx, r)
+}
+
+// ------------------------------------------------------------------------------------------------
+// ~ Private methods
+// ------------------------------------------------------------------------------------------------
+
+func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
+	profile, err := r.FlagSets().Internal().GetString("profile")
+	if err != nil {
+		return err
+	}
+
+	cluster := c.kubectl.Cluster(r.Args().At(0))
+
+	return c.execKubectl(ctx, r.Args().From(1)...).
+		Args(r.AdditionalFlags()...).
+		Args(r.AdditionalArgs()...).
+		Env(cluster.Env(profile)).
+		Run()
+}
+
+func (c *Command) completeClusters(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+	return suggests.List(c.kubectl.Clusters())
+}
