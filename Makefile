@@ -110,15 +110,16 @@ tidy:
 
 .PHONY: outdated
 ## Show outdated direct dependencies
+outdated: export GOWORK=off
 outdated:
 	@echo "〉go mod outdated"
 	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go mod tidy && go list -u -m -json all | go-mod-outdated -update -direct) &&) true
 
 .PHONY: upgrade
 ## Upgrade dependencies
+upgrade: export GOWORK=off
 upgrade:
 	@echo "〉go mod upgrade"
-	@rm -f go.work go.work.sum
 	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && go mod tidy && deps=$$(go list -u -m -f '{{if and (not .Main) (not .Indirect) .Update}}{{.Path}}{{end}}' all); [ -z "$$deps" ] || for dep in $$deps; do go get "$$dep@latest"; done; go mod tidy) &&) true
 	@$(MAKE) tidy
 

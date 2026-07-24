@@ -2042,27 +2042,12 @@
       "$schema": "https://json-schema.org/draft/2020-12/schema",
       "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubectl/$defs/Config",
       "$defs": {
-        "ClusterConfig": {
-          "type": "object",
-          "properties": {
-            "proxy": {
-              "description": "Named SSH proxy from the top-level proxies map",
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
         "Config": {
           "type": "object",
           "properties": {
             "configPath": {
+              "description": "ConfigPath to store kubeconfigs",
               "type": "string"
-            },
-            "clusters": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubectl/$defs/ClusterConfig"
-              }
             }
           },
           "additionalProperties": false
