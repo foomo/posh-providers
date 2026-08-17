@@ -9,7 +9,7 @@ replace (
 )
 
 require (
-	github.com/foomo/posh v0.20.2
+	github.com/foomo/posh v0.21.0
 	github.com/moby/moby/client v0.5.0
 )
 
@@ -45,7 +45,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.41.0 // indirect
 	go.opentelemetry.io/otel/trace v1.41.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/term v0.43.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/term v0.45.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 )

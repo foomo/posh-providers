@@ -11,8 +11,8 @@ replace (
 
 require (
 	github.com/digitalocean/godo v1.201.0
-	github.com/foomo/go v0.14.0
-	github.com/foomo/posh v0.20.2
+	github.com/foomo/go v0.16.0
+	github.com/foomo/posh v0.21.0
 	github.com/foomo/posh-providers/kubernetes v0.56.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
@@ -59,8 +59,8 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/term v0.43.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/term v0.45.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 )
