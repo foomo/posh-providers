@@ -1,4 +1,3 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/foomo/posh-providers?style=flat-square)](https://goreportcard.com/report/github.com/foomo/posh-providers)
 [![GoDoc](https://img.shields.io/badge/GoDoc-✓-informational.svg?style=flat-square&logo=go)](https://godoc.org/github.com/foomo/posh-providers)
 [![Coverage](https://img.shields.io/codecov/c/github/foomo/posh-providers?style=flat-square&logo=github)](https://app.codecov.io/gh/foomo/posh-providers)
 [![GitHub Stars](https://img.shields.io/github/stars/foomo/posh-providers.svg?style=flat-square&logo=github)](https://github.com/foomo/posh-providers)
