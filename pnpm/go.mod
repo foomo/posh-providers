@@ -9,7 +9,7 @@ replace (
 )
 
 require (
-	github.com/foomo/posh v0.20.2
+	github.com/foomo/posh v0.21.0
 	github.com/foomo/posh-providers v0.56.0
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
@@ -36,8 +36,8 @@ require (
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/term v0.43.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/term v0.45.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

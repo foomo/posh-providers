@@ -119,6 +119,14 @@
     {
       "type": "object",
       "properties": {
+        "gcx": {
+          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1grafana~1gcx"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
         "k6": {
           "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1grafana~1k6"
         }
@@ -366,6 +374,10 @@
           "type": "object",
           "properties": {
             "title": {
+              "type": "string"
+            },
+            "theme": {
+              "description": "Theme selects a Catppuccin palette for the prompt: mocha, macchiato, frappe or latte",
               "type": "string"
             },
             "prefix": {
@@ -1182,6 +1194,50 @@
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1stern~1stern/$defs/Query"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://github.com/foomo/posh-providers/grafana/gcx": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1grafana~1gcx/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1grafana~1gcx/$defs/ConfigEnv"
+          }
+        },
+        "ConfigEnv": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "description": "URL of the grafana server",
+              "type": "string"
+            },
+            "env": {
+              "description": "Env to pass to the cli",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "orgId": {
+              "description": "OrgID to set",
+              "type": "string"
+            },
+            "token": {
+              "description": "Token to set",
+              "type": "string"
+            },
+            "tokenCmd": {
+              "description": "TokenCmd to execute returning the token",
+              "type": "array",
+              "items": {
+                "type": "string"
               }
             }
           },

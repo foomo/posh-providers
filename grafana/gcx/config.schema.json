@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/foomo/posh-providers/grafana/gcx",
+  "$ref": "#/$defs/Config",
+  "$defs": {
+    "Config": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConfigEnv"
+      },
+      "type": "object"
+    },
+    "ConfigEnv": {
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL of the grafana server"
+        },
+        "env": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Env to pass to the cli"
+        },
+        "orgId": {
+          "type": "string",
+          "description": "OrgID to set"
+        },
+        "token": {
+          "type": "string",
+          "description": "Token to set"
+        },
+        "tokenCmd": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "TokenCmd to execute returning the token"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    }
+  }
+}
