@@ -2,10 +2,14 @@ package bruno
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"path"
 
 	"github.com/foomo/posh-providers/onepassword"
+	"github.com/foomo/posh-providers/pkg/ptermx"
+	"github.com/foomo/posh/pkg/agent"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -17,6 +21,9 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -152,6 +159,19 @@ func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog carries
+// the structure; what it cannot show is that the environments and requests are
+// read off disk, which is what makes `list` the necessary first step.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
+}
+
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
@@ -201,7 +221,7 @@ func (c *Command) list(ctx context.Context, r *readline.Readline) error {
 		}
 	}
 
-	return pterm.DefaultTree.WithRoot(t).Render()
+	return agent.Tree(ptermx.LeveledList(t))
 }
 
 func (c *Command) run(ctx context.Context, r *readline.Readline) error {

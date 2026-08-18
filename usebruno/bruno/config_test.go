@@ -8,6 +8,7 @@ import (
 
 	testingx "github.com/foomo/go/testing"
 	tagx "github.com/foomo/go/testing/tag"
+	"github.com/foomo/posh-providers/pkg/testutils"
 	"github.com/foomo/posh-providers/usebruno/bruno"
 	"github.com/invopop/jsonschema"
 	"github.com/pkg/errors"
@@ -40,4 +41,8 @@ func TestConfig(t *testing.T) {
 	if !assert.Equal(t, string(expected), string(actual)) {
 		require.NoError(t, os.WriteFile(filename, actual, 0600))
 	}
+
+	// The schema is what an agent reads to interpret this provider's config key,
+	// so a property without a description is a field it cannot make sense of.
+	testutils.AssertDocumentedConfig(t, filename)
 }

@@ -6,7 +6,8 @@
     "Config": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Path to the Bruno collection; environment variables are expanded"
         }
       },
       "additionalProperties": false,

@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	// Path to the Bruno collection; environment variables are expanded
 	Path string `json:"path" yaml:"path" mapstructure:"path"`
 }
 
