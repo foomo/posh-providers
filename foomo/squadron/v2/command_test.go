@@ -5,8 +5,8 @@ import (
 
 	testingx "github.com/foomo/go/testing"
 	tagx "github.com/foomo/go/testing/tag"
-	squadron "github.com/foomo/posh-providers/foomo/squadron/v2"
-	"github.com/foomo/posh-providers/pkg/agentdoc"
+	"github.com/foomo/posh-providers/foomo/squadron/v2"
+	"github.com/foomo/posh-providers/pkg/testutils"
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/log"
 )
@@ -22,5 +22,6 @@ func TestCommandDocs(t *testing.T) {
 	// working.
 	cmd := squadron.NewCommand(log.NewFmt(), nil, nil, &cache.MemoryCache{})
 
-	agentdoc.AssertDescribed(t, "squadron", cmd)
+	testutils.AssertDescribed(t, "squadron", cmd)
+	testutils.AssertSkilled(t, "squadron", cmd)
 }

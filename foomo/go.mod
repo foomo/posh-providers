@@ -17,18 +17,19 @@ require (
 	github.com/foomo/go v0.16.0
 	github.com/foomo/gokazi v0.2.0
 	github.com/foomo/posh v0.21.0
+	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
 	github.com/foomo/posh-providers/cloudflare v0.56.0
 	github.com/foomo/posh-providers/kubernetes v0.56.0
 	github.com/foomo/posh-providers/onepassword v0.56.0
 	github.com/foomo/posh-providers/slack-go v0.56.0
 	github.com/invopop/jsonschema v0.14.0
-	github.com/knadh/koanf/parsers/yaml v1.1.0
+	github.com/knadh/koanf/parsers/yaml v1.1.1
 	github.com/knadh/koanf/providers/file v1.2.1
-	github.com/knadh/koanf/v2 v2.3.5
+	github.com/knadh/koanf/v2 v2.3.6
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.83
 	github.com/samber/lo v1.53.0
-	github.com/slack-go/slack v0.27.0
+	github.com/slack-go/slack v0.29.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.22.0
@@ -51,6 +52,7 @@ require (
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
+	github.com/gofrs/flock v0.13.0 // indirect
 	github.com/gookit/color v1.6.1 // indirect
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
