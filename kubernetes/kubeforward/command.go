@@ -2,6 +2,7 @@ package kubeforward
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,6 +11,7 @@ import (
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
 	"github.com/foomo/gokazi/pkg/gokazi"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -21,6 +23,9 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -164,6 +169,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog renders
+// `connect` and `disconnect` as symmetric verbs over an optional name; what it
+// cannot show is that omitting the name on `disconnect` stops every configured
+// forward, that both leave background processes in the shared gokazi registry, and
+// that --debug runs in the foreground and blocks.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

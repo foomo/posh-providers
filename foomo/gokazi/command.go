@@ -2,6 +2,7 @@ package gokazi
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"maps"
@@ -10,6 +11,7 @@ import (
 
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
 	"github.com/foomo/gokazi/pkg/gokazi"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -20,6 +22,9 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -181,6 +186,20 @@ func (c *Command) Shutdown(ctx context.Context) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog shows
+// `stop` taking an optional repeated name; what it cannot show is that the
+// registry is shared with every other provider that starts background tasks, nor
+// that the arg gate is off by one so a single name still stops everything.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
