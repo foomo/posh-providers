@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"stern": {
-					"$ref": "https://github.com/foomo/posh-providers/stern/stern"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/stern/stern/config.schema.json"
 				}
 			}
 		}

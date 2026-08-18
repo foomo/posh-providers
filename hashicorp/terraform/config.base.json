@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"terraform": {
-					"$ref": "https://github.com/foomo/posh-providers/hashicorp/terraform"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/hashicorp/terraform/config.schema.json"
 				}
 			}
 		}

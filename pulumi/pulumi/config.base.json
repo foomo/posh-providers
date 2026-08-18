@@ -6,10 +6,10 @@
 				"pulumi": {
 					"oneOf": [
 						{
-							"$ref": "https://github.com/foomo/posh-providers/pulumi/pulumi/azure"
+							"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/pulumi/pulumi/azure/config.schema.json"
 						},
 						{
-							"$ref": "https://github.com/foomo/posh-providers/pulumi/pulumi/gcloud"
+							"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/pulumi/pulumi/gcloud/config.schema.json"
 						}
 					]
 				}

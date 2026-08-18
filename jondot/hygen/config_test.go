@@ -26,7 +26,7 @@ func TestConfig(t *testing.T) {
 	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/jondot/hygen", "./"))
 	schema := reflector.Reflect(&hygen.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/jondot/hygen"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/jondot/hygen/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

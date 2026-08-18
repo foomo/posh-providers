@@ -26,7 +26,12 @@ directory.
 
 The access names are fixed for the checkout - they come from the `cloudflared`
 key of this project's posh config, not from a live lookup, so reading that key
-tells you every valid name, and its schema describes the shape.
+tells you every valid name. `cloudflared` is only the default key, overridable via
+`WithConfigKey`, so confirm the actual one against the project's own file.
+
+Field shapes: [`cloudflare/cloudflared/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/cloudflare/cloudflared/config.schema.json).
+That URL is also the schema's `$id`, so it is the `$defs` key the same
+schema is bundled under in the project's `posh.schema.json`.
 
 #### Examples
 

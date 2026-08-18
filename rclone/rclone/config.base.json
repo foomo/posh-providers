@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"rclone": {
-					"$ref": "https://github.com/foomo/posh-providers/rclone/rclone"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/rclone/rclone/config.schema.json"
 				}
 			}
 		}

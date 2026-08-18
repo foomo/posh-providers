@@ -33,11 +33,13 @@ Flags after a `--` separator are passed through to helm.
 
 Two separate layers, and they answer different questions:
 
-The **posh provider config** is the `squadron` key of this project's posh config.
-Read that key for the cluster and fleet names, and its schema - referenced from
-the config's own `$schema`, under
-`https://github.com/foomo/posh-providers/foomo/squadron` - for the field shape;
-both are authoritative in a way this document cannot be. Two behaviours the
+The **posh provider config** is the `squadron` key of this project's posh config -
+the default, overridable via `WithConfigKey`, so confirm the actual key against
+the project's own file. Read that key for the cluster and fleet names, and
+[`foomo/squadron/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/foomo/squadron/config.schema.json)
+for the field shape; both are authoritative in a way this document cannot be. That
+URL is also the schema's `$id`, so it is the `$defs` key the same schema is bundled
+under in the project's `posh.schema.json`. Two behaviours the
 schema cannot express: a cluster's `confirm` is what makes the mutating verbs
 refuse to run under an agent, and the selectable clusters are the intersection
 with the configured kubectl clusters, so a cluster listed here without a

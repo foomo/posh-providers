@@ -30,7 +30,7 @@ func TestConfig(t *testing.T) {
 	// the walked dir, so the base needs one extra segment to resolve.
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/onepassword/x", "../../onepassword"))
 	schema := reflector.Reflect(&slack.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/slack-go/slack"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/slack-go/slack/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

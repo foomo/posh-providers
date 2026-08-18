@@ -27,7 +27,7 @@ func TestConfig(t *testing.T) {
 	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/golang-migrate/migrate", "./"))
 	schema := reflector.Reflect(&migrate.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/golang-migrate/migrate"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/golang-migrate/migrate/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

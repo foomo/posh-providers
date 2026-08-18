@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"gcloud": {
-					"$ref": "https://github.com/foomo/posh-providers/google/gcloud"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/google/gcloud/config.schema.json"
 				}
 			}
 		}

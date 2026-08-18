@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"migrate": {
-					"$ref": "https://github.com/foomo/posh-providers/golang-migrate/migrate"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/golang-migrate/migrate/config.schema.json"
 				}
 			}
 		}

@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"bruno": {
-					"$ref": "https://github.com/foomo/posh-providers/usebruno/bruno"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/usebruno/bruno/config.schema.json"
 				}
 			}
 		}

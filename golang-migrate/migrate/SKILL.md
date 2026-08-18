@@ -42,8 +42,12 @@ at startup regardless of the config being correct.
 #### Configuration
 
 Read the `migrate` key of this project's posh config for the available database
-and source names. Field shapes are in the schema,
-`https://github.com/foomo/posh-providers/golang-migrate/migrate`.
+and source names - `migrate` is only the default, overridable via
+`CommandWithConfigKey`, so confirm the actual key against the project's own file.
+
+Field shapes: [`golang-migrate/migrate/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/golang-migrate/migrate/config.schema.json).
+That URL is also the schema's `$id`, so it is the `$defs` key the same
+schema is bundled under in the project's `posh.schema.json`.
 
 #### Examples
 

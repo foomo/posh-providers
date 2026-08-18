@@ -2,14 +2,19 @@ package cli
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/foomo/go/options"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type Command struct {
 	l           log.Logger
@@ -95,6 +100,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog shows two
+// sibling subcommands; what it cannot show is that one is read-only while the
+// other is an interactive browser flow that hangs an agent, nor that
+// authentication here is a process-wide GITHUB_TOKEN other commands depend on.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

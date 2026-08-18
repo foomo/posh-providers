@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"beam": {
-					"$ref": "https://github.com/foomo/posh-providers/foomo/beam"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/foomo/beam/config.schema.json"
 				}
 			}
 		}

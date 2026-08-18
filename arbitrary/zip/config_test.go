@@ -30,7 +30,7 @@ func TestConfig(t *testing.T) {
 	// the walked dir, so the base needs one extra segment to resolve.
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/onepassword/x", "../../onepassword"))
 	schema := reflector.Reflect(&zip.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/arbitrary/zip"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/arbitrary/zip/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

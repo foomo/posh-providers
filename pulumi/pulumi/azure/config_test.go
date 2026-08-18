@@ -34,7 +34,7 @@ func TestConfig(t *testing.T) {
 	// undocumented rather than erroring.
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/onepassword/x/y", "../../../onepassword"))
 	schema := reflector.Reflect(&pulumi.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/pulumi/pulumi/azure"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/pulumi/pulumi/azure/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

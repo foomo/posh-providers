@@ -4,7 +4,7 @@
       "type": "object",
       "properties": {
         "gnat": {
-          "$ref": "https://github.com/foomo/posh-providers/galaxy/gnat"
+          "$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/galaxy/gnat/config.schema.json"
         }
       }
     }

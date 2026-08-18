@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"chrome": {
-					"$ref": "https://github.com/foomo/posh-providers/google/chrome"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/google/chrome/config.schema.json"
 				}
 			}
 		}

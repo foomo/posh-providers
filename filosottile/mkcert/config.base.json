@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"mkcert": {
-					"$ref": "https://github.com/foomo/posh-providers/filosottile/mkcert"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/filosottile/mkcert/config.schema.json"
 				}
 			}
 		}

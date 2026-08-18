@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"open": {
-					"$ref": "https://github.com/foomo/posh-providers/arbitrary/open"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/arbitrary/open/config.schema.json"
 				}
 			}
 		}

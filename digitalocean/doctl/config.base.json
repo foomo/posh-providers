@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"doctl": {
-					"$ref": "https://github.com/foomo/posh-providers/digitalocean/doctl"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/digitalocean/doctl/config.schema.json"
 				}
 			}
 		}

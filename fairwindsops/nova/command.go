@@ -2,9 +2,11 @@ package nova
 
 import (
 	"context"
+	_ "embed"
 	"sort"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -12,6 +14,9 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -52,7 +57,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 				Nodes: tree.Nodes{
 					{
 						Name:        "find",
-						Description: "",
+						Description: "Find outdated Helm releases or container images in the cluster",
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							fs.Default().Bool("containers", false, "Show old container image versions instead of helm chart versions")
 							fs.Default().Bool("helm", false, "Show old helm chart versions")
@@ -106,6 +111,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog lists
+// --helm and --containers as two flags among nine; what it cannot show is that
+// they select what is scanned rather than the output format, that the scan needs
+// egress to public registries, and that the cluster placeholder is resolved from
+// kubeconfig files on disk.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

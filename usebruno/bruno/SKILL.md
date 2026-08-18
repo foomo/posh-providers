@@ -24,7 +24,13 @@ under an agent.
 #### Configuration
 
 The collection path comes from the `bruno` key of this project's posh config -
-read it to find where the `.bru` files live.
+read it to find where the `.bru` files live. `bruno` is only the default key,
+overridable via `CommandWithConfigKey`, so confirm the actual one against the
+project's own file.
+
+Field shapes: [`usebruno/bruno/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/usebruno/bruno/config.schema.json).
+That URL is also the schema's `$id`, so it is the `$defs` key the same
+schema is bundled under in the project's `posh.schema.json`.
 
 #### Examples
 

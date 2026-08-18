@@ -57,8 +57,14 @@ every subcommand, which is how you reach upstream flags the tree does not model.
 #### Configuration
 
 The `gcloud` key of this project's posh config holds the account and cluster
-names; read that key for the valid values and its schema, under
-`https://github.com/foomo/posh-providers/google/gcloud`, for the field shape.
+names - read that key for the valid values. `gcloud` is only the default key,
+overridable via `WithConfigKey`, so confirm the actual one against the project's
+own file.
+
+Field shapes: [`google/gcloud/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/google/gcloud/config.schema.json).
+That URL is also the schema's `$id`, so it is the `$defs` key the same
+schema is bundled under in the project's `posh.schema.json`.
+
 Three behaviours the schema cannot express: an account's `key` is what decides
 whether `login` can run unattended, `configPath` is created on startup and
 becomes `CLOUDSDK_CONFIG` for every invocation, and a cluster's key here is only

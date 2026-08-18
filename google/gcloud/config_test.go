@@ -35,7 +35,7 @@ func TestConfig(t *testing.T) {
 	// the package's own path yields ".../foomo/onepassword", which never matches.
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/onepassword/x", "../../onepassword"))
 	schema := reflector.Reflect(&gcloud.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/google/gcloud"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/google/gcloud/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

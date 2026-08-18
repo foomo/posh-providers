@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"gh": {
-					"$ref": "https://github.com/foomo/posh-providers/cli/cli"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/cli/cli/config.schema.json"
 				}
 			}
 		}

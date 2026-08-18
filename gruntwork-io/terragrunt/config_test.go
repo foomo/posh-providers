@@ -26,7 +26,7 @@ func TestConfig(t *testing.T) {
 	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/gruntwork-io/terragrunt", "./"))
 	schema := reflector.Reflect(&terragrunt.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/gruntwork-io/terragrunt"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/gruntwork-io/terragrunt/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

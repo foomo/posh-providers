@@ -26,7 +26,7 @@ func TestConfig(t *testing.T) {
 	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/google/chrome", "./"))
 	schema := reflector.Reflect(&chrome.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/google/chrome"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/google/chrome/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

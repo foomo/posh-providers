@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"k6": {
-					"$ref": "https://github.com/foomo/posh-providers/grafana/k6"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/grafana/k6/config.schema.json"
 				}
 			}
 		}

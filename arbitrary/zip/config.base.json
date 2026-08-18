@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"zip": {
-					"$ref": "https://github.com/foomo/posh-providers/arbitrary/zip"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/arbitrary/zip/config.schema.json"
 				}
 			}
 		}

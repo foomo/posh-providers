@@ -26,7 +26,7 @@ func TestConfig(t *testing.T) {
 	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/grafana/k6", "./"))
 	schema := reflector.Reflect(&k6.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/grafana/k6"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/grafana/k6/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 
