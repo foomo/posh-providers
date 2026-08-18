@@ -751,12 +751,15 @@
           "type": "object",
           "properties": {
             "name": {
+              "description": "Account identity passed to gcloud as --account",
               "type": "string"
             },
             "email": {
+              "description": "Email of the account, for reference only",
               "type": "string"
             },
             "key": {
+              "description": "1Password document holding the service account key; without it, login falls back to an interactive browser prompt",
               "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1gcloud/$defs/Secret"
             }
           },
@@ -766,15 +769,19 @@
           "type": "object",
           "properties": {
             "name": {
+              "description": "Name of the cluster in GKE, which may differ from the key used to select it",
               "type": "string"
             },
             "project": {
+              "description": "Google cloud project the cluster belongs to",
               "type": "string"
             },
             "region": {
+              "description": "Google cloud region the cluster runs in",
               "type": "string"
             },
             "account": {
+              "description": "Account key to authenticate as; passed to gcloud as --account when set",
               "type": "string"
             }
           },
@@ -784,15 +791,18 @@
           "type": "object",
           "properties": {
             "configPath": {
+              "description": "Path used as CLOUDSDK_CONFIG, keeping gcloud state per project; created on startup",
               "type": "string"
             },
             "accounts": {
+              "description": "Account configurations, keyed by the name given to `gcloud login`",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1gcloud/$defs/Account"
               }
             },
             "clusters": {
+              "description": "Cluster configurations, keyed by the name given to `gcloud kubeconfig`",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1gcloud/$defs/Cluster"
@@ -802,18 +812,23 @@
           "additionalProperties": false
         },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -948,12 +963,15 @@
           "type": "object",
           "properties": {
             "type": {
+              "description": "Access mode passed to `cloudflared access`, e.g. tcp or ssh",
               "type": "string"
             },
             "hostname": {
+              "description": "Hostname of the Cloudflare Access target to tunnel to",
               "type": "string"
             },
             "port": {
+              "description": "Local port the tunnel listens on, bound to 127.0.0.1",
               "type": "integer"
             }
           },
@@ -963,9 +981,11 @@
           "type": "object",
           "properties": {
             "path": {
+              "description": "Path used as HOME for every cloudflared call, keeping its credentials per project",
               "type": "string"
             },
             "access": {
+              "description": "Access configurations, keyed by the name given to `access connect`",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1cloudflare~1cloudflared/$defs/Access"
@@ -993,18 +1013,23 @@
           "additionalProperties": false
         },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -1146,18 +1171,23 @@
           "additionalProperties": false
         },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -1689,18 +1719,23 @@
           "additionalProperties": false
         },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -1815,18 +1850,23 @@
           "additionalProperties": false
         },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -1875,18 +1915,23 @@
           "additionalProperties": false
         },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -1974,18 +2019,23 @@
           "additionalProperties": false
         },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -2184,18 +2234,23 @@
           }
         },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -2211,12 +2266,14 @@
           "type": "object",
           "properties": {
             "sources": {
+              "description": "SourcesMap maps a source name to a golang-migrate source URL, e.g.\n`file://migrations`. The names are the values the `source` argument accepts.",
               "type": "object",
               "additionalProperties": {
                 "type": "string"
               }
             },
             "databases": {
+              "description": "DatabasesMap maps a database name to a golang-migrate database URL, e.g.\n`pgx5://user:password@localhost:5432/db?sslmode=disable`. The names are the\nvalues the `database` argument accepts. A value may contain 1Password\nsecret references, which are resolved at execution time.",
               "type": "object",
               "additionalProperties": {
                 "type": "string"
@@ -2235,6 +2292,7 @@
           "type": "object",
           "properties": {
             "path": {
+              "description": "Path to the Bruno collection; environment variables are expanded",
               "type": "string"
             }
           },
