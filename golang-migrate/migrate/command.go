@@ -2,9 +2,11 @@ package migrate
 
 import (
 	"context"
+	_ "embed"
 	"strconv"
 
 	"github.com/foomo/posh-providers/onepassword"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -14,6 +16,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -75,13 +80,15 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 		Description: "Manage database migrations",
 		Nodes: tree.Nodes{
 			{
-				Name: "database",
+				Name:        "database",
+				Description: "Name of a database from the `migrate.databases` config key",
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.config.Databases())
 				},
 				Nodes: tree.Nodes{
 					{
-						Name: "source",
+						Name:        "source",
+						Description: "Name of a migration source from the `migrate.sources` config key",
 						Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.config.Sources())
 						},
@@ -98,7 +105,7 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 							},
 							{
 								Name:        "down",
-								Description: "Roll back the version by 1",
+								Description: "Roll back all migrations",
 								Execute:     inst.execute,
 							},
 							{
@@ -170,6 +177,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog names
+// what each verb does but cannot show that `drop` and `down` are irreversible
+// and unconfirmed, that the database they hit is picked by the first argument,
+// or that the two placeholders resolve against config keys rather than the
+// database itself.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
