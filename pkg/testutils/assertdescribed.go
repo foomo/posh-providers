@@ -1,10 +1,3 @@
-// Package agentdoc validates that a provider's command tree is documented well
-// enough to be useful in `posh agent catalog` and the generated SKILL.md.
-//
-// The catalog publishes whatever descriptions the tree carries, so a missing
-// one is not a cosmetic gap: it is a command an agent cannot tell apart from
-// its siblings. This package is the regression guard, called from a provider's
-// own test.
 package testutils
 
 import (
@@ -23,7 +16,7 @@ import (
 //	func TestCommandDocs(t *testing.T) {
 //		cmd, err := bruno.NewCommand(log.NewFmt())
 //		require.NoError(t, err)
-//		agentdoc.AssertDescribed(t, "bruno", cmd)
+//		testutils.AssertDescribed(t, "bruno", cmd)
 //	}
 func AssertDescribed(t *testing.T, name string, v any) {
 	t.Helper()

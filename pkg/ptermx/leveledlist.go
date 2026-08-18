@@ -21,6 +21,7 @@ func LeveledList(node pterm.TreeNode) pterm.LeveledList {
 	var ret pterm.LeveledList
 
 	var walk func(n pterm.TreeNode, level int)
+
 	walk = func(n pterm.TreeNode, level int) {
 		ret = append(ret, pterm.LeveledListItem{Level: level, Text: n.Text})
 
