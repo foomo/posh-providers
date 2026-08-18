@@ -3,10 +3,12 @@ package az
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubeconfig"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	pkgexec "github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
@@ -15,6 +17,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -378,6 +383,22 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that `raw` is the whole Azure CLI rather than a leaf, that the
+// `vault` delete/set verbs destroy live key vault material without prompting,
+// that `login` needs a browser unless given a service principal, or that
+// `kubeconfig` overwrites credentials and then shells out to a `kubelogin` the
+// provider never checks for.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

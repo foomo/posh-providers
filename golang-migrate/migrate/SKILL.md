@@ -11,20 +11,9 @@ local database from a production one. Do not run either unattended: ask for
 explicit confirmation of the target database first. The same applies to `force`,
 which rewrites the recorded version without running anything.
 
-The argument order is `<database> <source> <verb>` - the database comes before
-the migration set, and both come before the thing to do. `force` and `migrate`
-take a trailing version number; the rest take none.
-
 `force` sets the recorded version without running any migration. It is the
 recovery path for a database the `version` verb reports as dirty, and it will
 happily record a version whose migrations never ran.
-
-The database and source names are not fixed. They are the keys of the `databases`
-and `sources` maps in this project's posh config, so they differ per project and
-cannot be listed here. Read that config to find the real names; tab completion
-in the interactive shell suggests them from the same maps. An unknown name is
-not an error - it resolves to an empty URL and the command fails when the driver
-rejects it.
 
 Database URLs may carry 1Password secret references. They are resolved at
 execution time only when a 1Password provider is wired into the command
@@ -34,6 +23,19 @@ the driver as-is, which fails if it still contains an unresolved reference.
 Cancelling the command triggers a graceful stop rather than an immediate kill:
 the in-flight migration is allowed to finish before the process exits, so it can
 take a moment to return and should not be force-killed.
+
+#### Behaviour
+
+The argument order is `<database> <source> <verb>` - the database comes before
+the migration set, and both come before the thing to do. `force` and `migrate`
+take a trailing version number; the rest take none.
+
+The database and source names are not fixed. They are the keys of the `databases`
+and `sources` maps in this project's posh config, so they differ per project and
+cannot be listed here. Read that config to find the real names; tab completion
+in the interactive shell suggests them from the same maps. An unknown name is
+not an error - it resolves to an empty URL and the command fails when the driver
+rejects it.
 
 The database and source drivers are compiled into the host posh shell by blank
 import, not selected at runtime. A URL scheme the project did not import fails

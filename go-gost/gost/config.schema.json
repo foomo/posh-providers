@@ -7,7 +7,8 @@
       "additionalProperties": {
         "type": "string"
       },
-      "type": "object"
+      "type": "object",
+      "description": "Config maps a gost process name to the path of the gost configuration file it is started with."
     }
   }
 }

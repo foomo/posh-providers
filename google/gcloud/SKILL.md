@@ -35,6 +35,8 @@ necessarily the GKE cluster name. If the cluster names an account, that account
 is passed to gcloud as `--account`, which means `kubeconfig` can fail on
 authentication if you have not run `login` for it first.
 
+#### Behaviour
+
 `--profile` does not reach gcloud. It selects which kubeconfig file the
 credentials are written into - a subdirectory of the kubectl provider's config
 path - so it partitions kubeconfigs rather than changing anything about the

@@ -2,7 +2,9 @@ package ssh
 
 import (
 	"context"
+	_ "embed"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -10,6 +12,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -50,19 +55,19 @@ func NewCommand(l log.Logger, ssh *SSH, opts ...CommandOption) *Command {
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Manage ssh",
+		Description: "Manage ssh port forwards and socks5 tunnels",
 		Nodes: []*tree.Node{
 			{
 				Name:        "pfw",
-				Description: "Manage port forwards",
+				Description: "Manage ssh local port forwards (ssh -L)",
 				Nodes: []*tree.Node{
 					{
 						Name:        "start",
-						Description: "Start a port forwaring",
+						Description: "Start configured port forwards as background processes; all of them if no name is given",
 						Args: tree.Args{
 							{
 								Name:        "name",
-								Description: "Config name",
+								Description: "Port forward name from the portForwards config; all of them if omitted",
 								Repeat:      true,
 								Optional:    true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -74,11 +79,11 @@ func NewCommand(l log.Logger, ssh *SSH, opts ...CommandOption) *Command {
 					},
 					{
 						Name:        "stop",
-						Description: "Stop a port forwaring",
+						Description: "Stop running port forwards; all of them if no name is given",
 						Args: tree.Args{
 							{
 								Name:        "name",
-								Description: "Config name",
+								Description: "Port forward name from the portForwards config; all of them if omitted",
 								Repeat:      true,
 								Optional:    true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -92,15 +97,15 @@ func NewCommand(l log.Logger, ssh *SSH, opts ...CommandOption) *Command {
 			},
 			{
 				Name:        "socks5",
-				Description: "Manage socks5 tunnels",
+				Description: "Manage ssh socks5 tunnels (ssh -D)",
 				Nodes: []*tree.Node{
 					{
 						Name:        "start",
-						Description: "Start a socks5 tunnel",
+						Description: "Start configured socks5 tunnels as background processes; all of them if no name is given",
 						Args: tree.Args{
 							{
 								Name:        "name",
-								Description: "Config name",
+								Description: "Socks5 tunnel name from the socks5Tunnels config; all of them if omitted",
 								Repeat:      true,
 								Optional:    true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -112,11 +117,11 @@ func NewCommand(l log.Logger, ssh *SSH, opts ...CommandOption) *Command {
 					},
 					{
 						Name:        "stop",
-						Description: "Stop a socks5 tunnel",
+						Description: "Stop running socks5 tunnels; all of them if no name is given",
 						Args: tree.Args{
 							{
 								Name:        "name",
-								Description: "Config name",
+								Description: "Socks5 tunnel name from the socks5Tunnels config; all of them if omitted",
 								Repeat:      true,
 								Optional:    true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -156,6 +161,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that these verbs manage background processes outliving the shell,
+// that an omitted name makes start/stop act on every configured entry, that
+// `pfw start` blocks on an interactive auth prompt where `socks5 start` does
+// not, or that `port: 0` fails to auto-assign for a port forward.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

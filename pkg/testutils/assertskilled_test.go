@@ -47,7 +47,7 @@ func TestInvalidSkill(t *testing.T) {
 			name:  "an unknown heading is reported",
 			input: "#### Gotchas\n\nProse.\n",
 			expect: []string{
-				`heading "Gotchas" is not one of Hazards, Configuration, Examples, References`,
+				`heading "Gotchas" is not one of Hazards, Behaviour, Configuration, Examples, References`,
 				`has no "Hazards" section; name the verbs that mutate state and which of them need manual approval, or say plainly that every verb is read-only`,
 			},
 		},
@@ -55,7 +55,28 @@ func TestInvalidSkill(t *testing.T) {
 			name:  "an out of order heading is reported",
 			input: "#### References\n\n- https://example.com\n\n#### Hazards\n\nProse.\n",
 			expect: []string{
-				`heading "Hazards" is out of order; expected the order Hazards, Configuration, Examples, References`,
+				`heading "Hazards" is out of order; expected the order Hazards, Behaviour, Configuration, Examples, References`,
+			},
+		},
+		{
+			name:   "a Behaviour section is allowed between Hazards and Configuration",
+			input:  "#### Hazards\n\nRead-only.\n\n#### Behaviour\n\nhostPort means two different things.\n\n#### Configuration\n\nKey `x`.\n",
+			expect: nil,
+		},
+		{
+			// Behaviour carries the warts, so it must not stand in for the
+			// verdict Hazards exists to force.
+			name:  "a Behaviour section does not satisfy the Hazards requirement",
+			input: "#### Behaviour\n\nSurprising but harmless.\n",
+			expect: []string{
+				`has no "Hazards" section; name the verbs that mutate state and which of them need manual approval, or say plainly that every verb is read-only`,
+			},
+		},
+		{
+			name:  "Behaviour before Hazards is out of order",
+			input: "#### Behaviour\n\nProse.\n\n#### Hazards\n\nProse.\n",
+			expect: []string{
+				`heading "Hazards" is out of order; expected the order Hazards, Behaviour, Configuration, Examples, References`,
 			},
 		},
 		{

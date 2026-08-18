@@ -2,10 +2,12 @@ package gost
 
 import (
 	"context"
+	_ "embed"
 	"os/exec"
 
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
 	"github.com/foomo/gokazi/pkg/gokazi"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -14,6 +16,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -79,15 +84,15 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Manage gost processes",
+		Description: "Manage gost tunnels as background processes",
 		Nodes: tree.Nodes{
 			{
 				Name:        "start",
-				Description: "Start a gost process",
+				Description: "Start configured gost processes as background processes; all of them if fewer than two names are given",
 				Args: tree.Args{
 					{
 						Name:        "name",
-						Description: "Config names",
+						Description: "Config name; note a single name still acts on all of them",
 						Repeat:      true,
 						Optional:    true,
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -99,11 +104,11 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "stop",
-				Description: "Stop a gost process",
+				Description: "Stop running gost processes; all of them if fewer than two names are given",
 				Args: tree.Args{
 					{
 						Name:        "name",
-						Description: "Config names",
+						Description: "Config name; note a single name still acts on all of them",
 						Repeat:      true,
 						Optional:    true,
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -141,6 +146,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that these verbs manage background processes, that a single name
+// still acts on every configured process because of the off-by-one arg gate, or
+// that what a name actually binds and proxies lives in the config file it
+// points at.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

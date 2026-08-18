@@ -1,14 +1,5 @@
 #### Hazards
 
-The three leading placeholders are resolved against each other, left to right:
-the fleets are those configured for the chosen cluster, and the units are
-resolved against the cluster and fleet already picked. The squadron names come
-off disk rather than from the cluster - see Configuration below for where each
-of the three actually comes from. `all` is accepted in place of a single squadron
-name to target every one of them. Run
-`squadron <cluster> <fleet> <squadron> list` to see the units within a squadron;
-naming no unit targets all of them.
-
 Read-only, safe to run for orientation: `status`, `diff`, `template`, `config`,
 `list`, `schema`.
 
@@ -24,6 +15,17 @@ No flag overrides this - ask the user to run it in an interactive shell.
 Where a cluster is marked for notification, `up`, `down` and `rollback` post to
 Slack, tagged with the current git ref and git user name. The `--slack` flag
 forces this on for clusters that do not have it set.
+
+#### Behaviour
+
+The three leading placeholders are resolved against each other, left to right:
+the fleets are those configured for the chosen cluster, and the units are
+resolved against the cluster and fleet already picked. The squadron names come
+off disk rather than from the cluster - see Configuration below for where each
+of the three actually comes from. `all` is accepted in place of a single squadron
+name to target every one of them. Run
+`squadron <cluster> <fleet> <squadron> list` to see the units within a squadron;
+naming no unit targets all of them.
 
 `--tag` sets the image tag via the `TAG` environment variable rather than a
 squadron flag; `--tags` is unrelated and filters units by their config tags.

@@ -24,6 +24,8 @@ call blocks until the forward dies - and because it returns right after that one
 process, a `connect --debug a b` only ever starts `a`. An agent should not use
 `--debug`: it will hang waiting on a process that never exits on its own.
 
+#### Behaviour
+
 After starting a forward, `connect` sleeps one second and then verifies the task
 is running, so a forward that fails fast (port already bound, target missing)
 surfaces as an error here; one that dies later does not, and only `gokazi list`

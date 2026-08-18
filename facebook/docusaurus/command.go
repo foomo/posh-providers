@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -17,6 +18,9 @@ import (
 
 //go:embed Dockerfile
 var dockerfile string
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -97,6 +101,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. This command has no
+// args, flags or subcommands, so the renderer would skip it entirely without this
+// prose - and what needs saying is that the bare verb blocks on a foreground
+// docker run needing a TTY, and overwrites the image tag named in the config.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

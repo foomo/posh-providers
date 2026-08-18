@@ -20,7 +20,16 @@ import (
 // It is named for its payload rather than "Notes": a generic bucket invites
 // restating the command tree, which renders directly above it, while a sentence
 // that is not a hazard looks out of place under this heading.
-var SkillHeadings = []string{"Hazards", "Configuration", "Examples", "References"}
+//
+// "Behaviour" is the pressure valve that keeps that true. A provider often
+// surprises without endangering - a field meaning two different things depending
+// on the subtree, a defect that only corrupts displayed metadata - and filing
+// those under "Hazards" dilutes the section an agent consults to decide what
+// needs approval. The test is consequence, not severity: if acting on it wrongly
+// destroys state, blocks unattended, or reaches further than the command name
+// suggests, it is a hazard; if it merely defeats an expectation, it is
+// behaviour.
+var SkillHeadings = []string{"Hazards", "Behaviour", "Configuration", "Examples", "References"}
 
 // RequiredSkillHeading must appear in every fragment.
 //

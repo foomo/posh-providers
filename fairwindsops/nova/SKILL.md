@@ -10,6 +10,14 @@ beyond the cluster and reports stale results - or none - when that egress is
 blocked. `--show-errored-containers` is what surfaces those failures; without
 it, a lookup that failed and a chart that is up to date look the same.
 
+It is not offline in a second sense either: `--helm` and `--containers` select
+what is scanned rather than only how it is displayed, and they compose. With
+neither, nova defaults to Helm charts only, so a run that reports nothing about
+images was never asked about them - a silent gap in coverage rather than a clean
+result. Pass both to cover both in one invocation.
+
+#### Behaviour
+
 The cluster name is not free text. It is resolved from the `*.yaml` files present
 in kubectl's `configPath`, so only clusters whose kubeconfig has already been
 fetched are selectable - an unfetched cluster is not a typo but a missing file,
@@ -19,11 +27,6 @@ and the fix is whichever provider writes that kubeconfig (`gcloud`, `az`,
 `<configPath>/<profile>/<cluster>.yaml`. Both lists are cached for the shell
 session, so a cluster fetched after the prompt started may not appear until the
 cache is invalidated.
-
-`--helm` and `--containers` select what is scanned rather than only how it is
-displayed, and they compose: with neither, nova defaults to Helm charts only, so
-a run that reports nothing about images was never asked about them. Pass both to
-cover both in one invocation.
 
 `find` and its flags are forwarded to the real `nova` binary, as are any
 additional args and flags, so upstream flags not listed in the usage block still

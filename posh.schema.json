@@ -1626,21 +1626,27 @@
           "type": "object",
           "properties": {
             "sourcePath": {
+              "description": "Path to the docusaurus site, added into the image at build time",
               "type": "string"
             },
             "localPort": {
+              "description": "Host port mapped to the container's port 3000",
               "type": "string"
             },
             "nodeTag": {
+              "description": "Node base image tag to build against",
               "type": "string"
             },
             "imageTag": {
+              "description": "Tag of the image being built and run",
               "type": "string"
             },
             "imageName": {
+              "description": "Name of the image being built and run",
               "type": "string"
             },
             "volumes": {
+              "description": "Additional docker volume mounts, environment variables are expanded",
               "type": "array",
               "items": {
                 "type": "string"
