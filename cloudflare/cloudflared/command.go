@@ -2,10 +2,13 @@ package cloudflared
 
 import (
 	"context"
+	_ "embed"
 	"encoding/base64"
 	"os"
 	"os/exec"
 
+	"github.com/foomo/posh/pkg/agent"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -15,6 +18,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -67,12 +73,12 @@ func NewCommand(l log.Logger, cloudflared *Cloudflared, opts ...CommandOption) (
 				Nodes: tree.Nodes{
 					{
 						Name:        "list",
-						Description: "list forward access",
+						Description: "List forward access",
 						Execute:     inst.accessList,
 					},
 					{
 						Name:        "connect",
-						Description: "open access by name ",
+						Description: "Open access by name",
 						Args: tree.Args{
 							{
 								Name:        "name",
@@ -85,8 +91,8 @@ func NewCommand(l log.Logger, cloudflared *Cloudflared, opts ...CommandOption) (
 						Execute: inst.accessConnect,
 					},
 					{
-						Name:        "disconect",
-						Description: "close access by name ",
+						Name:        "disconnect",
+						Description: "Close access by name",
 						Args: tree.Args{
 							{
 								Name:        "name",
@@ -103,7 +109,7 @@ func NewCommand(l log.Logger, cloudflared *Cloudflared, opts ...CommandOption) (
 			},
 			{
 				Name:        "tunnel",
-				Description: "manage tunnels",
+				Description: "Manage tunnels",
 				Nodes: tree.Nodes{
 					{
 						Name:        "login",
@@ -201,6 +207,20 @@ func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog shows
+// the subcommands; what it cannot show is that the access processes are owned
+// by this shell, so the list is empty until something in this session starts
+// one.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
+}
+
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
@@ -249,7 +269,7 @@ func (c *Command) accessList(ctx context.Context, r *readline.Readline) error {
 		data = append(data, []string{p.PID, p.Cmdline})
 	}
 
-	return pterm.DefaultTable.WithHasHeader(true).WithData(data).Render()
+	return agent.Table(data, agent.WithHeader())
 }
 
 func (c *Command) accessConnect(ctx context.Context, r *readline.Readline) error {
@@ -259,7 +279,7 @@ func (c *Command) accessConnect(ctx context.Context, r *readline.Readline) error
 
 func (c *Command) accessDisconnect(ctx context.Context, r *readline.Readline) error {
 	access := c.cloudflared.Config().GetAccesss(r.Args().At(2))
-	return c.cloudflared.Disonnect(ctx, access)
+	return c.cloudflared.Disconnect(ctx, access)
 }
 
 func (c *Command) tunnelCreate(ctx context.Context, r *readline.Readline) error {

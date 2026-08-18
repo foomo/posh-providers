@@ -243,7 +243,7 @@ func (c *Command) clusterDisconnect(ctx context.Context, r *readline.Readline) e
 		c.l.Info("Disconnecting from cluster: " + name)
 
 		clusterConfig := c.beam.Config().GetCluster(name)
-		if err := c.cloudflared.Disonnect(ctx, cloudflared.Access{
+		if err := c.cloudflared.Disconnect(ctx, cloudflared.Access{
 			Type:     "tcp",
 			Hostname: clusterConfig.Hostname,
 			Port:     clusterConfig.Port,
@@ -280,7 +280,7 @@ func (c *Command) databaseDisconnect(ctx context.Context, r *readline.Readline) 
 		c.l.Info("Disconnecting from database: " + name)
 
 		databaseConfig := c.beam.Config().GetDatabase(name)
-		if err := c.cloudflared.Disonnect(ctx, cloudflared.Access{
+		if err := c.cloudflared.Disconnect(ctx, cloudflared.Access{
 			Type:     "tcp",
 			Hostname: databaseConfig.Hostname,
 			Port:     databaseConfig.Port,

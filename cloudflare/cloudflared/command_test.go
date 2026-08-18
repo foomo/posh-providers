@@ -6,14 +6,13 @@ import (
 	testingx "github.com/foomo/go/testing"
 	tagx "github.com/foomo/go/testing/tag"
 	"github.com/foomo/posh-providers/cloudflare/cloudflared"
-	"github.com/foomo/posh-providers/pkg/agentdoc"
+	"github.com/foomo/posh-providers/pkg/testutils"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
 
-func TestCommandDocs(t *testing.T) {
-	t.Parallel()
+func TestCommandDescribe(t *testing.T) {
 	testingx.Tags(t, tagx.Short)
 
 	// NewCommand does os.MkdirAll on Config().Path, so the config key must be
@@ -30,5 +29,6 @@ func TestCommandDocs(t *testing.T) {
 	cmd, err := cloudflared.NewCommand(l, cf)
 	require.NoError(t, err)
 
-	agentdoc.AssertDescribed(t, "cloudflared", cmd)
+	testutils.AssertDescribed(t, "cloudflared", cmd)
+	testutils.AssertSkilled(t, "cloudflared", cmd)
 }
