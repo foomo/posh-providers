@@ -25,6 +25,10 @@ func TestConfig(t *testing.T) {
 	reflector := new(jsonschema.Reflector)
 	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/webdriverio/webdriverio", "./"))
+	// Config embeds onepassword.Secret, documented in another module.
+	// AddGoComments drops the base package's last segment before appending
+	// the walked dir, so the base needs one extra segment to resolve.
+	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/onepassword/x", "../../onepassword"))
 	schema := reflector.Reflect(&webdriverio.Config{})
 	schema.ID = "https://github.com/foomo/posh-providers/webdriverio/webdriverio"
 	actual, err := json.MarshalIndent(schema, "", "  ")
