@@ -6,13 +6,16 @@
     "Account": {
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Account identity passed to gcloud as --account"
         },
         "email": {
-          "type": "string"
+          "type": "string",
+          "description": "Email of the account, for reference only"
         },
         "key": {
-          "$ref": "#/$defs/Secret"
+          "$ref": "#/$defs/Secret",
+          "description": "1Password document holding the service account key; without it, login falls back to an interactive browser prompt"
         }
       },
       "additionalProperties": false,
@@ -21,16 +24,20 @@
     "Cluster": {
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Name of the cluster in GKE, which may differ from the key used to select it"
         },
         "project": {
-          "type": "string"
+          "type": "string",
+          "description": "Google cloud project the cluster belongs to"
         },
         "region": {
-          "type": "string"
+          "type": "string",
+          "description": "Google cloud region the cluster runs in"
         },
         "account": {
-          "type": "string"
+          "type": "string",
+          "description": "Account key to authenticate as; passed to gcloud as --account when set"
         }
       },
       "additionalProperties": false,
@@ -39,19 +46,22 @@
     "Config": {
       "properties": {
         "configPath": {
-          "type": "string"
+          "type": "string",
+          "description": "Path used as CLOUDSDK_CONFIG, keeping gcloud state per project; created on startup"
         },
         "accounts": {
           "additionalProperties": {
             "$ref": "#/$defs/Account"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Account configurations, keyed by the name given to `gcloud login`"
         },
         "clusters": {
           "additionalProperties": {
             "$ref": "#/$defs/Cluster"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Cluster configurations, keyed by the name given to `gcloud kubeconfig`"
         }
       },
       "additionalProperties": false,
@@ -60,20 +70,25 @@
     "Secret": {
       "properties": {
         "account": {
-          "type": "string"
+          "type": "string",
+          "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID."
         },
         "vault": {
-          "type": "string"
+          "type": "string",
+          "description": "Vault is the name or UUID of the vault holding the item."
         },
         "item": {
-          "type": "string"
+          "type": "string",
+          "description": "Item is the name or UUID of the item within the vault."
         },
         "field": {
-          "type": "string"
+          "type": "string",
+          "description": "Field is the name of the field to read from the item, e.g. `password`."
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://\u003cvault\u003e/\u003citem\u003e/\u003cfield\u003e`, resolved against Account."
     }
   }
 }

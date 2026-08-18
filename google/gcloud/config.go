@@ -6,9 +6,12 @@ import (
 )
 
 type Config struct {
-	ConfigPath string             `json:"configPath" yaml:"configPath"`
-	Accounts   map[string]Account `json:"accounts" yaml:"accounts"`
-	Clusters   map[string]Cluster `json:"clusters" yaml:"clusters"`
+	// Path used as CLOUDSDK_CONFIG, keeping gcloud state per project; created on startup
+	ConfigPath string `json:"configPath" yaml:"configPath"`
+	// Account configurations, keyed by the name given to `gcloud login`
+	Accounts map[string]Account `json:"accounts" yaml:"accounts"`
+	// Cluster configurations, keyed by the name given to `gcloud kubeconfig`
+	Clusters map[string]Cluster `json:"clusters" yaml:"clusters"`
 }
 
 func (c Config) Cluster(name string) (Cluster, error) {

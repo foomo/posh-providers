@@ -2,11 +2,13 @@ package gcloud
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -17,6 +19,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -85,8 +90,9 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 				Description: "Login to gcloud",
 				Args: tree.Args{
 					{
-						Name:     "account",
-						Optional: true,
+						Name:        "account",
+						Description: "Name of the account to log in as",
+						Optional:    true,
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.gcloud.cfg.AccountNames())
 						},
@@ -104,7 +110,8 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 				Description: "Retrieve kube config for the given cluster",
 				Args: tree.Args{
 					{
-						Name: "cluster",
+						Name:        "cluster",
+						Description: "Name of the cluster to retrieve credentials for",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.gcloud.cfg.ClusterNames())
 						},
@@ -132,6 +139,20 @@ func (c *Command) Name() string {
 
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog lists
+// three subcommands and cannot show that the root is a passthrough to the real
+// gcloud, nor that `login` reaches an interactive browser prompt unless a
+// service account key backs the account.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
