@@ -6,10 +6,12 @@
     "Config": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Path of the generated rclone configuration file, relative to the project\nroot. Exported as RCLONE_CONFIG for every command in the shell session, so\nrclone reads this file instead of the user's own ~/.config/rclone."
         },
         "config": {
-          "type": "string"
+          "type": "string",
+          "description": "Config is the rclone configuration file template in rclone's INI format,\nwritten verbatim to Path by `rclone init`. Values may contain 1Password\nsecret references (op://vault/item/field), which are resolved by piping\nthe template through `op inject`."
         }
       },
       "additionalProperties": false,

@@ -2,8 +2,10 @@ package mkcert
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -13,6 +15,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -87,16 +92,16 @@ func NewCommand(l log.Logger, opts ...Option) (*Command, error) {
 			},
 			{
 				Name:        "generate",
-				Description: "Generate configured certificates",
+				Description: "Generate every configured certificate, overwriting existing files",
 				Execute:     inst.generate,
 			},
 			{
 				Name:        "create",
-				Description: "Creat a new certificate for the given names",
+				Description: "Create a new certificate for the given names into the certificate path",
 				Args: []*tree.Arg{
 					{
 						Name:        "names",
-						Description: "List of names including wildcard",
+						Description: "Hostnames, wildcards, IPs, URLs or emails to include in the certificate",
 						Repeat:      true,
 					},
 				},
@@ -139,6 +144,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog cannot
+// show that `install` touches the system trust store and, because it forwards
+// its own node name, also mints a stray install.pem into the project root; that
+// `generate` and `create` overwrite unencrypted keys without prompting; or that
+// the two verbs derive output filenames differently for the same certificate.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

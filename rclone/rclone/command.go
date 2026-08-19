@@ -2,6 +2,7 @@ package rclone
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -18,6 +20,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -76,7 +81,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 
 	remoteArg := &tree.Arg{
 		Name:        "remote",
-		Description: "Configure remote",
+		Description: "Configured remote and path, e.g. cloudflare:bucket/dir; a local path also works",
 		Repeat:      true,
 		Optional:    true,
 		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -286,6 +291,22 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// lists 26 verbs identically shaped, so it cannot show which of them delete
+// remote data, that `sync` decides which side to erase from the argument order,
+// that unlisted rclone verbs still work through the passthrough root, that
+// `init` overwrites the config file and needs a 1Password session, or that an
+// empty remote list completes as one blank suggestion.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
