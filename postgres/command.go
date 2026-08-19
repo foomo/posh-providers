@@ -2,11 +2,13 @@ package postgres
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/foomo/posh-providers/arbitrary/zip"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -14,6 +16,9 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -58,7 +63,7 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "postgres",
-		Description: "Postgres utilities",
+		Description: "Run psql, or dump and restore databases",
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 			connectionFlags(fs)
 			return nil
@@ -94,21 +99,22 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 					},
 					{
 						Name:        "dirname",
-						Description: "Path to the dump file",
+						Description: "Directory the timestamped dump file is written into",
 					},
 				},
 				Execute: inst.dump,
 			},
 			{
 				Name:        "run-cmd",
-				Description: "Run only single command",
+				Description: "Run a single SQL command with psql",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					connectionFlags(fs)
 					return nil
 				},
 				Args: tree.Args{
 					{
-						Name: "command",
+						Name:        "command",
+						Description: "SQL passed to psql via --command",
 					},
 				},
 				Execute: inst.runCommand,
@@ -122,7 +128,8 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 				},
 				Args: tree.Args{
 					{
-						Name: "filename",
+						Name:        "filename",
+						Description: "SQL file passed to psql via --file",
 					},
 				},
 				Execute: inst.runFile,
@@ -184,6 +191,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that the connection target falls back to the environment, that
+// `restore --clean` drops objects first, that the dump filename is generated
+// rather than chosen, or that omitting CommandWithZip makes dump/restore panic.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
