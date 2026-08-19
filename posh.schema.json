@@ -1312,12 +1312,15 @@
           "type": "object",
           "properties": {
             "charts": {
+              "description": "Helm charts installable with the install/uninstall verbs.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json/$defs/ConfigCharts"
             },
             "registry": {
+              "description": "Container registry shared by every cluster below. Created on the first\n`up` and deleted by any `down`, including while other clusters use it.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json/$defs/ConfigRegistry"
             },
             "clusters": {
+              "description": "Clusters that can be created, keyed by the name used as the argument.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json/$defs/ConfigCluster"
@@ -1330,9 +1333,11 @@
           "type": "object",
           "properties": {
             "path": {
+              "description": "Directory holding one subdirectory per chart, relative to the project\nroot. Its subdirectory names are what the chart argument completes to.",
               "type": "string"
             },
             "prefix": {
+              "description": "Prefix prepended to the chart name to form the target namespace, so\nchart \"base\" with prefix \"shared-\" installs into \"shared-base\".",
               "type": "string"
             }
           },
@@ -1371,9 +1376,11 @@
           "type": "object",
           "properties": {
             "name": {
+              "description": "Registry name passed to k3d, which prefixes it with \"k3d-\" for the\nactual container and hostname.",
               "type": "string"
             },
             "port": {
+              "description": "Host port the registry binds to.",
               "type": "string"
             }
           },

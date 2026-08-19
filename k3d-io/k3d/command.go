@@ -2,10 +2,12 @@ package k3d
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -15,6 +17,9 @@ import (
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -85,7 +90,7 @@ func NewCommand(l log.Logger, k3d *K3d, cache cache.Cache, kubectl *kubectl.Kube
 		Nodes: tree.Nodes{
 			{
 				Name:        "up",
-				Description: "Spin up configured cluster",
+				Description: "Create the shared registry and the cluster; no-op if the cluster exists",
 				Args:        tree.Args{nameArg},
 				Execute:     inst.up,
 			},
@@ -109,19 +114,19 @@ func NewCommand(l log.Logger, k3d *K3d, cache cache.Cache, kubectl *kubectl.Kube
 			},
 			{
 				Name:        "install",
-				Description: "Install predified charts",
+				Description: "Install or upgrade a predefined chart into the cluster",
 				Args:        tree.Args{nameArg, chartArg},
 				Execute:     inst.install,
 			},
 			{
 				Name:        "uninstall",
-				Description: "Uninstall predefined charts",
+				Description: "Uninstall a predefined chart from the cluster",
 				Args:        tree.Args{nameArg, chartArg},
 				Execute:     inst.uninstall,
 			},
 			{
 				Name:        "down",
-				Description: "Shut down configured cluster",
+				Description: "Delete the cluster, its kubeconfig and the shared registry",
 				Args:        tree.Args{nameArg},
 				Execute:     inst.down,
 			},
@@ -153,6 +158,23 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog lists
+// seven verbs against a cluster name and cannot show that a single registry is
+// shared by every cluster and torn down by any `down`; that `up` silently
+// no-ops on an existing cluster rather than reconciling its config; that the
+// k3d cluster is named after the config's `alias` while its kubeconfig is
+// named after the argument; or that `install` runs `helm upgrade --force`,
+// which replaces rather than patches.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
