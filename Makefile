@@ -63,10 +63,10 @@ generate:
 schema:
 	@echo "〉generating schema"
 	@yq eval-all '. as $$item ireduce ({}; . *+ $$item)' base.schema.json \
-		$(shell find . -name config.base.json -print | tr '\n' ' ') \
+		$(shell find . -name config.base.json -print | sort | tr '\n' ' ') \
 		> merged.schema.json
 	@-jsonschema bundle merged.schema.json \
-			$(shell find . -name config.schema.json -print | sed 's/^/--resolve /' | tr '\n' ' ') \
+			$(shell find . -name config.schema.json -print | sort | sed 's/^/--resolve /' | tr '\n' ' ') \
 			--without-id \
 			--http \
 			> posh.schema.json
