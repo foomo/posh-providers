@@ -2,10 +2,12 @@ package mjml
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -17,6 +19,9 @@ import (
 	"github.com/samber/lo"
 	"golang.org/x/sync/errgroup"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -57,15 +62,16 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run mjml",
+		Description: "Compile mjml templates to html",
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-			fs.Internal().Int("parallel", 0, "number of parallel processes")
+			fs.Internal().Int("parallel", 0, "number of concurrent compiles; 0 means one at a time")
 			return nil
 		},
 		Args: tree.Args{
 			{
-				Name:     "path",
-				Optional: true,
+				Name:        "path",
+				Description: "Directory to report as the target; note it does not narrow which files are compiled",
+				Optional:    true,
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.paths(ctx))
 				},
@@ -114,6 +120,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// shows a path argument that does not actually narrow the run, and cannot show
+// that only sources under a /src/ segment are compiled, that outputs are
+// derived by whole-string substitution, or that a failure cancels the
+// concurrent group mid-way.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
