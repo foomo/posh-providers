@@ -2,8 +2,10 @@ package harbor
 
 import (
 	"context"
+	_ "embed"
 	"os"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -15,6 +17,9 @@ import (
 	"github.com/pterm/pterm"
 	"golang.org/x/oauth2"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -55,19 +60,17 @@ func NewCommand(l log.Logger, harbor *Harbor, opts ...CommandOption) *Command {
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run harbor",
+		Description: "Sign in to the configured Harbor registry",
 		Execute:     inst.auth,
 		Nodes: tree.Nodes{
 			{
 				Name:        "auth",
-				Args:        nil,
-				Description: "Sign in to Harbor",
+				Description: "Open the Harbor login page in a browser",
 				Execute:     inst.auth,
 			},
 			{
 				Name:        "docker",
-				Args:        nil,
-				Description: "Configure docker to be able to access registry.",
+				Description: "Log the local docker daemon in to the Harbor registry",
 				Execute:     inst.docker,
 			},
 		},
@@ -98,6 +101,22 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. Two verbs with no
+// arguments render as almost nothing, so the catalog cannot show that both need
+// a human: that `auth` only launches a browser and reports success regardless,
+// that `docker` logs the whole machine in behind an interactive secret prompt
+// and derives its username from GITHUB_TOKEN, or that the prompt's auth
+// indicator is inferred from a deliberately failing docker pull.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

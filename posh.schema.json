@@ -1302,12 +1302,15 @@
           "type": "object",
           "properties": {
             "url": {
+              "description": "Harbor base URL including scheme, e.g. `https://harbor.example.org`. Passed\nto `docker login` as-is; the registry host is derived from it by stripping a\n`https://` prefix, so an `http://` URL or a trailing slash is not handled.",
               "type": "string"
             },
             "authUrl": {
+              "description": "Login page opened in a browser by `auth`, typically the OIDC entry point\n(`<url>/c/oidc/login`). Opened by `docker` too, so the CLI secret can be\ncopied from the profile page.",
               "type": "string"
             },
             "project": {
+              "description": "Harbor project used to build the throwaway image reference the auth check\npulls. Not used by `auth` or `docker`.",
               "type": "string"
             }
           },
