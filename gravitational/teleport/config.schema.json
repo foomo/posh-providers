@@ -6,19 +6,23 @@
     "Config": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Directory holding the teleport session state, exported as TELEPORT_HOME\nwhen the provider is constructed. Relative to the project root."
         },
         "labels": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Labels every cluster, app and database must carry to be listed. Combined\ninto a single tsh --query expression with \u0026\u0026; omit to list everything."
         },
         "hostname": {
-          "type": "string"
+          "type": "string",
+          "description": "Teleport proxy to authenticate against, e.g. \"teleport.example.com:443\"."
         },
         "kubernetes": {
-          "$ref": "#/$defs/Kubernetes"
+          "$ref": "#/$defs/Kubernetes",
+          "description": "Kubernetes-specific settings."
         },
         "apps": {
           "additionalProperties": {
@@ -27,10 +31,12 @@
             },
             "type": "array"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Extra arguments passed to `tsh apps login`, keyed by app name. Prepended\nbefore the app name itself; apps not listed here still work."
         },
         "database": {
-          "$ref": "#/$defs/Database"
+          "$ref": "#/$defs/Database",
+          "description": "Database-specific settings."
         }
       },
       "additionalProperties": false,
@@ -39,7 +45,8 @@
     "Database": {
       "properties": {
         "user": {
-          "type": "string"
+          "type": "string",
+          "description": "Database user to log in as. Overridden by the TELEPORT_DATABASE_USER\nenvironment variable when it is set."
         }
       },
       "additionalProperties": false,
@@ -51,7 +58,8 @@
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Display names for kube clusters, keyed by the real teleport cluster name.\nCompletion offers the alias and it is mapped back before login, so the\nvalues must be unique and must not collide with a real cluster name."
         }
       },
       "additionalProperties": false,

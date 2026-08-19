@@ -2,10 +2,12 @@ package teleport
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -13,6 +15,9 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -57,7 +62,7 @@ func NewCommand(l log.Logger, cache cache.Cache, teleport *Teleport, kubectl *ku
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Manage access points through teleport",
+		Description: "Manage access points through teleport; logs in when called without a subcommand",
 		Execute:     inst.auth,
 		Nodes: tree.Nodes{
 			{
@@ -144,6 +149,24 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog lists
+// five verbs and cannot show that all of them need an interactive browser SSO
+// an agent cannot complete; that the bare root logs in rather than printing
+// help; that `kubeconfig` deletes the existing config before the login that
+// would replace it; that nothing completes until authenticated, and then only
+// what the configured labels match; or that cluster aliases are reverse-mapped
+// by scanning a map, so a duplicated or shadowing alias picks a cluster at
+// random.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
