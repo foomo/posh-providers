@@ -10,7 +10,8 @@
         },
         "type": "array"
       },
-      "type": "object"
+      "type": "object",
+      "description": "Config maps a config set name to the sesamy YAML files that are merged, in order, to produce the config each command runs with."
     }
   }
 }

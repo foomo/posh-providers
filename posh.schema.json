@@ -2062,6 +2062,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1sesamy~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config maps a config set name to the sesamy YAML files that are merged, in order, to produce the config each command runs with.",
           "type": "object",
           "additionalProperties": {
             "type": "array",

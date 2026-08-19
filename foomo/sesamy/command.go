@@ -3,9 +3,11 @@ package sesamy
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"sort"
 
 	"github.com/foomo/posh-providers/onepassword"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -20,6 +22,9 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -76,9 +81,10 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 	// }
 
 	configArg := &tree.Arg{
-		Name:     "config",
-		Optional: true,
-		Suggest:  inst.completePaths,
+		Name:        "config",
+		Description: "Config set name from the sesamy config; every set if omitted",
+		Optional:    true,
+		Suggest:     inst.completePaths,
 	}
 	flags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 		fs.Default().Bool("verbose", false, "show verbose output")
@@ -87,11 +93,11 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run sesamy",
+		Description: "Run sesamy against a named config set",
 		Nodes: tree.Nodes{
 			{
 				Name:        "config",
-				Description: "Dump config",
+				Description: "Print the merged config with secrets resolved",
 				Args:        tree.Args{configArg},
 				Execute:     inst.conf,
 			},
@@ -115,7 +121,7 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 				Args: tree.Args{
 					{
 						Name:        "name",
-						Description: "Name of the target",
+						Description: "Which console to open",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return []goprompt.Suggest{
 								{Text: "ga"},
@@ -290,6 +296,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that an omitted config argument runs the verb against every
+// configured set, that `provision` writes to live GTM containers, or that every
+// verb renders 1Password secrets into the config it pipes to sesamy.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
