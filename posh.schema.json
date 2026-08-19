@@ -1236,6 +1236,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1gcx~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config maps an environment name to the Grafana server, org and credentials gcx is run against.",
           "type": "object",
           "additionalProperties": {
             "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1gcx~1config.schema.json/$defs/ConfigEnv"

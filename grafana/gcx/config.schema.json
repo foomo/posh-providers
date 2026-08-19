@@ -7,7 +7,8 @@
       "additionalProperties": {
         "$ref": "#/$defs/ConfigEnv"
       },
-      "type": "object"
+      "type": "object",
+      "description": "Config maps an environment name to the Grafana server, org and credentials gcx is run against."
     },
     "ConfigEnv": {
       "properties": {
