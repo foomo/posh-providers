@@ -1550,9 +1550,11 @@
           "type": "object",
           "properties": {
             "tempDir": {
+              "description": "Directory passed to sqlc as SQLCTMPDIR, resolved relative to the project root",
               "type": "string"
             },
             "cacheDir": {
+              "description": "Directory passed to sqlc as SQLCCACHE, resolved relative to the project root",
               "type": "string"
             }
           },

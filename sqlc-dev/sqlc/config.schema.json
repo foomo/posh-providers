@@ -6,10 +6,12 @@
     "Config": {
       "properties": {
         "tempDir": {
-          "type": "string"
+          "type": "string",
+          "description": "Directory passed to sqlc as SQLCTMPDIR, resolved relative to the project root"
         },
         "cacheDir": {
-          "type": "string"
+          "type": "string",
+          "description": "Directory passed to sqlc as SQLCCACHE, resolved relative to the project root"
         }
       },
       "additionalProperties": false,

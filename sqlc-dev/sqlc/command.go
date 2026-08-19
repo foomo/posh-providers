@@ -2,9 +2,11 @@ package sqlc
 
 import (
 	"context"
+	_ "embed"
 	"path"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -16,6 +18,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -68,15 +73,16 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 
 	pathArgs := tree.Args{
 		{
-			Name:     "path",
-			Optional: true,
-			Suggest:  inst.completePaths,
+			Name:        "path",
+			Description: "Path to a sqlc.yaml; every one found in the project if omitted",
+			Optional:    true,
+			Suggest:     inst.completePaths,
 		},
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run sqlc",
+		Description: "Run sqlc against the project's sqlc.yaml files",
 		Nodes: []*tree.Node{
 			{
 				Name:        "compile",
@@ -93,13 +99,13 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			{
 				Name:        "diff",
 				Args:        pathArgs,
-				Description: "Statically check SQL for syntax and type errors",
+				Description: "Compare generated code against what is on disk",
 				Execute:     inst.run,
 			},
 			{
 				Name:        "vet",
 				Args:        pathArgs,
-				Description: "Statically check SQL for syntax and type errors",
+				Description: "Run configured lint rules against queries",
 				Execute:     inst.run,
 			},
 		},
@@ -131,6 +137,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that `generate` overwrites sources for every sqlc.yaml when no
+// path is given, that the root forwards unlisted subcommands, or that the
+// config key is never defaulted so cacheDir/tempDir are silently ignored.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
