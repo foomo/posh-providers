@@ -2,6 +2,7 @@ package lint
 
 import (
 	"context"
+	_ "embed"
 	"slices"
 
 	"github.com/foomo/go/options"
@@ -14,6 +15,9 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type Command struct {
 	l           log.Logger
@@ -47,18 +51,19 @@ func NewCommand(l log.Logger, commands command.Commands, opts ...options.Option[
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Lint your code",
+		Description: "Run every registered linter, or the named ones",
 		Args: tree.Args{
 			{
-				Name:     "name",
-				Optional: true,
+				Name:        "name",
+				Description: "Linter name; every registered linter if omitted",
+				Optional:    true,
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.linterNames())
 				},
 			},
 		},
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-			fs.Default().Bool("fix", false, "run quick fix")
+			fs.Default().Bool("fix", false, "let each linter rewrite files to fix findings, where it supports it")
 			return nil
 		},
 		Execute: inst.execute,
@@ -89,6 +94,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The tree shows one
+// argument and one flag but not which linters are registered, that `--fix` is
+// forwarded to each of them and may rewrite files, or that they all run
+// concurrently under a shared context where the first failure cancels the rest.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
