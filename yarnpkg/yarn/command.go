@@ -2,12 +2,14 @@ package yarn
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/cloudrecipes/packagejson"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -17,6 +19,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"golang.org/x/sync/errgroup"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -70,9 +75,17 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 				Name:        "run",
 				Description: "Run script",
 				Args: tree.Args{
-					inst.pathArg(),
 					&tree.Arg{
-						Name: "script",
+						Name:        "path",
+						Description: "Directory containing the package.json; required here, the script is read from the next argument",
+						Optional:    true,
+						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
+							return suggests.List(inst.paths(ctx))
+						},
+					},
+					&tree.Arg{
+						Name:        "script",
+						Description: "package.json script to run; completed from the chosen path",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.scripts(ctx, r.Args().At(1)))
 						},
@@ -82,14 +95,15 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 			},
 			&tree.Node{
 				Name:        "run-all",
-				Description: "Run script in all",
+				Description: "Run script in every discovered package, excluding the root",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					fs.Default().Int("parallel", 0, "number of parallel processes")
 					return nil
 				},
 				Args: tree.Args{
 					&tree.Arg{
-						Name: "script",
+						Name:        "script",
+						Description: "package.json script to run in every discovered package; not completed",
 					},
 				},
 				Execute: inst.runAll,
@@ -122,6 +136,23 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog lists
+// three subcommands and cannot show that the root forwards everything else to
+// the yarn binary, so `add`, `upgrade` and `publish` are reachable and unlisted.
+// Nor can it show that `run`'s `[path]` is marked optional but read by index, so
+// omitting it takes the script as the directory; that `run-all` skips the root
+// package; that discovery ignores any directory whose name merely contains
+// "dist"; or that the subcommands drop flags typed before `--`.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -221,8 +252,9 @@ func (c *Command) scripts(ctx context.Context, filename string) []string {
 
 func (c *Command) pathArg() *tree.Arg {
 	return &tree.Arg{
-		Name:     "path",
-		Optional: true,
+		Name:        "path",
+		Description: "Directory containing the package.json; the project root if omitted",
+		Optional:    true,
 		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 			return suggests.List(c.paths(ctx))
 		},
