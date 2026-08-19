@@ -2,10 +2,12 @@ package gotsrpc
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -15,6 +17,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type Command struct {
 	l           log.Logger
@@ -33,16 +38,17 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 	}
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "gotsrpc",
-		Description: "Run gotsrpc",
+		Description: "Generate gotsrpc code from gotsrpc.yml files",
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 			fs.Default().Bool("debug", false, "show debug output")
 			return nil
 		},
 		Args: tree.Args{
 			{
-				Name:     "path",
-				Optional: true,
-				Suggest:  inst.completePaths,
+				Name:        "path",
+				Description: "Path to a gotsrpc.yml file; every one found in the project if omitted",
+				Optional:    true,
+				Suggest:     inst.completePaths,
 			},
 		},
 		Execute: inst.execute,
@@ -88,6 +94,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that an omitted path regenerates from every gotsrpc.yml in the
+// project, that doing so overwrites generated sources named only in those
+// files, or that forwarded flags have every "--" rewritten to "-".
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
