@@ -2,10 +2,12 @@ package k9s
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/foomo/posh-providers/foomo/squadron"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -13,6 +15,9 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -72,20 +77,23 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 
 	args := tree.Args{
 		{
-			Name:    "cluster",
-			Suggest: inst.completeClusters,
+			Name:        "cluster",
+			Description: "Cluster to open the dashboard against; sets KUBECONFIG, not validated",
+			Suggest:     inst.completeClusters,
 		},
 	}
 	if inst.squadron != nil {
 		args = append(args, &tree.Arg{
-			Name:     "fleet",
-			Optional: true,
-			Suggest:  inst.completeFleets,
+			Name:        "fleet",
+			Description: "Fleet within the cluster; omit to cover every namespace",
+			Optional:    true,
+			Suggest:     inst.completeFleets,
 		},
 			&tree.Arg{
-				Name:     "squadron",
-				Optional: true,
-				Suggest:  inst.completeSquadrons,
+				Name:        "squadron",
+				Description: "Squadron within the fleet; combined with the fleet into the namespace",
+				Optional:    true,
+				Suggest:     inst.completeSquadrons,
 			})
 	}
 
@@ -132,6 +140,23 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog shows a
+// single node with up to three arguments and cannot show that it opens a
+// blocking, read-write terminal UI; that the cluster is never validated, so a
+// typo silently falls through to the ambient kube context; that `[fleet]` and
+// `[squadron]` exist only when the project wired CommandWithSquadron; or how
+// the two combine into a namespace - including the case where `all` yields a
+// literal `<fleet>-all` rather than every namespace.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
