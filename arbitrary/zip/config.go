@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	// Named 1Password secrets holding archive passwords, keyed by the name accepted by --cred
 	Credentials map[string]onepassword.Secret `json:"credentials" yaml:"credentials"`
 }
 

@@ -2,7 +2,9 @@ package zip
 
 import (
 	"context"
+	_ "embed"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -10,6 +12,9 @@ import (
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -32,12 +37,13 @@ func NewCommand(l log.Logger, zip *Zip, opts ...CommandOption) *Command {
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "zip",
-		Description: "Zip command",
+		Description: "Extract zip archives, optionally with a 1Password-held password",
 		Nodes: tree.Nodes{
 			{
-				Name: "extract",
+				Name:        "extract",
+				Description: "Extract a zip archive into the directory containing it",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-					fs.Internal().String("cred", "", "configured zip credential name")
+					fs.Internal().String("cred", "", "Credential name from the zip config, whose 1Password password is used")
 
 					if err := fs.Internal().SetValues("cred", inst.zip.Config().CredentialNames()...); err != nil {
 						return err
@@ -48,7 +54,7 @@ func NewCommand(l log.Logger, zip *Zip, opts ...CommandOption) *Command {
 				Args: tree.Args{
 					{
 						Name:        "filename",
-						Description: "Path to zip file",
+						Description: "Path to the zip file; it is extracted into its own directory",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							ret, _ := files.Find(ctx, ".", "*.zip",
 								files.FindWithIgnore(`^\.`, "vendor", "node_modules"),
@@ -88,6 +94,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that extraction happens in the archive's own directory and can
+// overwrite files there, that `--cred` resolves a 1Password secret and hands it
+// to unzip on the command line, or that the provider's Create methods are not
+// reachable from the shell at all.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

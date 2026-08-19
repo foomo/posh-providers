@@ -9,7 +9,8 @@
           "additionalProperties": {
             "$ref": "#/$defs/Secret"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Named 1Password secrets holding archive passwords, keyed by the name accepted by --cred"
         }
       },
       "additionalProperties": false,

@@ -1004,6 +1004,7 @@
           "type": "object",
           "properties": {
             "credentials": {
+              "description": "Named 1Password secrets holding archive passwords, keyed by the name accepted by --cred",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1zip~1config.schema.json/$defs/Secret"
