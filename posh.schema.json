@@ -1640,9 +1640,11 @@
           "type": "object",
           "properties": {
             "path": {
+              "description": "Root of the terragrunt tree. Environments, sites and stacks are all\ndiscovered beneath it as `<path>/envs/<env>/<site>/<stack>/terragrunt.hcl`,\nso this single value determines the whole command surface; nothing else is\nconfigured.",
               "type": "string"
             },
             "cachePath": {
+              "description": "Directory terragrunt downloads remote modules into, exported as\n`TERRAGRUNT_DOWNLOAD` at shell startup. Resolved against the project root, so\nleaving it unset points the download cache at the checkout itself.",
               "type": "string"
             }
           },

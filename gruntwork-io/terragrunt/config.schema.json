@@ -6,10 +6,12 @@
     "Config": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Root of the terragrunt tree. Environments, sites and stacks are all\ndiscovered beneath it as `\u003cpath\u003e/envs/\u003cenv\u003e/\u003csite\u003e/\u003cstack\u003e/terragrunt.hcl`,\nso this single value determines the whole command surface; nothing else is\nconfigured."
         },
         "cachePath": {
-          "type": "string"
+          "type": "string",
+          "description": "Directory terragrunt downloads remote modules into, exported as\n`TERRAGRUNT_DOWNLOAD` at shell startup. Resolved against the project root, so\nleaving it unset points the download cache at the checkout itself."
         }
       },
       "additionalProperties": false,

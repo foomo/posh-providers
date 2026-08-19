@@ -2,6 +2,7 @@ package terragrunt
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"os"
 	"os/exec"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -21,6 +23,9 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -82,7 +87,7 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache, op
 	stackArgs := tree.Args{
 		{
 			Name:        "stacks",
-			Description: "Stacks to run",
+			Description: "Stacks to run in, relative to the site directory; required, one terragrunt run each",
 			Repeat:      true,
 			Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 				return inst.getStacks(ctx, r)
@@ -92,21 +97,21 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache, op
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run terragrunt commands",
+		Description: "Run terragrunt against a configured environment and site",
 		Nodes: tree.Nodes{
 			{
 				Name:        "env",
 				Values:      inst.getEnvs,
-				Description: "Environment to provision",
+				Description: "Environment to act on, discovered under <path>/envs",
 				Nodes: tree.Nodes{
 					{
 						Name:        "site",
 						Values:      inst.getSites,
-						Description: "Site to provision",
+						Description: "Site within the environment, discovered under <path>/envs/<env>",
 						Nodes: tree.Nodes{
 							{
 								Name:        "secrets",
-								Description: "Render secret templates",
+								Description: "Render secrets.tpl.yaml templates to plaintext via 1Password",
 								Execute:     inst.secrets,
 							},
 							// terraform: main commands
@@ -151,7 +156,7 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, cache cache.Cache, op
 								Description: "Show output values from your root module",
 								Args:        stackArgs,
 								Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-									fs.Default().String("raw", "", "Print the raw string directly")
+									fs.Default().String("raw", "", "Print the named output as a raw string")
 									return nil
 								},
 								Execute: inst.execute,
@@ -241,6 +246,21 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog renders
+// <env> and <site> as plain placeholders and cannot show that both are
+// discovered from the filesystem, that each stack is a separate sequential
+// terragrunt run that aborts on the first failure, that omitting the verb
+// panics, or that `secrets` writes plaintext into the checkout.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

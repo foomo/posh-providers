@@ -11,7 +11,14 @@ import (
 )
 
 type Config struct {
-	Path      string `json:"path" yaml:"path"`
+	// Root of the terragrunt tree. Environments, sites and stacks are all
+	// discovered beneath it as `<path>/envs/<env>/<site>/<stack>/terragrunt.hcl`,
+	// so this single value determines the whole command surface; nothing else is
+	// configured.
+	Path string `json:"path" yaml:"path"`
+	// Directory terragrunt downloads remote modules into, exported as
+	// `TERRAGRUNT_DOWNLOAD` at shell startup. Resolved against the project root, so
+	// leaving it unset points the download cache at the checkout itself.
 	CachePath string `json:"cachePath" yaml:"cachePath"`
 }
 
