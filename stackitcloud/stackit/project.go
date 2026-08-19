@@ -8,7 +8,10 @@ import (
 )
 
 type Project struct {
-	ID       string             `json:"id" yaml:"id"`
+	// STACKIT project UUID, passed to the CLI as `--project-id`.
+	ID string `json:"id" yaml:"id"`
+	// SKE clusters in this project, keyed by the name accepted as the `cluster`
+	// argument. The key is a local alias; `name` holds the real cluster name.
 	Clusters map[string]Cluster `json:"clusters" yaml:"clusters"`
 }
 
