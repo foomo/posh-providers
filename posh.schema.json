@@ -1543,9 +1543,11 @@
           "type": "object",
           "properties": {
             "path": {
+              "description": "Directory holding the `*.k6.js` scenario scripts and their `*.secret.tpl`\ntemplates. Created at shell startup if missing, and the root the `scenario`\nargument is resolved against.",
               "type": "string"
             },
             "envs": {
+              "description": "Environments selectable as the first argument, keyed by the name offered in\ncompletion. Each entry's keys are upper-cased and passed to k6 as environment\nvariables, so they are visible to the scenario via `__ENV`.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1k6~1config.schema.json/$defs/Env"

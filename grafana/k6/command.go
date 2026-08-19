@@ -2,6 +2,7 @@ package k6
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/foomo/posh-providers/onepassword"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -19,6 +21,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -76,22 +81,22 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run k6",
+		Description: "Run a k6 load-test scenario against a configured environment",
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-			fs.Default().Bool("verbose", false, "enable verbose logging")
+			fs.Default().Bool("verbose", false, "Enable k6 verbose logging")
 			return nil
 		},
 		Args: tree.Args{
 			{
 				Name:        "env",
-				Description: "Env name",
+				Description: "Environment to run against, supplying its variables to the scenario",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.cfg.EnvNames())
 				},
 			},
 			{
 				Name:        "scenario",
-				Description: "Scenario name",
+				Description: "Scenario script to run, relative to the configured k6 path",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					root := env.Path(inst.cfg.Path)
 
@@ -136,6 +141,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog cannot
+// show that a hardcoded --out web-dashboard keeps k6 alive while a browser is
+// attached, that <env> selects the system under load and is never validated, or
+// that op inject leaves decrypted secrets on disk beside the scenarios.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
