@@ -6,7 +6,8 @@
     "Config": {
       "properties": {
         "config": {
-          "type": "string"
+          "type": "string",
+          "description": "Path to the dockprox config file, passed to `dockprox serve --config`.\nUsed verbatim, without environment expansion, and it is also what makes a\nstarted process findable again by stop."
         }
       },
       "additionalProperties": false,

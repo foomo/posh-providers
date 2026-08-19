@@ -2,16 +2,21 @@ package dockprox
 
 import (
 	"context"
+	_ "embed"
 	"os/exec"
 
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
 	"github.com/foomo/gokazi/pkg/gokazi"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -71,21 +76,21 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Manage dockprox processes",
+		Description: "Manage the dockprox background process",
 		Nodes: tree.Nodes{
 			{
 				Name:        "start",
-				Description: "Start a dockprox process",
+				Description: "Start dockprox as a background process using the configured config file",
 				Execute:     inst.start,
 			},
 			{
 				Name:        "stop",
-				Description: "Stop a dockprox process",
+				Description: "Stop the running dockprox process; does not find one started by menubar",
 				Execute:     inst.stop,
 			},
 			{
 				Name:        "menubar",
-				Description: "Start global dockprox as menubar",
+				Description: "Start the dockprox menubar app; needs a desktop session and cannot be stopped by stop",
 				Execute:     inst.menubar,
 			},
 		},
@@ -116,6 +121,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that this manages a background process outliving the command, that
+// `stop` cannot find one started by `menubar` because the registered task
+// matches on the config-path argument only `start` passes, or that what the
+// proxy binds lives in the config file rather than anywhere in the tree.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
