@@ -2,8 +2,10 @@ package gnat
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -11,6 +13,9 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -62,11 +67,11 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Browse NATS JetStream servers",
+		Description: "Open the gnat terminal UI against a configured NATS JetStream server",
 		Args: tree.Args{
 			{
 				Name:        "name",
-				Description: "Name of the configured server profile.",
+				Description: "Profile name from the profiles config, resolved to its url",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					var ret []goprompt.Suggest
 
@@ -106,6 +111,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that this is a blocking full-screen TUI unusable unattended, that
+// the profile silently selects which NATS server is mutable from inside it, or
+// that `configDir` never takes effect because it is passed as an argument
+// rather than an environment variable.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
