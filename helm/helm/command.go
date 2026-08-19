@@ -2,9 +2,11 @@ package helm
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
@@ -13,6 +15,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type Command struct {
 	l           log.Logger
@@ -61,10 +66,10 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...options.Option[*
 		fs.Default().Bool("all-namespaces", false, "all namespace scope for this request")
 		fs.Default().Bool("create-namespace", false, "create the release namespace if not present")
 		fs.Default().Bool("dependency-update", false, "update dependencies")
-		fs.Default().Bool("dry-run", false, "assume aws profile")
+		fs.Default().Bool("dry-run", false, "simulate the operation without applying any change")
 		fs.Default().Bool("atomic", false, "delete installation on failure")
 		fs.Default().Bool("wait", false, "wait until all resources a ready")
-		fs.Internal().String("profile", "", "Profile to use.")
+		fs.Internal().String("profile", "", "Subdirectory of kubectl's config path to read the cluster kubeconfig from")
 
 		if r.Args().HasIndex(0) {
 			if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
@@ -77,14 +82,14 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...options.Option[*
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run helm commands",
+		Description: "Run helm against a cluster, using its kubeconfig",
 		Nodes: tree.Nodes{
 			{
 				Name: "cluster",
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.kubectl.Clusters())
 				},
-				Description: "Cluster to run against",
+				Description: "Cluster name, selecting the kubeconfig every subcommand runs with",
 				Nodes: tree.Nodes{
 					{
 						Name:        "create",
@@ -119,9 +124,10 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...options.Option[*
 						},
 						Args: tree.Args{
 							{
-								Name:     "value",
-								Repeat:   false,
-								Optional: false,
+								Name:        "value",
+								Description: "Which part of the release to download",
+								Repeat:      false,
+								Optional:    false,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return []goprompt.Suggest{
 										{Text: "all", Description: "Download all information for a named release"},
@@ -295,6 +301,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// lists every subcommand without saying which mutate the cluster, that the
+// cluster argument is the only thing scoping them, that this tree is a
+// hand-maintained mirror rather than a passthrough, or that Validate ignores
+// --profile and so accepts commands that then fail inside helm.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
