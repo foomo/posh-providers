@@ -2,9 +2,11 @@ package chrome
 
 import (
 	"context"
+	_ "embed"
 	"os/exec"
 	"runtime"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -15,6 +17,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -72,17 +77,19 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Open a Google Chrome browser",
+		Description: "Open Chrome with an isolated profile directory",
 		Args: tree.Args{
 			{
-				Name: "profile",
+				Name:        "profile",
+				Description: "Profile name from the chrome config; also names its data directory",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.cfg.ProfileNames())
 				},
 			},
 			{
-				Name:     "url",
-				Optional: true,
+				Name:        "url",
+				Description: "URL to open, overriding the profile's configured url",
+				Optional:    true,
 			},
 		},
 		Execute: inst.execute,
@@ -113,6 +120,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that each profile keeps a persistent logged-in session in its own
+// user-data dir, that the command returns before the browser has really
+// started, or that a profile's proxy is passed verbatim rather than resolved.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

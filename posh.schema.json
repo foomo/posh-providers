@@ -877,7 +877,7 @@
               "type": "string"
             },
             "proxy": {
-              "description": "Named SSH proxy from the global proxies config",
+              "description": "Proxy passed verbatim to Chrome as --proxy-server, e.g. socks5://localhost:1080",
               "type": "string"
             },
             "incognito": {
