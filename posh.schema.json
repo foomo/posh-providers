@@ -2255,6 +2255,7 @@
           "type": "object",
           "properties": {
             "queries": {
+              "description": "Named queries selectable by the `query` verb, keyed by the name typed as its\nfirst argument. Nested arbitrarily deep: each additional argument descends one\nlevel, and every level's `query` arguments are appended in order.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stern~1stern~1config.schema.json/$defs/Query"
@@ -2267,12 +2268,14 @@
           "type": "object",
           "properties": {
             "query": {
+              "description": "Arguments passed verbatim to stern when this level is selected, e.g. a pod\nregex plus flags. Concatenated with every ancestor level's arguments, so a\nnested entry refines its parent rather than replacing it.",
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
             "queries": {
+              "description": "Further queries nested under this one, selected by appending their name as\nanother argument.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stern~1stern~1config.schema.json/$defs/Query"

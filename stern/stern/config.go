@@ -7,6 +7,9 @@ import (
 )
 
 type Config struct {
+	// Named queries selectable by the `query` verb, keyed by the name typed as its
+	// first argument. Nested arbitrarily deep: each additional argument descends one
+	// level, and every level's `query` arguments are appended in order.
 	Queries map[string]Query `json:"queries" yaml:"queries"`
 }
 

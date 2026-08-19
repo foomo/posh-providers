@@ -2,10 +2,12 @@ package stern
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/foomo/posh-providers/foomo/squadron"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -15,6 +17,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -85,20 +90,21 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "stern",
-		Description: "Tail your logs with stern",
+		Description: "Tail Kubernetes pod logs with stern",
 		Nodes: []*tree.Node{
 			{
 				Name:        "cluster",
-				Description: "Cluster name",
+				Description: "Cluster whose kubeconfig is used to tail",
 				Values:      inst.completeClusters,
 				Nodes: []*tree.Node{
 					{
 						Name:        "query",
-						Description: "Tail by query",
+						Description: "Tail using a named query from this provider's config",
 						Args: tree.Args{
 							{
-								Name:   "name",
-								Repeat: true,
+								Name:        "name",
+								Description: "Query names, walked as a path into the nested config; each level's arguments are appended",
+								Repeat:      true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.cfg.QueryNames(r.Args().From(2)...))
 								},
@@ -117,7 +123,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query")
 							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
 							fs.Default().String("template", "default", "Template to use for log lines")
-							fs.Internal().String("profile", "", "Profile to use")
+							fs.Internal().String("profile", "", "Kubectl config profile holding this cluster's kubeconfig")
 
 							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
 								return err
@@ -139,10 +145,11 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 					},
 					{
 						Name:        "raw",
-						Description: "Tail by raw query",
+						Description: "Tail using a pod regex given directly",
 						Args: tree.Args{
 							{
-								Name: "query",
+								Name:        "query",
+								Description: "Pod name regex passed straight to stern",
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -158,7 +165,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query")
 							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
 							fs.Default().String("template", "default", "Template to use for log lines")
-							fs.Internal().String("profile", "", "Profile to use")
+							fs.Internal().String("profile", "", "Kubectl config profile holding this cluster's kubeconfig")
 
 							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
 								return err
@@ -180,19 +187,22 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 					},
 					{
 						Name:        "squadron",
-						Description: "Tail by squadron unit",
+						Description: "Tail a squadron unit's pods, deriving the namespace from fleet and squadron",
 						Args: tree.Args{
 							{
-								Name:    "fleet",
-								Suggest: inst.completeFleets,
+								Name:        "fleet",
+								Description: "Squadron fleet, used to derive the namespace",
+								Suggest:     inst.completeFleets,
 							},
 							{
-								Name:    "squadron",
-								Suggest: inst.completeSquadrons,
+								Name:        "squadron",
+								Description: "Squadron name, used for both the namespace and the pod prefix",
+								Suggest:     inst.completeSquadrons,
 							},
 							{
-								Name:    "unit",
-								Suggest: inst.completeSquadronUnits,
+								Name:        "unit",
+								Description: "Squadron unit; matched as pods named <squadron>-<unit>",
+								Suggest:     inst.completeSquadronUnits,
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -206,7 +216,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 							fs.Default().String("selector", "", "Selector (label query) to filter on. If present, default to \".*\" for the pod-query")
 							fs.Default().String("since", "default", "Return logs newer than a relative duration like 5s, 2m, or 3")
 							fs.Default().String("template", "default", "Template to use for log lines")
-							fs.Internal().String("profile", "", "Profile to use")
+							fs.Internal().String("profile", "", "Kubectl config profile holding this cluster's kubeconfig")
 
 							if err := fs.Default().SetValues("output", "raw", "json", "extjson", "ppextjson"); err != nil {
 								return err
@@ -252,6 +262,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog renders
+// [name]... as one repeated argument and cannot show that it is a path into a
+// recursive query tree whose levels concatenate, that an unmatched name after a
+// valid one is silently dropped, that stern streams until interrupted, or that
+// `squadron` computes its own namespace.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

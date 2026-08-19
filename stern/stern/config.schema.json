@@ -9,7 +9,8 @@
           "additionalProperties": {
             "$ref": "#/$defs/Query"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Named queries selectable by the `query` verb, keyed by the name typed as its\nfirst argument. Nested arbitrarily deep: each additional argument descends one\nlevel, and every level's `query` arguments are appended in order."
         }
       },
       "additionalProperties": false,
@@ -21,13 +22,15 @@
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "description": "Arguments passed verbatim to stern when this level is selected, e.g. a pod\nregex plus flags. Concatenated with every ancestor level's arguments, so a\nnested entry refines its parent rather than replacing it."
         },
         "queries": {
           "additionalProperties": {
             "$ref": "#/$defs/Query"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Further queries nested under this one, selected by appending their name as\nanother argument."
         }
       },
       "additionalProperties": false,
