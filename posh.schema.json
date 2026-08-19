@@ -1535,6 +1535,7 @@
           "type": "object",
           "properties": {
             "templatePath": {
+              "description": "Directory holding the template directories; its parent becomes HYGEN_TMPLS",
               "type": "string"
             }
           },

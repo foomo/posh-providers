@@ -6,7 +6,8 @@
     "Config": {
       "properties": {
         "templatePath": {
-          "type": "string"
+          "type": "string",
+          "description": "Directory holding the template directories; its parent becomes HYGEN_TMPLS"
         }
       },
       "additionalProperties": false,

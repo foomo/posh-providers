@@ -2,12 +2,14 @@ package hygen
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -17,6 +19,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -74,10 +79,11 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, erro
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run hygen",
+		Description: "Scaffold files from a hygen template",
 		Args: tree.Args{
 			{
-				Name: "path",
+				Name:        "path",
+				Description: "Unused: the root has no execute, so only the template subcommand runs",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.paths(ctx))
 				},
@@ -86,7 +92,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, erro
 		Nodes: tree.Nodes{
 			{
 				Name:        "template",
-				Description: "Render template",
+				Description: "Render a template directory from the configured template path",
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.paths(ctx))
 				},
@@ -96,7 +102,8 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, erro
 				},
 				Args: tree.Args{
 					{
-						Name: "path",
+						Name:        "path",
+						Description: "Target path passed through to hygen; not completed",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return nil
 						},
@@ -149,6 +156,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that only the `template` leaf is runnable, that the leaf's own
+// name is forwarded to hygen as an argument, that validation stats that literal
+// word rather than the named template, or that HYGEN_TMPLS is the parent of the
+// configured template path.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
