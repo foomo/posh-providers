@@ -6,19 +6,23 @@
     "Cluster": {
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Cluster name, matched against both the `cluster` argument and the kubectl\ncluster whose kubeconfig is used to reach the pod."
         },
         "podName": {
-          "type": "string"
+          "type": "string",
+          "description": "Name of the etcd pod to exec into. Must be an exact pod name, not a\ndeployment or label selector."
         },
         "namespace": {
-          "type": "string"
+          "type": "string",
+          "description": "Namespace the etcd pod runs in."
         },
         "paths": {
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "description": "etcd keys offered as completions for the `path` argument. Advisory only — any\nkey can be typed, whether listed or not."
         }
       },
       "additionalProperties": false,
@@ -27,13 +31,15 @@
     "Config": {
       "properties": {
         "configPath": {
-          "type": "string"
+          "type": "string",
+          "description": "Directory the `edit` verb writes its scratch copy of a value into, before and\nafter editing. Created at shell startup; resolved against the project root, so\nthe file — which holds real etcd contents — lands inside the checkout."
         },
         "clusters": {
           "items": {
             "$ref": "#/$defs/Cluster"
           },
-          "type": "array"
+          "type": "array",
+          "description": "Clusters this command can reach. Only clusters listed here are offered, and\ncompletion additionally requires a matching kubeconfig to exist."
         }
       },
       "additionalProperties": false,

@@ -3,6 +3,7 @@ package etcd
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"os"
 	"os/exec"
 	"path"
@@ -11,6 +12,7 @@ import (
 
 	prompt2 "github.com/c-bata/go-prompt"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -20,6 +22,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type Command struct {
 	l           log.Logger
@@ -41,7 +46,8 @@ func NewCommand(l log.Logger, etcd *ETCD, kubectl *kubectl.Kubectl, opts ...Opti
 
 	args := tree.Args{
 		{
-			Name: "path",
+			Name:        "path",
+			Description: "etcd key to read or write, from the cluster's configured paths",
 			Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []prompt2.Suggest {
 				if value, ok := inst.etcd.cfg.Cluster(r.Args().At(0)); ok {
 					return suggests.List(value.Paths)
@@ -53,7 +59,7 @@ func NewCommand(l log.Logger, etcd *ETCD, kubectl *kubectl.Kubectl, opts ...Opti
 	}
 	flags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 		if r.Args().HasIndex(0) {
-			fs.Internal().String("profile", "", "Profile to use.")
+			fs.Internal().String("profile", "", "Kubectl config profile holding this cluster's kubeconfig")
 
 			if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
 				return err
@@ -65,10 +71,11 @@ func NewCommand(l log.Logger, etcd *ETCD, kubectl *kubectl.Kubectl, opts ...Opti
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "etcd",
-		Description: "Read and write to etcd",
+		Description: "Read and write etcd keys inside a cluster's etcd pod",
 		Nodes: tree.Nodes{
 			{
-				Name: "cluster",
+				Name:        "cluster",
+				Description: "Cluster to connect to; must be configured here and have a kubeconfig",
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					var ret []string
 
@@ -82,16 +89,18 @@ func NewCommand(l log.Logger, etcd *ETCD, kubectl *kubectl.Kubectl, opts ...Opti
 				},
 				Nodes: tree.Nodes{
 					{
-						Name:    "get",
-						Args:    args,
-						Flags:   flags,
-						Execute: inst.get,
+						Name:        "get",
+						Description: "Print the value at the given key",
+						Args:        args,
+						Flags:       flags,
+						Execute:     inst.get,
 					},
 					{
-						Name:    "edit",
-						Args:    args,
-						Flags:   flags,
-						Execute: inst.edit,
+						Name:        "edit",
+						Description: "Open the value in $EDITOR and write changes back to etcd",
+						Args:        args,
+						Flags:       flags,
+						Execute:     inst.edit,
 					},
 				},
 			},
@@ -123,6 +132,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog cannot
+// show that `edit` writes straight into a live cluster's etcd behind an
+// interactive editor, that the value is interpolated into a shell command inside
+// the pod and so corrupts anything containing quotes or backticks, or that both
+// verbs depend on an exact pod name that changes when the pod is rescheduled.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

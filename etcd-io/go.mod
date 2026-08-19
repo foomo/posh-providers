@@ -13,6 +13,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/foomo/go v0.16.0
 	github.com/foomo/posh v0.21.0
+	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
 	github.com/foomo/posh-providers/kubernetes v0.56.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1

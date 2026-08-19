@@ -918,15 +918,19 @@
           "type": "object",
           "properties": {
             "name": {
+              "description": "Cluster name, matched against both the `cluster` argument and the kubectl\ncluster whose kubeconfig is used to reach the pod.",
               "type": "string"
             },
             "podName": {
+              "description": "Name of the etcd pod to exec into. Must be an exact pod name, not a\ndeployment or label selector.",
               "type": "string"
             },
             "namespace": {
+              "description": "Namespace the etcd pod runs in.",
               "type": "string"
             },
             "paths": {
+              "description": "etcd keys offered as completions for the `path` argument. Advisory only — any\nkey can be typed, whether listed or not.",
               "type": "array",
               "items": {
                 "type": "string"
@@ -939,9 +943,11 @@
           "type": "object",
           "properties": {
             "configPath": {
+              "description": "Directory the `edit` verb writes its scratch copy of a value into, before and\nafter editing. Created at shell startup; resolved against the project root, so\nthe file — which holds real etcd contents — lands inside the checkout.",
               "type": "string"
             },
             "clusters": {
+              "description": "Clusters this command can reach. Only clusters listed here are offered, and\ncompletion additionally requires a matching kubeconfig to exist.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1etcd-io~1etcd~1config.schema.json/$defs/Cluster"
