@@ -2,6 +2,7 @@ package cdktf
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -18,6 +20,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -88,7 +93,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 
 	stacksArg := &tree.Arg{
 		Name:        "stacks",
-		Description: "Name of the stacks",
+		Description: "Stacks to act on; every stack in the app if omitted",
 		Repeat:      true,
 		Optional:    true,
 		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -96,16 +101,16 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 		},
 	}
 	skipSynthFlag := func(fs *readline.FlagSets) {
-		fs.Internal().Bool("skip-synth", false, "Skip synth trough env var")
+		fs.Internal().Bool("skip-synth", false, "Reuse the already-synthesized Terraform code instead of re-synthesizing")
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run cdktf",
+		Description: "Run cdktf against the configured app",
 		Nodes: tree.Nodes{
 			{
 				Name:        "list",
-				Description: "List stacks in app",
+				Description: "List the stacks defined in the app",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					skipSynthFlag(fs)
 					return nil
@@ -114,7 +119,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "diff",
-				Description: "Perform a diff (terraform plan) for the given stack",
+				Description: "Show pending changes for the given stacks (terraform plan)",
 				Args:        tree.Args{stacksArg},
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					skipSynthFlag(fs)
@@ -127,11 +132,11 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "deploy",
-				Description: "Deploy the given stacks",
+				Description: "Apply the given stacks, creating and updating real infrastructure",
 				Args:        tree.Args{stacksArg},
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					skipSynthFlag(fs)
-					fs.Default().Bool("auto-approve", false, "Auto approve")
+					fs.Default().Bool("auto-approve", false, "Skip the interactive approval prompt")
 					fs.Default().Bool("refresh-only", false, "Select the 'refresh only' planning mode")
 					fs.Default().Bool("migrate-state", false, "Pass this flag after switching state backends")
 
@@ -141,11 +146,11 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "destroy",
-				Description: "Destroy the given stacks",
+				Description: "Tear down all infrastructure in the given stacks",
 				Args:        tree.Args{stacksArg},
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					skipSynthFlag(fs)
-					fs.Default().Bool("auto-approve", false, "Auto approve")
+					fs.Default().Bool("auto-approve", false, "Skip the interactive approval prompt")
 					fs.Default().Bool("migrate-state", false, "Pass this flag after switching state backends")
 
 					return nil
@@ -154,18 +159,18 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "unlock",
-				Description: "Unlock a terraform state.",
+				Description: "Force-release a stack's terraform state lock, only safe when no run is in progress",
 				Args: tree.Args{
 					{
 						Name:        "stack",
-						Description: "Path to the terraform stack.",
+						Description: "Stack whose state lock should be released",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.stacks(ctx))
 						},
 					},
 					{
 						Name:        "lockId",
-						Description: "Terraform stage lock id",
+						Description: "Terraform state lock ID, as reported by the failed command",
 					},
 				},
 				Execute: inst.unlock,
@@ -214,6 +219,21 @@ $ npm install --global cdktf-cli
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog cannot
+// show that omitting [stacks] widens deploy/destroy to the whole app, that
+// stack names come from a *.stack.yaml naming convention rather than from
+// cdktf, that `unlock` shells out to terraform in the synth output directory,
+// or that --skip-synth reaches the binary on some verbs and is inert on deploy.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------

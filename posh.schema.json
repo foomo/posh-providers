@@ -1656,9 +1656,11 @@
           "type": "object",
           "properties": {
             "path": {
+              "description": "Directory the cdktf app lives in; every verb runs with this as its working\ndirectory. Also the root walked for `*.stack.yaml` files to discover stack\nnames.",
               "type": "string"
             },
             "outPath": {
+              "description": "Directory cdktf synthesizes into. Used only by `unlock`, which runs\nterraform in `<outPath>/stacks/<stack>`, so leaving it unset breaks that\nverb while every other one still works.",
               "type": "string"
             }
           },
