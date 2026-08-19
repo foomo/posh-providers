@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"os/exec"
 	"strings"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/c-bata/go-prompt"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -17,6 +19,9 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -70,10 +75,11 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run task scripts",
+		Description: "Run a configured task, executing its shell commands",
 		Args: tree.Args{
 			{
-				Name: "task",
+				Name:        "task",
+				Description: "Task name from the tasks config or the task directory",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					var ret []prompt.Suggest
 
@@ -115,6 +121,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. A task name reveals
+// nothing about what it runs: the prose names the arbitrary-shell and sudo
+// escalation, the recursive deps with no cycle guard, and the inverted sense of
+// precondition, where a succeeding check skips the task entirely.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
