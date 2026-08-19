@@ -11,10 +11,20 @@ import (
 )
 
 type Config struct {
+	// Directory holding one subdirectory per workspace. Workspace names are
+	// discovered from it rather than configured: any child directory containing
+	// `.tf` files and not prefixed with `.` or `_` becomes a valid `workspace`
+	// argument, whether or not it appears under `subscriptions`.
 	Path string `json:"path" yaml:"path"`
 	// Azure tenant ID — sets ARM_TENANT_ID for all workspaces; required for CLI auth via az login --allow-no-subscriptions
-	TenantID          string                      `json:"tenantId,omitempty" yaml:"tenantId,omitempty"`
-	Subscriptions     map[string]Subscription     `json:"subscriptions" yaml:"subscriptions"`
+	TenantID string `json:"tenantId,omitempty" yaml:"tenantId,omitempty"`
+	// Per-workspace Azure subscription and backend settings, keyed by workspace
+	// directory name. Optional: a workspace with no entry still runs, but gets no
+	// `ARM_SUBSCRIPTION_ID` and no `-backend-config` flags on `init`.
+	Subscriptions map[string]Subscription `json:"subscriptions" yaml:"subscriptions"`
+	// Service principals selectable with `--service-principal`, keyed by the name
+	// offered in completion. Selecting one overrides the default Azure auth chain
+	// for that invocation, including the subscription.
 	ServicePrincipals map[string]ServicePrincipal `json:"servicePrincipals" yaml:"servicePrincipals"`
 }
 
@@ -23,7 +33,8 @@ type Subscription struct {
 	ID string `json:"id" yaml:"id"`
 	// Backend state storage configuration
 	Backend Backend `json:"backend" yaml:"backend"`
-	// Named SSH proxy for this workspace
+	// Named SSH proxy for this workspace. Unused — nothing in this provider reads
+	// it, so setting it has no effect.
 	Proxy string `json:"proxy" yaml:"proxy"`
 }
 
@@ -43,7 +54,8 @@ type ServicePrincipal struct {
 	TenantID string `json:"tenantId" yaml:"tenantId"`
 	// Application client ID
 	ClientID string `json:"clientId" yaml:"clientId"`
-	// Application client secret
+	// Application client secret, in plaintext. Held in the project config and
+	// exported as ARM_CLIENT_SECRET, so keep it out of version control.
 	ClientSecret string `json:"clientSecret" yaml:"clientSecret"`
 	// Azure subscription ID
 	SubscriptionID string `json:"subscriptionId" yaml:"subscriptionId"`

@@ -1696,6 +1696,7 @@
           "type": "object",
           "properties": {
             "path": {
+              "description": "Directory holding one subdirectory per workspace. Workspace names are\ndiscovered from it rather than configured: any child directory containing\n`.tf` files and not prefixed with `.` or `_` becomes a valid `workspace`\nargument, whether or not it appears under `subscriptions`.",
               "type": "string"
             },
             "tenantId": {
@@ -1703,12 +1704,14 @@
               "type": "string"
             },
             "subscriptions": {
+              "description": "Per-workspace Azure subscription and backend settings, keyed by workspace\ndirectory name. Optional: a workspace with no entry still runs, but gets no\n`ARM_SUBSCRIPTION_ID` and no `-backend-config` flags on `init`.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1terraform~1config.schema.json/$defs/Subscription"
               }
             },
             "servicePrincipals": {
+              "description": "Service principals selectable with `--service-principal`, keyed by the name\noffered in completion. Selecting one overrides the default Azure auth chain\nfor that invocation, including the subscription.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1terraform~1config.schema.json/$defs/ServicePrincipal"
@@ -1729,7 +1732,7 @@
               "type": "string"
             },
             "clientSecret": {
-              "description": "Application client secret",
+              "description": "Application client secret, in plaintext. Held in the project config and\nexported as ARM_CLIENT_SECRET, so keep it out of version control.",
               "type": "string"
             },
             "subscriptionId": {
@@ -1751,7 +1754,7 @@
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1terraform~1config.schema.json/$defs/Backend"
             },
             "proxy": {
-              "description": "Named SSH proxy for this workspace",
+              "description": "Named SSH proxy for this workspace. Unused — nothing in this provider reads\nit, so setting it has no effect.",
               "type": "string"
             }
           },
