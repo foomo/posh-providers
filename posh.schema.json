@@ -1954,21 +1954,27 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1gocontentful~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config is the schema of a `gocontentful.yaml` file discovered in the project, not of a key in the posh config.",
           "type": "object",
           "properties": {
             "spaceId": {
+              "description": "Contentful space id to generate against",
               "type": "string"
             },
             "cmaKey": {
+              "description": "Contentful management API key, typically a 1Password secret reference",
               "type": "string"
             },
             "environment": {
+              "description": "Contentful environment; defaults to \"master\" when empty",
               "type": "string"
             },
             "region": {
+              "description": "Contentful API region",
               "type": "string"
             },
             "contentTypes": {
+              "description": "Content types to generate code for",
               "type": "array",
               "items": {
                 "type": "string"

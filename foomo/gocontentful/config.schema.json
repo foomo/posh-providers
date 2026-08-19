@@ -6,26 +6,32 @@
     "Config": {
       "properties": {
         "spaceId": {
-          "type": "string"
+          "type": "string",
+          "description": "Contentful space id to generate against"
         },
         "cmaKey": {
-          "type": "string"
+          "type": "string",
+          "description": "Contentful management API key, typically a 1Password secret reference"
         },
         "environment": {
-          "type": "string"
+          "type": "string",
+          "description": "Contentful environment; defaults to \"master\" when empty"
         },
         "region": {
-          "type": "string"
+          "type": "string",
+          "description": "Contentful API region"
         },
         "contentTypes": {
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "description": "Content types to generate code for"
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config is the schema of a `gocontentful.yaml` file discovered in the project, not of a key in the posh config."
     }
   }
 }
