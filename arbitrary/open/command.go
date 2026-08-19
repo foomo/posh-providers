@@ -2,9 +2,11 @@ package open
 
 import (
 	"context"
+	_ "embed"
 	"net/url"
 
 	"github.com/foomo/posh-providers/onepassword"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -13,6 +15,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -66,10 +71,11 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Open an external url",
+		Description: "Open a configured url in the browser",
 		Args: tree.Args{
 			{
-				Name: "router",
+				Name:        "router",
+				Description: "Router name from the open config, supplying the base url",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					var ret []goprompt.Suggest
 					for s, router := range inst.cfg {
@@ -80,8 +86,9 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 				},
 			},
 			{
-				Name:   "route",
-				Repeat: true,
+				Name:        "route",
+				Description: "Route name under the router; repeat to descend nested routes",
+				Repeat:      true,
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					var ret []goprompt.Suggest
 
@@ -140,6 +147,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that a route may embed 1Password credentials in the opened URL,
+// that the router silently decides which environment is reached, or that the
+// route lookup stops descending after one level so deeper routes are
+// unreachable.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
