@@ -8,6 +8,7 @@ import (
 
 	testingx "github.com/foomo/go/testing"
 	tagx "github.com/foomo/go/testing/tag"
+	"github.com/foomo/posh-providers/pkg/testutils"
 	"github.com/foomo/posh-providers/webdriverio/webdriverio"
 	"github.com/invopop/jsonschema"
 	"github.com/pkg/errors"
@@ -44,4 +45,6 @@ func TestConfig(t *testing.T) {
 	if !assert.Equal(t, string(expected), string(actual)) {
 		require.NoError(t, os.WriteFile(filename, actual, 0600))
 	}
+
+	testutils.AssertDocumentedConfig(t, filename)
 }

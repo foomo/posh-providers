@@ -2193,24 +2193,29 @@
           "type": "object",
           "properties": {
             "dirs": {
+              "description": "Unused. Test directories are discovered by walking for wdio.conf.ts,\nnever read from here.",
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
             "modes": {
+              "description": "Run modes, keyed by name and suggested as the first argument. The key\n\"browserstack\" additionally selects the BrowserStack backend.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/ConfigModes"
             },
             "sites": {
+              "description": "Sites to test, keyed by name and suggested as the second argument.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/ConfigSites"
             },
             "secrets": {
+              "description": "Unused. Declared but read by nothing; only Sites[..].Auth and\nBrowserStack resolve secrets.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/Secret"
               }
             },
             "browserStack": {
+              "description": "1Password item holding the BrowserStack credentials, read from its\n\"username\" and \"password\" fields. Required when the \"browserstack\"\nmode is used without --ci; the command panics if it is unset.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/Secret"
             }
           },
@@ -2220,9 +2225,11 @@
           "type": "object",
           "properties": {
             "auth": {
+              "description": "1Password item holding basic auth credentials for this environment,\nread from its \"username\" and \"password\" fields. Omit for no basic auth.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/Secret"
             },
             "domain": {
+              "description": "Base domain for this environment, e.g. \"staging.example.com\". The mode's\nhost prefix and port are applied on top of it.",
               "type": "string"
             }
           },
@@ -2238,9 +2245,11 @@
           "type": "object",
           "properties": {
             "port": {
+              "description": "Port appended to the site domain, e.g. \"8443\". Omit for the default port.",
               "type": "string"
             },
             "hostPrefix": {
+              "description": "Subdomain prepended to the site domain, e.g. \"local\". Omit for none.",
               "type": "string"
             }
           },

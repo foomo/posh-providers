@@ -3,6 +3,7 @@ package webdriverio
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"fmt"
 	"net/url"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -20,6 +22,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -105,7 +110,7 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 									fs.Default().String("spec", "", "Run suite on specific specs")
 									fs.Default().String("suite", "", "Run suite on test suite")
 									fs.Internal().String("tag", "", "Run suite on specific tag")
-									fs.Internal().String("scenario", "", "Run suite on specific specs")
+									fs.Internal().String("scenario", "", "Run suite on specific scenarios")
 									fs.Internal().String("log-level", "info", "Set the log level")
 									fs.Internal().Bool("ci", false, "Run suite on CI")
 									fs.Internal().Bool("headless", false, "Run suite in headless mode")
@@ -139,9 +144,10 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 								},
 								Args: tree.Args{
 									{
-										Name:     "path",
-										Repeat:   false,
-										Optional: true,
+										Name:        "path",
+										Description: "Directory holding e2e/wdio.conf.ts; every discovered directory if omitted",
+										Repeat:      false,
+										Optional:    true,
 										Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 											return suggests.List(inst.paths(ctx))
 										},
@@ -181,6 +187,24 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog shows
+// three arguments and a flag list, and cannot show that omitting [path] runs
+// every discovered directory serially until one fails; that the tests hit a
+// real configured environment with TLS verification disabled; that neither
+// <site> nor <env> is validated, so a typo yields an empty base URL; that the
+// mode name "browserstack" is a magic string that panics when the matching
+// secret is unset; or that most flags reach the runner as environment
+// variables the project's own wdio.conf.ts has to read.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
