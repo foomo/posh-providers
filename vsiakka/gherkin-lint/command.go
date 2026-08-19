@@ -2,10 +2,12 @@ package gherkinlint
 
 import (
 	"context"
+	_ "embed"
 	"path"
 
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
@@ -14,6 +16,9 @@ import (
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type Command struct {
 	l               log.Logger
@@ -57,12 +62,13 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...options.Option[*Command]) *
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run gherkin-lint",
+		Description: "Lint gherkin feature files in WebdriverIO project directories",
 		Args: tree.Args{
 			{
-				Name:     "path",
-				Optional: true,
-				Repeat:   true,
+				Name:        "path",
+				Description: "Directory to lint; every directory containing a wdio.conf.ts if omitted",
+				Optional:    true,
+				Repeat:      true,
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.paths(ctx))
 				},
@@ -96,6 +102,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that discovery keys on `wdio.conf.ts` rather than feature files,
+// that a non-zero exit means findings and aborts the remaining directories, or
+// that this command is also an `arbitrary/lint` linter run by that sweep.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 func (c *Command) Lint(ctx context.Context, _ bool) error {
