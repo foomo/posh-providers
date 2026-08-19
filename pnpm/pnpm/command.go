@@ -2,12 +2,14 @@ package pnpm
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/foomo/posh-providers/pkg/npm"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -18,6 +20,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -54,21 +59,23 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 		},
 		Nodes: tree.Nodes{
 			{
-				Name: "workspace",
+				Name:        "workspace",
+				Description: "Run a pnpm command inside a workspace package directory",
 				Nodes: tree.Nodes{
 					{
 						Name:        "path",
-						Description: "Location to execute",
+						Description: "Workspace package directory to run in",
 						Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.paths(ctx))
 						},
 						Nodes: tree.Nodes{
 							{
-								Name: "run",
+								Name:        "run",
+								Description: "Run a package.json script in that directory",
 								Args: tree.Args{
 									{
 										Name:        "script",
-										Description: "Run scripts",
+										Description: "Script name from the directory's package.json",
 										Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 											return suggests.List(inst.scripts(ctx, r.Args().At(1)))
 										},
@@ -105,11 +112,11 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			},
 			{
 				Name:        "run",
-				Description: "Run script",
+				Description: "Run a package.json script in the project root",
 				Args: tree.Args{
 					{
 						Name:        "script",
-						Description: "Run scripts",
+						Description: "Script name from the project's package.json",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.scripts(ctx, "."))
 						},
@@ -163,6 +170,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that unlisted pnpm subcommands still work, that `run` executes
+// whatever package.json defines and silently drops flags, that `workspace`
+// retargets a verb at another package.json, or that path completion yields
+// nothing without a pnpm-workspace.yaml.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
