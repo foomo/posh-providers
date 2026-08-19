@@ -6,13 +6,16 @@
     "Cluster": {
       "properties": {
         "port": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Local port the tunnel binds on 127.0.0.1"
         },
         "hostname": {
-          "type": "string"
+          "type": "string",
+          "description": "Cloudflare Access hostname the tunnel connects to"
         },
         "kubeconfig": {
-          "$ref": "#/$defs/Secret"
+          "$ref": "#/$defs/Secret",
+          "description": "1Password document holding the kubeconfig; $PORT in it is replaced with the port above"
         }
       },
       "additionalProperties": false,
@@ -24,13 +27,15 @@
           "additionalProperties": {
             "$ref": "#/$defs/Cluster"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Clusters reachable through a cloudflared tunnel, keyed by the name the command accepts"
         },
         "databases": {
           "additionalProperties": {
             "$ref": "#/$defs/Database"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Databases reachable through a cloudflared tunnel, keyed by the name the command accepts"
         }
       },
       "additionalProperties": false,
@@ -39,10 +44,12 @@
     "Database": {
       "properties": {
         "port": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Local port the tunnel binds on 127.0.0.1"
         },
         "hostname": {
-          "type": "string"
+          "type": "string",
+          "description": "Cloudflare Access hostname the tunnel connects to"
         }
       },
       "additionalProperties": false,

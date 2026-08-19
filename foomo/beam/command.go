@@ -2,12 +2,14 @@ package beam
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/foomo/posh-providers/cloudflare/cloudflared"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -15,6 +17,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pterm/pterm"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -59,24 +64,24 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run beam",
+		Description: "Manage cloudflared tunnels to remote clusters and databases",
 		Nodes: tree.Nodes{
 			{
 				Name:        "status",
-				Description: "Show connection status",
+				Description: "List every running cloudflared process, not just this project's",
 				Execute:     inst.status,
 			},
 			{
 				Name:        "cluster",
-				Description: "Manage cluster connection",
+				Description: "Manage cluster tunnels",
 				Nodes: tree.Nodes{
 					{
 						Name:        "connect",
-						Description: "Connect to cluster",
+						Description: "Open a cloudflared tunnel to the cluster",
 						Args: tree.Args{
 							{
 								Name:        "cluster",
-								Description: "Cluster name",
+								Description: "Cluster name from the clusters config",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.beam.cfg.ClusterNames())
 								},
@@ -86,11 +91,11 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 					},
 					{
 						Name:        "kubeconfig",
-						Description: "Download kubeconfig",
+						Description: "Fetch the kubeconfig from 1Password and overwrite kubectl's file for this cluster",
 						Args: tree.Args{
 							{
 								Name:        "cluster",
-								Description: "Cluster name",
+								Description: "Cluster name from the clusters config",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.beam.cfg.ClusterNames())
 								},
@@ -100,11 +105,11 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 					},
 					{
 						Name:        "disconnect",
-						Description: "Disconnect to cluster",
+						Description: "Close cluster tunnels by killing the cloudflared process; all clusters if no name is given",
 						Args: tree.Args{
 							{
 								Name:        "cluster",
-								Description: "Cluster name",
+								Description: "Cluster name from the clusters config; all of them if omitted",
 								Optional:    true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.beam.cfg.ClusterNames())
@@ -117,15 +122,15 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 			},
 			{
 				Name:        "database",
-				Description: "Manage database connection",
+				Description: "Manage database tunnels",
 				Nodes: tree.Nodes{
 					{
 						Name:        "connect",
-						Description: "Connect to database",
+						Description: "Open a cloudflared tunnel to the database",
 						Args: tree.Args{
 							{
 								Name:        "database",
-								Description: "Database name",
+								Description: "Database name from the databases config",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.beam.cfg.DatabaseNames())
 								},
@@ -135,11 +140,11 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 					},
 					{
 						Name:        "disconnect",
-						Description: "Disconnect to database",
+						Description: "Close database tunnels by killing the cloudflared process; all databases if no name is given",
 						Args: tree.Args{
 							{
 								Name:        "database",
-								Description: "Database name",
+								Description: "Database name from the databases config; all of them if omitted",
 								Optional:    true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.beam.cfg.DatabaseNames())
@@ -178,6 +183,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that `disconnect` with no name closes every tunnel and matches on
+// hostname alone, that `kubeconfig` overwrites kubectl's file from 1Password,
+// that an unknown name silently resolves to an empty config rather than an
+// error, or that the gokazi tasks this provider registers are never used.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
