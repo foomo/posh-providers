@@ -885,6 +885,7 @@
           "type": "object",
           "properties": {
             "name": {
+              "description": "Cluster ID or name passed to doctl. The README's sample uses the cluster\nUUID, which is also what the generated kubeconfig's credential plugin\nrequires. The kubeconfig filename comes from the map key instead, unless\n`CommandWithClusterNameFn` overrides it.",
               "type": "string"
             }
           },
@@ -894,9 +895,11 @@
           "type": "object",
           "properties": {
             "configPath": {
+              "description": "Path to the doctl config file holding the API token, relative to the project\nroot. Exported as `DIGITALOCEAN_CONFIG` at shell startup, so every doctl\ninvocation in the session reads this file rather than the user's own; written\nby `auth init`.",
               "type": "string"
             },
             "clusters": {
+              "description": "Clusters addressable by this command, keyed by the name accepted as the\n`cluster` argument. The key is a local alias; `name` holds the value passed\nto doctl.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1digitalocean~1doctl~1config.schema.json/$defs/Cluster"
