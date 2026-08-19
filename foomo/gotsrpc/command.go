@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
@@ -132,8 +133,9 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 		if out, err := shell.New(ctx, c.l, "gotsrpc").
 			Args(flags...).
-			Args(value).
+			Args(path.Base(value)).
 			Args(r.AdditionalArgs()...).
+			Dir(path.Dir(value)).
 			Output(); err != nil {
 			return errors.Wrap(err, string(out))
 		}
