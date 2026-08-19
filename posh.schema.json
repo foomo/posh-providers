@@ -1944,12 +1944,15 @@
           "type": "object",
           "properties": {
             "logPath": {
+              "description": "Directory license_finder writes its log to, passed as `--log-directory`.",
               "type": "string"
             },
             "decisionsPath": {
+              "description": "File recording the approval decisions, passed as `--decisions-file`. Every\n`add`/`remove` verb rewrites this file, so it is the provider's only\npersistent state and belongs in version control.",
               "type": "string"
             },
             "sources": {
+              "description": "Dependency-manifest filenames to search the project for, e.g. `go.mod` or\n`yarn.lock`. Each match's containing directory becomes a scanned project;\nthe manifests themselves are never read here.",
               "type": "array",
               "items": {
                 "type": "string"

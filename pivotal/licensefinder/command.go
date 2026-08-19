@@ -2,12 +2,14 @@ package licensefinder
 
 import (
 	"context"
+	_ "embed"
 	"os/exec"
 	"path"
 	"sort"
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -18,6 +20,9 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -71,39 +76,39 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 
 	nameArg := &tree.Arg{
 		Name:        "name",
-		Description: "Name of the license",
+		Description: "License or dependency name, exactly as license_finder reports it",
 	}
 	addFlags := func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-		fs.Default().String("who", "", "Who approved")
-		fs.Default().String("why", "", "Reason to approve")
+		fs.Default().String("who", "", "Person recording the decision, stored in the decisions file")
+		fs.Default().String("why", "", "Justification, stored in the decisions file")
 
 		return nil
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "List unapproved dependencies",
+		Description: "List dependencies whose licenses are not yet approved",
 		Execute:     inst.actionItems,
 		Nodes: tree.Nodes{
 			{
 				Name:        "report",
-				Description: "Print a report of the project's dependencies",
+				Description: "Print a license report for every discovered project",
 				Execute:     inst.report,
 			},
 			{
 				Name:        "add",
-				Description: "Add licenses or dependencies",
+				Description: "Record an approval decision in the decisions file",
 				Nodes: tree.Nodes{
 					{
 						Name:        "permitted",
-						Description: "Add permitted licenses",
+						Description: "Permit a license for every dependency that uses it",
 						Args:        tree.Args{nameArg},
 						Flags:       addFlags,
 						Execute:     inst.addPermitted,
 					},
 					{
 						Name:        "ignored",
-						Description: "Add ignored dependencies",
+						Description: "Exclude a dependency from license checks entirely",
 						Args:        tree.Args{nameArg},
 						Flags:       addFlags,
 						Execute:     inst.addIgnored,
@@ -112,34 +117,33 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "list",
-				Description: "List licenses or dependencies",
+				Description: "Show recorded approval decisions",
 				Nodes: tree.Nodes{
 					{
 						Name:        "permitted",
-						Description: "Add permitted licenses",
+						Description: "List the permitted licenses",
 						Execute:     inst.listPermitted,
 					},
 					{
 						Name:        "ignored",
-						Description: "List ignored dependencies",
-						Args:        tree.Args{nameArg},
+						Description: "List the ignored dependencies",
 						Execute:     inst.listIgnored,
 					},
 				},
 			},
 			{
 				Name:        "remove",
-				Description: "Remove licenses or dependencies",
+				Description: "Delete a recorded approval decision",
 				Nodes: tree.Nodes{
 					{
 						Name:        "permitted",
-						Description: "Add permitted licenses",
+						Description: "Remove a permitted license",
 						Args:        tree.Args{nameArg},
 						Execute:     inst.removePermitted,
 					},
 					{
 						Name:        "ignored",
-						Description: "Remove ignored dependencies",
+						Description: "Stop ignoring a dependency",
 						Args:        tree.Args{nameArg},
 						Execute:     inst.removeIgnored,
 					},
@@ -190,6 +194,21 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog cannot
+// show that the add/remove verbs rewrite a version-controlled decisions file and
+// are policy changes rather than build steps, that a non-zero exit is the
+// intended signal while a zero exit can mean nothing was scanned, or that
+// multiple discovered source paths do not aggregate correctly.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
