@@ -19,23 +19,13 @@ Check which of the two you are using before any mutating verb.
 
 #### Behaviour
 
-**Workspace path completion is broken when there is no `pnpm-workspace.yaml`.**
-The lookup tests `errors.Is(err, os.ErrExist)` where it means `ErrNotExist`, so
-the "file absent" case falls into the error branch and returns an empty list
-instead of falling back to scanning `.`. In a single-package project the
-`workspace` subtree therefore offers no paths at all. When the file *is*
-present, discovery works: each `packages` entry (with a trailing `/*` stripped)
-is walked for nested `package.json` files.
+**Workspace path completion depends on `pnpm-workspace.yaml`.** With the file
+present, each `packages` entry (with a trailing `/*` stripped) is walked for
+nested `package.json` files. Without it, discovery falls back to scanning the
+project root, so a single-package project offers `.` and nothing else.
 
-**`run` drops your flags.** The two `run` leaves call a helper that execs
-`pnpm run <script>` with only the directory set - unlike every other node, which
-forwards `r.Flags()`. So `pnpm run build --silent` silently loses `--silent`.
-Flags reach pnpm on the other verbs and through the root passthrough, just not
-here.
-
-`--recursive` is declared on the root only. It is forwarded by the fallback
-paths, so `pnpm install --recursive` works, but it has no effect on the two
-`run` leaves for the reason above.
+`--recursive` is declared on the root only, but it is forwarded from every leaf,
+so it reaches pnpm wherever it is typed.
 
 Script names come from the target directory's `package.json`; workspace paths
 come from `pnpm-workspace.yaml`. Both lists are cached per session, so a newly

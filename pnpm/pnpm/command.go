@@ -82,7 +82,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 									},
 								},
 								Execute: func(ctx context.Context, r *readline.Readline) error {
-									return inst.run(ctx, r.Args().At(1), r.Args().At(3))
+									return inst.run(ctx, r, r.Args().At(1), r.Args().At(3))
 								},
 							},
 							{
@@ -123,7 +123,7 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 					},
 				},
 				Execute: func(ctx context.Context, r *readline.Readline) error {
-					return inst.run(ctx, ".", r.Args().At(1))
+					return inst.run(ctx, r, ".", r.Args().At(1))
 				},
 			},
 			{
@@ -180,9 +180,8 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 
 // Skill implements the optional command.Skiller interface. The rendered tree
 // cannot show that unlisted pnpm subcommands still work, that `run` executes
-// whatever package.json defines and silently drops flags, that `workspace`
-// retargets a verb at another package.json, or that path completion yields
-// nothing without a pnpm-workspace.yaml.
+// whatever package.json defines, that `workspace` retargets a verb at another
+// package.json, or that nothing after a `--` separator is forwarded.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -191,9 +190,10 @@ func (c *Command) Skill(ctx context.Context) string {
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) run(ctx context.Context, dirname, script string) error {
+func (c *Command) run(ctx context.Context, r *readline.Readline, dirname, script string) error {
 	return shell.New(ctx, c.l, "pnpm", "run", script).
 		Dir(dirname).
+		Args(r.Flags()...).
 		Run()
 }
 
@@ -226,7 +226,7 @@ func (c *Command) paths(ctx context.Context) []string {
 
 		{
 			filename := env.Path("pnpm-workspace.yaml")
-			if _, err := os.Stat(filename); errors.Is(err, os.ErrExist) {
+			if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
 				// do nothing
 			} else if err != nil {
 				c.l.Debug("failed to stat workspace file", err.Error())
