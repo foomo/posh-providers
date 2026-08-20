@@ -56,9 +56,10 @@ func CommandWithConfigKey(v string) CommandOption {
 
 func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
-		name:  "sqlc",
-		l:     l.Named("sqlc"),
-		cache: cache.Get("sqlc"),
+		name:      "sqlc",
+		configKey: "sqlc",
+		l:         l.Named("sqlc"),
+		cache:     cache.Get("sqlc"),
 	}
 
 	for _, opt := range opts {
@@ -147,8 +148,8 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 
 // Skill implements the optional command.Skiller interface. The rendered tree
 // cannot show that `generate` overwrites sources for every sqlc.yaml when no
-// path is given, that the root forwards unlisted subcommands, or that the
-// config key is never defaulted so cacheDir/tempDir are silently ignored.
+// path is given, that the root forwards unlisted subcommands, or that
+// `--no-remote` is passed on every invocation.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }

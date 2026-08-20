@@ -36,7 +36,7 @@ To install binary locally, add:
 ```yaml
 sqlc:
   tempDir: .posh/tmp/sqlc
-  cacheDirDir: .posh/cache/sqlc
+  cacheDir: .posh/cache/sqlc
 ```
 ### Ownbrew
 

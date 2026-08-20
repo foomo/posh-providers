@@ -19,15 +19,6 @@ command can do.
 
 #### Behaviour
 
-**The `sqlc` config key is currently never read.** `NewCommand` never sets a
-default `configKey`, so it stays `""` and `viper.UnmarshalKey("", &cfg)` returns
-an empty `Config` no matter what the project configures. `CacheDir` and
-`TempDir` are therefore always empty, and the `SQLCCACHE`/`SQLCTMPDIR`
-environment variables handed to sqlc both resolve to the **project root** rather
-than the configured directories. Passing `CommandWithConfigKey("sqlc")`
-explicitly is the workaround; without it, setting `sqlc.cacheDir` in the posh
-config has no effect.
-
 `--no-remote` is passed on every invocation, including the passthrough, which
 disables sqlc's remote/cloud features regardless of what the config file asks
 for.
@@ -59,8 +50,8 @@ bundled under in the project's `posh.schema.json`.
 
 Both fields are directories resolved relative to the project root and passed to
 sqlc as environment variables - `cacheDir` as `SQLCCACHE`, `tempDir` as
-`SQLCTMPDIR`. Note the README's config sample misspells the second key as
-`cacheDirDir`, which would not bind even once the key defect is fixed.
+`SQLCTMPDIR`. Leaving either unset resolves that variable to the project root
+itself, so sqlc writes its cache or temp files into the checkout.
 
 What each config *generates* is decided by the `sqlc.yaml` files themselves, not
 by anything here - reading the target `sqlc.yaml` is the only way to know what
