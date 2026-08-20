@@ -2,11 +2,13 @@ package zeus
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
@@ -15,6 +17,9 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type Command struct {
 	l     log.Logger
@@ -43,7 +48,38 @@ func (c *Command) Name() string {
 }
 
 func (c *Command) Description() string {
-	return "run zeus on target"
+	return "Run zeus in the given directory, or bootstrap a new one"
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command. The command is not tree based, so
+// the CommandInfo is built by hand.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return command.CommandInfo{
+		FullPath:    c.name,
+		Description: c.Description(),
+		Arguments: []command.ArgInfo{
+			{
+				Name:        "path",
+				Description: "Path of the zeus directory; bootstraps a new one if it does not exist",
+			},
+			{
+				Name:        "args",
+				Description: "Arguments forwarded verbatim to the zeus binary",
+				Optional:    true,
+				Repeat:      true,
+			},
+		},
+	}
+}
+
+// Skill implements the optional command.Skiller interface. The command has no
+// subcommand tree at all, so the catalog can only show two placeholders: it
+// cannot show that the forwarded arguments are the real surface, that a
+// non-existent path bootstraps rather than errors, or that the path is the zeus
+// directory whose parent zeus is actually run in.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -95,13 +131,14 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return `Find and run zeus at the given path.
 
+The path is the zeus directory itself; zeus is run in its parent directory.
 If the given path doesn't exist, it will bootstrap a new zeus installation.
 
 Usage:
   zeus [path] <args>...
 
 Examples:
-  gomod tidy ./path
+  zeus ./svc/zeus build
 `
 }
 
