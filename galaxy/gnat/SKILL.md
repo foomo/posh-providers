@@ -20,14 +20,10 @@ The argument is required, so there is no "all profiles" default to worry about.
 
 #### Behaviour
 
-**`configDir` currently has no effect.** It is meant to set `$XDG_CONFIG_HOME`
-for the gnat process so its files stay with the project, and the config comment
-and README both say so. But `execute` appends it with `.Args(...)` rather than
-`.Env(...)` (`command.go:138`), and `Args` appends to argv while `Env` sets
-`cmd.Env` - so `XDG_CONFIG_HOME=<dir>` is passed to `gnat` as a trailing
-positional argument and the environment variable is never set. gnat therefore
-reads and writes its config under the user's real `$XDG_CONFIG_HOME`. The
-sibling `galaxy/tempo` does the same thing correctly with `.Env(envs...)`.
+**`configDir` sets `$XDG_CONFIG_HOME` for the gnat process only**, so gnat's own
+config and history files stay with the project instead of the user's home
+directory. Leaving it unset means gnat reads and writes the user's real
+`$XDG_CONFIG_HOME`, shared with every other gnat on the machine.
 
 The profile suggestions carry each profile's `description`, so tab completion in
 the interactive shell is the reliable way to see what a name points at - the

@@ -38,9 +38,8 @@ twice.
 
 `configDir` is applied as a real environment variable (`XDG_CONFIG_HOME`) for
 the tempo process, so its config files stay with the project rather than in the
-user's home directory. The sibling `galaxy/gnat` has the same option but passes
-it as an argument instead, where it has no effect - do not assume gnat's
-behaviour from this one.
+user's home directory. The sibling `galaxy/gnat` has the same option and behaves
+the same way.
 
 #### Configuration
 

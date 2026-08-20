@@ -122,8 +122,8 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // Skill implements the optional command.Skiller interface. The rendered tree
 // cannot show that this is a blocking full-screen TUI unusable unattended, that
 // the profile silently selects which NATS server is mutable from inside it, or
-// that `configDir` never takes effect because it is passed as an argument
-// rather than an environment variable.
+// that `configDir` scopes gnat's own config files to the project rather than the
+// user's home directory.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -155,6 +155,6 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
-		Args(envs...).
+		Env(envs...).
 		Run()
 }
