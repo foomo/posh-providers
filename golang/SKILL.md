@@ -27,12 +27,6 @@ level runs `golangci-lint run` across every `go.mod` here, and `lint --fix` forw
 in-place rewrite above then happens as part of a command that never mentions Go. `Lint` ignores the
 `--parallel` flag and the `[path]` argument entirely; it always walks every module, serially.
 
-**`--parallel N` makes `lint` fail outright.** The flag is declared on `lint`'s internal flag set,
-but `lint` forwards `r.Flags()` — every flag token the user typed, internal ones included — to
-`golangci-lint`, which has no `--parallel` and exits with `unknown flag: --parallel`. Verified
-against golangci-lint 2.12.2. `--parallel` works on every other node, because `lint` is the only one
-that forwards raw flags. Use `--concurrency` to limit golangci-lint's own CPU use instead.
-
 `generate` executes arbitrary code. It runs `go generate` against the project's `generate.go` files,
 so what it does — usually writing generated sources over existing ones — is defined by those
 directives, not by this provider. Read them before running it, and note that with `[path]` omitted it
@@ -70,12 +64,13 @@ explicitly alongside anything else after `--`.
 **Default parallelism is 1.** `--parallel N` raises the errgroup limit; omitted, modules are
 processed one at a time. The group shares one context, so the first failure cancels the rest
 mid-run, leaving later modules unattempted. `lint` additionally adds `--allow-parallel-runners` to
-golangci-lint whenever `--parallel` is set — which is also the invocation that fails, per the hazard
-above.
+golangci-lint whenever `--parallel` is set, so the two run concurrently without fighting over the
+lint cache.
 
-**`lint` passes each default flag twice**, once re-rendered from pflag (`fs.Visited().Args()`) and
-once verbatim (`r.Flags()`), so `--timeout 5m` arrives as `--timeout 5m0s --timeout 5m`. Last-wins
-flags are unaffected; `--build-tags` is a string slice, so the value accumulates.
+**Flags typed on `lint` reach golangci-lint re-rendered from the parsed flag set, not verbatim**, so
+`--timeout 5m` arrives as `--timeout 5m0s`. Internal flags such as `--parallel` are consumed by posh
+and never forwarded. Anything that golangci-lint accepts but this tree does not declare has to go
+after `--`.
 
 **`work init` and `work sync` are both three-and-two-step sequences, not single commands.** `init`
 runs `go work init`, `go work use -r .`, `go work sync`, aborting on the first failure — so against an

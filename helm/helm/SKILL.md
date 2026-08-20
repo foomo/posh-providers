@@ -16,15 +16,12 @@ the flag set is shared. On those it is forwarded and rejected by helm rather
 than silently ignored, but do not treat its presence in the usage block as proof
 a given verb can be simulated.
 
-**Validation ignores `--profile`, so a valid-looking command can run against the
-wrong file or fail confusingly.** `Validate` rejects a cluster whose
-*top-level* kubeconfig is missing - it checks `ConfigExists("")` regardless of
-the profile you passed - while execution reads
-`<configPath>/<profile>/<cluster>.yaml`. So a cluster that exists only under a
-profile is rejected outright, and a cluster that exists at top level but not
-under the named profile passes validation and then fails inside helm with a
-kubeconfig error. Keep the profile consistent with whichever provider wrote the
-kubeconfig.
+**The cluster argument is the only thing scoping every verb, so check it before
+running.** It is validated against the kubeconfig that will actually be used -
+the `--profile` flag is honoured, so a cluster that exists only under a profile
+is accepted with that flag and rejected without it. What validation cannot catch
+is naming a *real* cluster you did not mean, which for `uninstall` and `rollback`
+is the case that matters.
 
 #### Behaviour
 

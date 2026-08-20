@@ -8,12 +8,12 @@ call blocks indefinitely. Use `kubectl` for anything an agent needs to read.
 read-only. With it, a human at the keyboard can edit and delete live resources, so the flag both
 requires approval and widens what a mistyped cluster argument can damage. There is no dry-run.
 
-**A cluster argument is never validated.** The provider builds `KUBECONFIG` from the name it is given
-(`kubectl.Cluster(<name>).Env(<profile>)`) without checking that the file exists — `kubectl`'s own
-`ConfigExists` helper is not called here. A typo therefore points `KUBECONFIG` at a nonexistent path
-rather than failing, and `ku` starts against whatever the ambient kube context resolves to, which may
-be a different cluster than the one named. Confirm the cluster before trusting the argument, and see
-`kubectl` for the command that lists the configured ones.
+**The cluster argument is the only thing scoping the session, so check it before running.** It is
+validated — a name with no kubeconfig behind it is rejected as `invalid [cluster] argument`, and the
+`--profile` flag is honoured while checking, so a cluster that exists only under a profile needs that
+flag. What validation cannot catch is naming a *real* cluster you did not mean: `ku prod` and
+`ku staging` differ by one word and both pass. See `kubectl` for the command that lists the configured
+clusters.
 
 **Omitting `[fleet]` is cluster-wide, not a default namespace.** With only a cluster given, no
 `--namespace` is passed at all and the dashboard covers every namespace in the cluster — including

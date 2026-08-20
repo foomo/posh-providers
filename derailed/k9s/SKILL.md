@@ -9,13 +9,13 @@ at the keyboard can edit, scale and delete live resources, and the provider pass
 restricts that. Whatever cluster and namespace the arguments resolve to is fully writable from the
 moment the dashboard opens.
 
-**A cluster argument is never validated.** The provider builds `KUBECONFIG` from the name it is given
-(`kubectl.Cluster(<name>).Env(<profile>)`) without checking that the file exists — `kubectl`'s own
-`ConfigExists` helper is not called here. A typo therefore points `KUBECONFIG` at a nonexistent path
-rather than failing, and k9s starts against whatever the ambient kube context resolves to, which may
-be a different and real cluster. Combined with the point above, that is a writable dashboard on an
-unintended cluster. Confirm the cluster before trusting the argument; see `kubectl` for the command
-that lists the configured ones.
+**The cluster argument is the only thing scoping the dashboard, so check it before running.** It is
+validated — a name with no kubeconfig behind it is rejected as `invalid [cluster] argument`, and the
+`--profile` flag is honoured while checking, so a cluster that exists only under a profile needs that
+flag. What validation cannot catch is naming a *real* cluster you did not mean: `k9s prod` and
+`k9s staging` differ by one word and both pass. Combined with the point above, that is a writable
+dashboard on whichever cluster you named. See `kubectl` for the command that lists the configured
+clusters.
 
 **Omitting `[fleet]` is cluster-wide, not a default namespace.** With only a cluster given, no
 `--namespace` is passed at all and the dashboard covers every namespace in the cluster. The usage

@@ -14,6 +14,7 @@ import (
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/pkg/errors"
 )
 
 //go:embed SKILL.md
@@ -130,6 +131,17 @@ func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
+	switch {
+	case r.Args().LenIs(0):
+		return errors.New("missing [cluster] argument")
+	case !c.kubectl.Cluster(r.Args().At(0)).ConfigExistsForFlags(r.Flags()):
+		return errors.Errorf("invalid [cluster] argument: %s", r.Args().At(0))
+	}
+
+	return nil
+}
+
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
@@ -150,8 +162,7 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 
 // Skill implements the optional command.Skiller interface. The catalog shows a
 // single node with up to three arguments and cannot show that it opens a
-// blocking, read-write terminal UI; that the cluster is never validated, so a
-// typo silently falls through to the ambient kube context; that `[fleet]` and
+// blocking, read-write terminal UI; that `[fleet]` and
 // `[squadron]` exist only when the project wired CommandWithSquadron; or how
 // the two combine into a namespace - including the case where `all` yields a
 // literal `<fleet>-all` rather than every namespace.

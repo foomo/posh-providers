@@ -14,6 +14,7 @@ import (
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/pkg/errors"
 )
 
 //go:embed SKILL.md
@@ -133,6 +134,17 @@ func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
+	switch {
+	case r.Args().LenIs(0):
+		return errors.New("missing [cluster] argument")
+	case !c.kubectl.Cluster(r.Args().At(0)).ConfigExistsForFlags(r.Flags()):
+		return errors.Errorf("invalid [cluster] argument: %s", r.Args().At(0))
+	}
+
+	return nil
+}
+
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
@@ -157,8 +169,7 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // single `--namespace` by a function whose four branches drop the fleet name in
 // two of them, or that omitting `[fleet]` is cluster-wide rather than a default
 // namespace. It also cannot show that this is a blocking full-screen TUI, or
-// that `--edit` turns it read-write against a cluster argument nothing
-// validates.
+// that `--edit` turns it read-write against whichever cluster was named.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }

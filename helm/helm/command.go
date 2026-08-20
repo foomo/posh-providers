@@ -286,7 +286,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
 		return errors.New("missing [CLUSTER] argument")
-	case !c.kubectl.Cluster(r.Args().At(0)).ConfigExists(""):
+	case !c.kubectl.Cluster(r.Args().At(0)).ConfigExistsForFlags(r.Flags()):
 		return errors.New("invalid [CLUSTER] argument")
 	case r.Args().LenIs(1):
 		return errors.New("missing [CMD] argument")
@@ -311,9 +311,8 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 
 // Skill implements the optional command.Skiller interface. The rendered tree
 // lists every subcommand without saying which mutate the cluster, that the
-// cluster argument is the only thing scoping them, that this tree is a
-// hand-maintained mirror rather than a passthrough, or that Validate ignores
-// --profile and so accepts commands that then fail inside helm.
+// cluster argument is the only thing scoping them, or that this tree is a
+// hand-maintained mirror rather than a passthrough.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }

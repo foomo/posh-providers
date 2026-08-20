@@ -364,10 +364,9 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // `[path] [package] [target]` as three optional arguments and cannot show that
 // they are read by index - so naming a package requires naming the module first
 // - nor that omitting `[path]` widens every verb to every module in the
-// checkout. It also cannot show that `--parallel` is rejected by golangci-lint
-// on the one node that declares and forwards it, that anything after `--`
-// replaces the build tags instead of adding to them, or that implementing
-// Lint(ctx, fix) enrols this provider in `arbitrary/lint`'s project-wide sweep.
+// checkout. It also cannot show that anything after `--` replaces the build
+// tags instead of adding to them, or that implementing Lint(ctx, fix) enrols
+// this provider in `arbitrary/lint`'s project-wide sweep.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -787,7 +786,6 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 			return c.execGolangciLint(ctx, "run").
 				Args(args...).
 				Args(fs.Visited().Args()...).
-				Args(r.Flags()...).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()

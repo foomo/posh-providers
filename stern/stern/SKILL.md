@@ -16,11 +16,10 @@ on `query` and `raw`) widens that to the whole cluster. Prefer the narrowest tar
 can name, and prefer `squadron` or a named `query` over `raw '.*'`.
 
 The cluster is the **first** argument, so a staging and a production tail differ by one
-word. Nothing validates it: `kubectl.Cluster(name)` constructs a cluster for any string
-and `KUBECONFIG` is pointed at `<configPath>/[<profile>/]<name>.yaml` whether or not
-that file exists — so a typo does not error here, it falls through to whatever ambient
-kube context resolves, which can be a different real cluster. Confirm the name against
-the completion list.
+word. It is a dynamic tree node rather than a plain argument, so only names with an
+existing kubeconfig match: a typo is rejected as `invalid command` by the tree itself,
+before anything runs. That protects against mistyping but not against naming the wrong
+*real* cluster, which is the case to check.
 
 The root has no `Execute`, so this is not a passthrough: only `query`, `raw` and
 `squadron` exist. Everything else stern offers is reachable only by putting it after
