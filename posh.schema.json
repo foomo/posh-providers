@@ -1983,21 +1983,27 @@
           "type": "object",
           "properties": {
             "location": {
+              "description": "Location is the Azure region the resource group and storage account are\ncreated in. Only read by `backend create`; it is not used when logging in\nor running a stack.",
               "type": "string"
             },
             "container": {
+              "description": "Container is the blob container holding the pulumi state. Used as\nazblob://<container> for both `backend login` and PULUMI_BACKEND_URL.",
               "type": "string"
             },
             "subscription": {
+              "description": "Subscription is the Azure subscription ID owning the backend. Exported as\nARM_SUBSCRIPTION_ID for every stack operation, so it also decides which\nsubscription the stack's own resources are created in.",
               "type": "string"
             },
             "resourceGroup": {
+              "description": "ResourceGroup holds the storage account. Read by `backend create` and by\nthe storage key lookup every stack operation performs.",
               "type": "string"
             },
             "storageAccount": {
+              "description": "StorageAccount holds the container. Exported as AZURE_STORAGE_ACCOUNT,\nand its access key is fetched from Azure on every stack operation.",
               "type": "string"
             },
             "passphrase": {
+              "description": "Passphrase resolves the pulumi config passphrase from 1Password and is\nexported as PULUMI_CONFIG_PASSPHRASE. Every stack operation resolves it,\nso all of them require an unlocked 1Password session.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1azure~1config.schema.json/$defs/Secret"
             }
           },
@@ -2007,12 +2013,15 @@
           "type": "object",
           "properties": {
             "path": {
+              "description": "Path to the directory holding one sub directory per environment, each\ncontaining one sub directory per pulumi project. Environment and project\ncompletion read this tree from disk, so an environment that is configured\nunder Backends but missing here cannot be selected.",
               "type": "string"
             },
             "configPath": {
+              "description": "ConfigPath is exported as PULUMI_HOME, relocating pulumi's own state\n(credentials, plugins, templates) into the project. Resolved through\nenv.Path, so a relative value is taken from the project root.",
               "type": "string"
             },
             "backends": {
+              "description": "Backends maps an environment name to the Azure blob container holding its\npulumi state. The key is the <env> argument, so it must match a directory\nname below Path.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1azure~1config.schema.json/$defs/Backend"
@@ -2054,15 +2063,19 @@
           "type": "object",
           "properties": {
             "location": {
+              "description": "Location is the Google Cloud location the bucket is created in. Only read\nby `backend create`; it is not used when logging in or running a stack.",
               "type": "string"
             },
             "bucket": {
+              "description": "Bucket is the Google Cloud Storage bucket holding the pulumi state. Used\nas gs://<bucket> for both `backend login` and PULUMI_BACKEND_URL.",
               "type": "string"
             },
             "project": {
+              "description": "Project is the Google Cloud project owning the bucket. Exported as\nGOOGLE_PROJECT for every stack operation.",
               "type": "string"
             },
             "passphrase": {
+              "description": "Passphrase resolves the pulumi config passphrase from 1Password and is\nexported as PULUMI_CONFIG_PASSPHRASE. Every stack operation resolves it,\nso all of them require an unlocked 1Password session.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1gcloud~1config.schema.json/$defs/Secret"
             }
           },
@@ -2072,12 +2085,15 @@
           "type": "object",
           "properties": {
             "path": {
+              "description": "Path to the directory holding one sub directory per environment, each\ncontaining one sub directory per pulumi project. Environment and project\ncompletion read this tree from disk, so an environment that is configured\nunder Backends but missing here cannot be selected.",
               "type": "string"
             },
             "configPath": {
+              "description": "ConfigPath is exported as PULUMI_HOME, relocating pulumi's own state\n(credentials, plugins, templates) into the project. Resolved through\nenv.Path, so a relative value is taken from the project root.",
               "type": "string"
             },
             "backends": {
+              "description": "Backends maps an environment name to the Google Cloud Storage bucket\nholding its pulumi state. The key is the <env> argument, so it must match\na directory name below Path.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1gcloud~1config.schema.json/$defs/Backend"

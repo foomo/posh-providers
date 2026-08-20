@@ -6,22 +6,28 @@
     "Backend": {
       "properties": {
         "location": {
-          "type": "string"
+          "type": "string",
+          "description": "Location is the Azure region the resource group and storage account are\ncreated in. Only read by `backend create`; it is not used when logging in\nor running a stack."
         },
         "container": {
-          "type": "string"
+          "type": "string",
+          "description": "Container is the blob container holding the pulumi state. Used as\nazblob://\u003ccontainer\u003e for both `backend login` and PULUMI_BACKEND_URL."
         },
         "subscription": {
-          "type": "string"
+          "type": "string",
+          "description": "Subscription is the Azure subscription ID owning the backend. Exported as\nARM_SUBSCRIPTION_ID for every stack operation, so it also decides which\nsubscription the stack's own resources are created in."
         },
         "resourceGroup": {
-          "type": "string"
+          "type": "string",
+          "description": "ResourceGroup holds the storage account. Read by `backend create` and by\nthe storage key lookup every stack operation performs."
         },
         "storageAccount": {
-          "type": "string"
+          "type": "string",
+          "description": "StorageAccount holds the container. Exported as AZURE_STORAGE_ACCOUNT,\nand its access key is fetched from Azure on every stack operation."
         },
         "passphrase": {
-          "$ref": "#/$defs/Secret"
+          "$ref": "#/$defs/Secret",
+          "description": "Passphrase resolves the pulumi config passphrase from 1Password and is\nexported as PULUMI_CONFIG_PASSPHRASE. Every stack operation resolves it,\nso all of them require an unlocked 1Password session."
         }
       },
       "additionalProperties": false,
@@ -30,16 +36,19 @@
     "Config": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Path to the directory holding one sub directory per environment, each\ncontaining one sub directory per pulumi project. Environment and project\ncompletion read this tree from disk, so an environment that is configured\nunder Backends but missing here cannot be selected."
         },
         "configPath": {
-          "type": "string"
+          "type": "string",
+          "description": "ConfigPath is exported as PULUMI_HOME, relocating pulumi's own state\n(credentials, plugins, templates) into the project. Resolved through\nenv.Path, so a relative value is taken from the project root."
         },
         "backends": {
           "additionalProperties": {
             "$ref": "#/$defs/Backend"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Backends maps an environment name to the Azure blob container holding its\npulumi state. The key is the \u003cenv\u003e argument, so it must match a directory\nname below Path."
         }
       },
       "additionalProperties": false,

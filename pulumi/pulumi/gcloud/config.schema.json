@@ -6,16 +6,20 @@
     "Backend": {
       "properties": {
         "location": {
-          "type": "string"
+          "type": "string",
+          "description": "Location is the Google Cloud location the bucket is created in. Only read\nby `backend create`; it is not used when logging in or running a stack."
         },
         "bucket": {
-          "type": "string"
+          "type": "string",
+          "description": "Bucket is the Google Cloud Storage bucket holding the pulumi state. Used\nas gs://\u003cbucket\u003e for both `backend login` and PULUMI_BACKEND_URL."
         },
         "project": {
-          "type": "string"
+          "type": "string",
+          "description": "Project is the Google Cloud project owning the bucket. Exported as\nGOOGLE_PROJECT for every stack operation."
         },
         "passphrase": {
-          "$ref": "#/$defs/Secret"
+          "$ref": "#/$defs/Secret",
+          "description": "Passphrase resolves the pulumi config passphrase from 1Password and is\nexported as PULUMI_CONFIG_PASSPHRASE. Every stack operation resolves it,\nso all of them require an unlocked 1Password session."
         }
       },
       "additionalProperties": false,
@@ -24,16 +28,19 @@
     "Config": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Path to the directory holding one sub directory per environment, each\ncontaining one sub directory per pulumi project. Environment and project\ncompletion read this tree from disk, so an environment that is configured\nunder Backends but missing here cannot be selected."
         },
         "configPath": {
-          "type": "string"
+          "type": "string",
+          "description": "ConfigPath is exported as PULUMI_HOME, relocating pulumi's own state\n(credentials, plugins, templates) into the project. Resolved through\nenv.Path, so a relative value is taken from the project root."
         },
         "backends": {
           "additionalProperties": {
             "$ref": "#/$defs/Backend"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Backends maps an environment name to the Google Cloud Storage bucket\nholding its pulumi state. The key is the \u003cenv\u003e argument, so it must match\na directory name below Path."
         }
       },
       "additionalProperties": false,

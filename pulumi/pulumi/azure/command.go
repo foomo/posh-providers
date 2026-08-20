@@ -2,6 +2,7 @@ package pulumi
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 	"path"
@@ -10,6 +11,7 @@ import (
 	"github.com/foomo/posh-providers/azure/az"
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -20,6 +22,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
 
 type (
 	Command struct {
@@ -83,7 +88,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "pulumi",
-		Description: "Open the pulumi dashboard",
+		Description: "Manage pulumi stacks and their state backends",
 		Nodes: tree.Nodes{
 			{
 				Name:        "env",
@@ -102,7 +107,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 									fs.Default().Bool("debug", false, "Show full logs")
 									fs.Default().Bool("vebose", false, "Increase logging verbosity")
 									fs.Internal().String("group-args", "", "Additional group create args")
-									fs.Internal().String("storage-args", "", "Additional storaage create args")
+									fs.Internal().String("storage-args", "", "Additional storage create args")
 
 									return nil
 								},
@@ -199,15 +204,18 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 						Description: "Manage stacks and view stack state",
 						Args: tree.Args{
 							{
-								Name:    "project",
-								Suggest: inst.completeProjects,
+								Name:        "project",
+								Description: "Pulumi project directory below the environment",
+								Suggest:     inst.completeProjects,
 							},
 							{
-								Name:    "stack",
-								Suggest: inst.completeStacks,
+								Name:        "stack",
+								Description: "Stack name, from a Pulumi.<stack>.yaml in the project",
+								Suggest:     inst.completeStacks,
 							},
 							{
-								Name: "command",
+								Name:        "command",
+								Description: "Read-only stack subcommand: init, output or history",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return []goprompt.Suggest{
 										{Text: "init", Description: "Create an empty stack with the given name, ready for updates"},
@@ -230,12 +238,14 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 						Description: "Create or update the resources in a stack",
 						Args: tree.Args{
 							{
-								Name:    "project",
-								Suggest: inst.completeProjects,
+								Name:        "project",
+								Description: "Pulumi project directory below the environment",
+								Suggest:     inst.completeProjects,
 							},
 							{
-								Name:    "stack",
-								Suggest: inst.completeStacks,
+								Name:        "stack",
+								Description: "Stack name, from a Pulumi.<stack>.yaml in the project",
+								Suggest:     inst.completeStacks,
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -257,12 +267,14 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 						Description: "Destroy all existing resources in the stack",
 						Args: tree.Args{
 							{
-								Name:    "project",
-								Suggest: inst.completeProjects,
+								Name:        "project",
+								Description: "Pulumi project directory below the environment",
+								Suggest:     inst.completeProjects,
 							},
 							{
-								Name:    "stack",
-								Suggest: inst.completeStacks,
+								Name:        "stack",
+								Description: "Stack name, from a Pulumi.<stack>.yaml in the project",
+								Suggest:     inst.completeStacks,
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -273,7 +285,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 							fs.Default().Bool("remove", false, "Remove the stack and its config file after all resources in the stack have been deleted")
 							fs.Default().Bool("target-dependents", false, "Allows updating of dependent targets discovered but not specified in --target list")
 							fs.Default().Int("verbose", 3, "Enable verbose logging")
-							fs.Default().StringArray("target", nil, "Specify a single resource URN to update")
+							fs.Default().StringArray("target", nil, "Specify a single resource URN to destroy")
 
 							return nil
 						},
@@ -284,12 +296,14 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 						Description: "Show a preview of updates to a stack's resources",
 						Args: tree.Args{
 							{
-								Name:    "project",
-								Suggest: inst.completeProjects,
+								Name:        "project",
+								Description: "Pulumi project directory below the environment",
+								Suggest:     inst.completeProjects,
 							},
 							{
-								Name:    "stack",
-								Suggest: inst.completeStacks,
+								Name:        "stack",
+								Description: "Stack name, from a Pulumi.<stack>.yaml in the project",
+								Suggest:     inst.completeStacks,
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -311,12 +325,14 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 						Description: "Cancel a stack's currently running update, if any",
 						Args: tree.Args{
 							{
-								Name:    "project",
-								Suggest: inst.completeProjects,
+								Name:        "project",
+								Description: "Pulumi project directory below the environment",
+								Suggest:     inst.completeProjects,
 							},
 							{
-								Name:    "stack",
-								Suggest: inst.completeStacks,
+								Name:        "stack",
+								Description: "Stack name, from a Pulumi.<stack>.yaml in the project",
+								Suggest:     inst.completeStacks,
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -330,12 +346,14 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 						Description: "Refresh the resources in a stack",
 						Args: tree.Args{
 							{
-								Name:    "project",
-								Suggest: inst.completeProjects,
+								Name:        "project",
+								Description: "Pulumi project directory below the environment",
+								Suggest:     inst.completeProjects,
 							},
 							{
-								Name:    "stack",
-								Suggest: inst.completeStacks,
+								Name:        "stack",
+								Description: "Stack name, from a Pulumi.<stack>.yaml in the project",
+								Suggest:     inst.completeStacks,
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -345,7 +363,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 							fs.Default().Bool("expect-no-changes", false, "Return an error if any changes occur during this update")
 							fs.Default().Bool("help", false, "Show command help")
 							fs.Default().Bool("show-replacement-steps", false, "Show detailed resource replacement creates and deletes instead of a single step")
-							fs.Default().Bool("show-sames", false, "Show resources that needn't be updated because they haven't changed, alongside those that d")
+							fs.Default().Bool("show-sames", false, "Show resources that needn't be updated because they haven't changed, alongside those that do")
 							fs.Default().StringArray("import-pending-creates", nil, "A list of form [[URN ID]...] describing the provider IDs of pending creates")
 							fs.Default().StringArray("target", nil, "Specify a single resource URN to update")
 
@@ -358,15 +376,18 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 						Description: "Edit the current stack's state",
 						Args: tree.Args{
 							{
-								Name:    "project",
-								Suggest: inst.completeProjects,
+								Name:        "project",
+								Description: "Pulumi project directory below the environment",
+								Suggest:     inst.completeProjects,
 							},
 							{
-								Name:    "stack",
-								Suggest: inst.completeStacks,
+								Name:        "stack",
+								Description: "Stack name, from a Pulumi.<stack>.yaml in the project",
+								Suggest:     inst.completeStacks,
 							},
 							{
-								Name: "command",
+								Name:        "command",
+								Description: "State subcommand; delete, rename and unprotect mutate stack state",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return []goprompt.Suggest{
 										{Text: "delete", Description: "Deletes a resource from a stack's state"},
@@ -388,21 +409,26 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 						Description: "Import resources into an existing stack",
 						Args: tree.Args{
 							{
-								Name:    "project",
-								Suggest: inst.completeProjects,
+								Name:        "project",
+								Description: "Pulumi project directory below the environment",
+								Suggest:     inst.completeProjects,
 							},
 							{
-								Name:    "stack",
-								Suggest: inst.completeStacks,
+								Name:        "stack",
+								Description: "Stack name, from a Pulumi.<stack>.yaml in the project",
+								Suggest:     inst.completeStacks,
 							},
 							{
-								Name: "type",
+								Name:        "type",
+								Description: "Pulumi resource type token, e.g. azure-native:storage:StorageAccount",
 							},
 							{
-								Name: "name",
+								Name:        "name",
+								Description: "Name to give the imported resource in the stack",
 							},
 							{
-								Name: "id",
+								Name:        "id",
+								Description: "Provider-specific ID of the existing cloud resource",
 							},
 						},
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
@@ -413,7 +439,7 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 							fs.Default().String("from", "", "Invoke a converter to import the resources")
 							fs.Default().String("out", "", "The path to the file that will contain the generated resource declarations")
 							fs.Default().String("parent", "", "The name and URN of the parent resource in the format name=urn")
-							fs.Default().StringArray("properties", nil, "The property names to use for the import in the format name1,name")
+							fs.Default().StringArray("properties", nil, "The property names to use for the import in the format name1,name2")
 
 							return nil
 						},
@@ -449,6 +475,20 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. the catalog shows four placeholders in a row and cannot show that each is
+// resolved against the one before it, that every stack verb resolves a
+// 1Password secret and injects it into live stack config before running, or
+// which verbs mutate infrastructure as opposed to only reading it.
+func (c *Command) Skill(ctx context.Context) string {
+	return skill
 }
 
 // ------------------------------------------------------------------------------------------------
