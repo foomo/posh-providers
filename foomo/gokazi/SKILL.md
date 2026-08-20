@@ -10,15 +10,11 @@ everything they started is visible and stoppable here. A task name like
 `list` is read-only and the safe way to see what is running: it prints PID, name
 and whether each task is actually alive.
 
-**`stop` needs the name argument, and passing exactly one is not enough.** The
-fallback to "stop everything" is gated on `r.Args().LenGt(2)`, but the args here
-are `["stop", <name>...]`, so a single `gokazi stop my-task` has length 2, fails
-that check, and **stops every running task in the registry** - across every
-provider - rather than the one named. Only two or more names take the narrow path.
-This is a live off-by-one in the provider (`kubeforward disconnect` gates the same
-pattern on `LenGt(1)`), not intended behaviour, so do not rely on either reading:
-treat any `gokazi stop` as potentially stopping everything, and use the owning
-provider's stop verb when you mean one process.
+**`stop` with no name stops every running task in the registry**, across every
+provider - the name argument is optional and omitting it widens the scope rather
+than narrowing it, which the usage block cannot convey. Naming one or more tasks
+stops exactly those. When you mean one process, prefer the owning provider's own
+stop verb, which resolves the name against its config and logs what it does.
 
 Stopping is a signal to a live process, which makes it disruptive rather than
 destructive - nothing on disk or in a cluster is touched, but whatever depended on
@@ -62,8 +58,10 @@ posh execute gokazi list
 # Stop everything in the registry, across every provider
 posh execute gokazi stop
 
-# Note: a single name does NOT narrow the scope - this also stops everything.
-# Use the owning provider instead, e.g.
+# Stop one named task
+posh execute gokazi stop kubeforward.my-database
+
+# Or use the owning provider, which validates the name against its config
 posh execute kubeforward disconnect my-database
 ```
 

@@ -6,21 +6,16 @@ returns once the process is up and the tunnel keeps running after the command
 finishes. Nothing here reports status; use the `gokazi` command to see what is
 actually running.
 
-**A single name does not narrow the selection - it acts on everything.** Both
-`start` and `stop` gate on `r.Args().LenGt(2)` but slice with `From(1)`
-(`command.go:145` and `command.go:167`). The arguments at a leaf include the
-verb, so `gost stop local` has length 2, fails the `> 2` test, and falls through
-to the default of *every configured name*. Two or more names take the intended
-path and are honoured. So:
+**Omitting the name acts on every configured process.** The `name` argument is
+optional on both verbs, and leaving it off widens the scope rather than
+narrowing it - the usage block shows only `[name]...`, which reads as less work,
+not more:
 
-- `gost stop` - stops every configured process (documented behaviour)
-- `gost stop local` - **also stops every configured process**, not just `local`
+- `gost stop` - stops every configured process
+- `gost stop local` - stops exactly `local`
 - `gost stop local staging` - stops exactly those two
 
-The same holds for `start`. There is no way to act on exactly one name; pass the
-name twice (`gost stop local local`) if you need to, or expect all of them. This
-is a defect, not a design - `arbitrary/ssh` gates the identical pattern on
-`LenGt(2)` with `From(2)` and is correct.
+The same holds for `start`.
 
 Both verbs iterate and return on the first error, so an unknown name aborts the
 loop with everything before it already started or stopped. `start` validates
@@ -64,10 +59,10 @@ the id it appears under in the shared process registry that `gokazi`,
 # Start every configured gost process
 posh execute gost start
 
-# Two or more names are honoured exactly
+# Named processes are acted on exactly
 posh execute gost start local staging
 
-# NOTE: a single name still acts on every configured process
+# Stop one named process
 posh execute gost stop local
 ```
 

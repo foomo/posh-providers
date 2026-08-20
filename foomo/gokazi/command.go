@@ -87,11 +87,11 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "stop",
-				Description: "Stop process",
+				Description: "Stop running processes; all of them if no name is given",
 				Args: tree.Args{
 					{
 						Name:        "name",
-						Description: "Process name",
+						Description: "Process name; omit to stop every task in the registry",
 						Repeat:      true,
 						Optional:    true,
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -197,7 +197,7 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // Skill implements the optional command.Skiller interface. The catalog shows
 // `stop` taking an optional repeated name; what it cannot show is that the
 // registry is shared with every other provider that starts background tasks, nor
-// that the arg gate is off by one so a single name still stops everything.
+// that omitting the name widens the scope to every task rather than narrowing it.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -231,7 +231,7 @@ func (c *Command) stop(ctx context.Context, r *readline.Readline) error {
 	}
 
 	names := slices.Sorted(maps.Keys(tasks))
-	if r.Args().LenGt(2) {
+	if r.Args().LenGt(1) {
 		names = r.Args().From(1)
 	}
 

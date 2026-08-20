@@ -88,11 +88,11 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 		Nodes: tree.Nodes{
 			{
 				Name:        "start",
-				Description: "Start configured gost processes as background processes; all of them if fewer than two names are given",
+				Description: "Start configured gost processes as background processes; all of them if no name is given",
 				Args: tree.Args{
 					{
 						Name:        "name",
-						Description: "Config name; note a single name still acts on all of them",
+						Description: "Config name; omit to act on every configured process",
 						Repeat:      true,
 						Optional:    true,
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -104,11 +104,11 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "stop",
-				Description: "Stop running gost processes; all of them if fewer than two names are given",
+				Description: "Stop running gost processes; all of them if no name is given",
 				Args: tree.Args{
 					{
 						Name:        "name",
-						Description: "Config name; note a single name still acts on all of them",
+						Description: "Config name; omit to act on every configured process",
 						Repeat:      true,
 						Optional:    true,
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -155,10 +155,9 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 }
 
 // Skill implements the optional command.Skiller interface. The rendered tree
-// cannot show that these verbs manage background processes, that a single name
-// still acts on every configured process because of the off-by-one arg gate, or
-// that what a name actually binds and proxies lives in the config file it
-// points at.
+// cannot show that these verbs manage background processes, that omitting the
+// name acts on every configured process rather than fewer, or that what a name
+// actually binds and proxies lives in the config file it points at.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -169,7 +168,7 @@ func (c *Command) Skill(ctx context.Context) string {
 
 func (c *Command) start(ctx context.Context, r *readline.Readline) error {
 	names := c.cfg.Names()
-	if r.Args().LenGt(2) {
+	if r.Args().LenGt(1) {
 		names = r.Args().From(1)
 	}
 
@@ -193,7 +192,7 @@ func (c *Command) start(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) stop(ctx context.Context, r *readline.Readline) error {
 	names := c.cfg.Names()
-	if r.Args().LenGt(2) {
+	if r.Args().LenGt(1) {
 		names = r.Args().From(1)
 	}
 
