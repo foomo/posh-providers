@@ -1,4 +1,4 @@
-# POSH doctl provider
+# POSH hygen provider
 
 ## Usage
 

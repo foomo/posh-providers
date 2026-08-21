@@ -7,10 +7,17 @@
 ```go
 package main
 
+import (
+  // stern takes the squadron.Squadron interface; the implementation lives in
+  // the v2 module, and both declare `package squadron`, so alias one of them.
+  squadronv2 "github.com/foomo/posh-providers/foomo/squadron/v2"
+)
+
 type Plugin struct {
   l        log.Logger
   cache    cache.Cache
   kubectl  *kubectl.Kubectl
+  squadron *squadronv2.Squadron
   commands command.Commands
 }
 
@@ -29,7 +36,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
     return nil, errors.Wrap(err, "failed to create kubectl")
   }
 
-  inst.squadron, err = squadron.New(l, inst.kubectl)
+  inst.squadron, err = squadronv2.New(l, inst.kubectl)
   if err != nil {
     return nil, errors.Wrap(err, "failed to create squadron")
   }

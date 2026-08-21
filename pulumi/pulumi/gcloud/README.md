@@ -1,4 +1,4 @@
-# POSH pulumi (azure) provider
+# POSH pulumi (gcloud) provider
 
 ## Usage
 

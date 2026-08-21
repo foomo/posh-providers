@@ -1,4 +1,4 @@
-# POSH gotsrpc provider
+# POSH sesamy provider
 
 ## Usage
 
@@ -20,7 +20,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
 	// ...
 
-  inst.commands.Add(gotsrpc.NewCommand(l))
+  inst.commands.MustAdd(sesamy.NewCommand(l, inst.onePassword))
 
 	// ...
 
@@ -44,7 +44,7 @@ To install binary locally, add:
 ```yaml
 ownbrew:
   packages:
-    - name: gotsrpc
-      tap: foomo/tap/foomo/gotsrpc
-      version: 2.6.2
+    - name: sesamy
+      tap: foomo/tap/foomo/sesamy
+      version: 1.0.0
 ```

@@ -14,8 +14,10 @@ import (
 	"github.com/foomo/posh-providers/tenable/terrascan"
 )
 
-cmd := terrascan.NewCommand(l, cache)
-lintCmd := lint.NewCommand(l, cache, lint.CommandWithLinters(cmd))
+// terrascan implements Lint(ctx, fix), so registering it makes `lint` pick it
+// up - lint takes the whole command registry rather than a linters option.
+inst.commands.Add(terrascan.NewCommand(l, cache))
+inst.commands.Add(lint.NewCommand(l, inst.commands))
 ```
 
 Invocation:

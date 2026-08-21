@@ -9,13 +9,16 @@ package plugin
 
 type Plugin struct {
 	l        log.Logger
-  k3d      *k3d.K3d
+	k3d      *k3d.K3d
+	cache    cache.Cache
+	kubectl  *kubectl.Kubectl
 	commands command.Commands
 }
 
 func New(l log.Logger) (plugin.Plugin, error) {
 	inst := &Plugin{
 		l:        l,
+		cache:    &cache.MemoryCache{},
 		commands: command.Commands{},
 	}
 
@@ -30,7 +33,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
 	// ...
 
-  inst.commands.MustAdd(k3d.NewCommand(l, inst.k3d, inst.kubectl))
+  inst.commands.MustAdd(k3d.NewCommand(l, inst.k3d, inst.cache, inst.kubectl))
 
 	// ...
 

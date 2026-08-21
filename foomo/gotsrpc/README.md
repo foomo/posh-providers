@@ -9,18 +9,20 @@ package plugin
 
 type Plugin struct {
 	l        log.Logger
+	cache    cache.Cache
 	commands command.Commands
 }
 
 func New(l log.Logger) (plugin.Plugin, error) {
 	inst := &Plugin{
 		l:        l,
+		cache:    &cache.MemoryCache{},
 		commands: command.Commands{},
 	}
 
 	// ...
 
-  inst.commands.Add(gotsrpc.NewCommand(l))
+  inst.commands.Add(gotsrpc.NewCommand(l, inst.cache))
 
 	// ...
 

@@ -9,9 +9,12 @@ package plugin
 
 type Plugin struct {
 	l           log.Logger
-  beam        *beam.Beam
-  cloudflared *cloudflared.cloudflared
-  cache       cache.Cache
+	beam        *beam.Beam
+	op          *onepassword.OnePassword
+	gokazi      *gokazi.Gokazi
+	cloudflared *cloudflared.Cloudflared
+	kubectl     *kubectl.Kubectl
+	cache       cache.Cache
 	commands    command.Commands
 }
 
@@ -39,15 +42,20 @@ func New(l log.Logger) (plugin.Plugin, error) {
     return nil, errors.Wrap(err, "failed to create cloudflared")
   }
 
-  inst.beam, err = beam.NewBeam(l, inst.op)
+  inst.beam, err = beam.New(l, inst.op, inst.gokazi)
   if err != nil {
     return nil, errors.Wrap(err, "failed to create beam")
   }
 
   // ...
   inst.commands.Add(command.NewCheck(l,
-    beam.ClusterChecker(inst.cloudflared, inst.beam.Config().GetCluster("my-cluster")),
-    beam.DatabaseChecker(inst.cloudflared, inst.beam.Config().GetDatabase("my-database")),
+    // beam has no checker of its own; build cloudflared's from the config, the
+    // same way the connect verbs do.
+    cloudflared.AccessChecker(inst.cloudflared, cloudflared.Access{
+      Type:     "tcp",
+      Hostname: inst.beam.Config().GetCluster("my-cluster").Hostname,
+      Port:     inst.beam.Config().GetCluster("my-cluster").Port,
+    }),
   ))
 
   inst.commands.MustAdd(beam.NewCommand(l, inst.beam, inst.kubectl, inst.cloudflared))
