@@ -9,22 +9,20 @@ something a human runs before the agent starts working, not something the agent 
 same `tsh login --proxy=<hostname> --auth=github` as `teleport auth`. Typing the command name alone to
 see what it offers starts an SSO flow instead.
 
-**`kubeconfig` deletes the existing kubeconfig before it logs in, not after it succeeds.** It calls
-`DeleteConfig(<profile>)` first and only then runs `tsh kube login`. If the login fails — expired
-session, wrong cluster name, no network — the previous working config is already gone and the profile
-is left with no kubeconfig at all. Re-run it after authenticating rather than assuming the old
-credentials survived.
+**`kubeconfig` replaces the profile's kubeconfig.** `tsh kube login` merges into whatever is already at
+`KUBECONFIG`, so the provider moves the old file aside first to stop stale contexts accumulating, and
+puts it back if the login fails — an expired session or a network error leaves the previous working
+config intact rather than destroying it. The file is still rewritten on success, so anything hand-added
+to it is lost.
 
 **`--auth=github` is hardcoded.** The provider always requests the GitHub connector, so a project
 whose teleport cluster uses a different one cannot log in through this command regardless of config.
 
-**Cluster aliases are reverse-mapped by scanning the alias map, so an ambiguous or shadowing alias
-sends you to the wrong cluster.** Completion offers the alias, and `kubeconfig` maps it back with
-`Kubernetes.Name()`, which iterates the map looking for a matching value. Two consequences, both
-verified by running the lookup: if two real clusters share one alias the winner is **random per call**
-(a 175/25 split over 200 runs), and if an alias equals some *other* cluster's real name, the alias
-wins — configuring `kubernetes-dev: prod` means typing `prod` logs you into the dev cluster. Keep
-alias values unique and disjoint from every real cluster name; nothing validates this.
+**An ambiguous cluster alias is rejected, not resolved.** Completion offers the alias and `kubeconfig`
+maps it back to the real cluster name. Two configurations cannot resolve unambiguously and now error
+instead of picking a cluster: two clusters sharing one alias, and an alias equal to some *other*
+cluster's real name (`kubernetes-dev: prod` alongside a real `prod`). The error names the conflicting
+clusters, so fixing it is a config edit.
 
 #### Behaviour
 

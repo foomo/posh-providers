@@ -59,7 +59,7 @@
             "type": "string"
           },
           "type": "object",
-          "description": "Display names for kube clusters, keyed by the real teleport cluster name.\nCompletion offers the alias and it is mapped back before login, so the\nvalues must be unique and must not collide with a real cluster name."
+          "description": "Display names for kube clusters, keyed by the real teleport cluster name.\nCompletion offers the alias and it is mapped back before login, so the\nvalues must be unique and must not collide with another cluster's real\nname; a configuration that breaks either rule is rejected when the alias\nis resolved."
         }
       },
       "additionalProperties": false,

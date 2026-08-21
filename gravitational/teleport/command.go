@@ -3,7 +3,9 @@ package teleport
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
+	"os"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
@@ -160,11 +162,10 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // Skill implements the optional command.Skiller interface. The catalog lists
 // five verbs and cannot show that all of them need an interactive browser SSO
 // an agent cannot complete; that the bare root logs in rather than printing
-// help; that `kubeconfig` deletes the existing config before the login that
-// would replace it; that nothing completes until authenticated, and then only
-// what the configured labels match; or that cluster aliases are reverse-mapped
-// by scanning a map, so a duplicated or shadowing alias picks a cluster at
-// random.
+// help; that `kubeconfig` replaces the profile's existing config, restoring it
+// if the login fails; that nothing completes until authenticated, and then only
+// what the configured labels match; or that an ambiguous cluster alias is
+// rejected rather than resolved.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -208,20 +209,87 @@ func (c *Command) kubeconfig(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	// delete old config
-	if err := cluster.DeleteConfig(profile); err != nil {
+	clusterName, err := c.teleport.cfg.Kubernetes.Name(cluster.Name())
+	if err != nil {
+		return err
+	}
+
+	// `tsh kube login` merges into whatever is already at KUBECONFIG (upstream's
+	// kubeconfig.Update loads the path first), so the old file has to go to stop
+	// stale contexts accumulating. Move it aside rather than deleting it: a failed
+	// login - expired session, no network - would otherwise leave the profile
+	// with no kubeconfig at all, having destroyed a working one.
+	stash, err := stashFile(cluster.Config(profile))
+	if err != nil {
 		return err
 	}
 
 	// generate & filter new config
-	return shell.New(ctx, c.l, "tsh", "kube", "login",
-		c.teleport.cfg.Kubernetes.Name(cluster.Name()),
-	).
+	if err := shell.New(ctx, c.l, "tsh", "kube", "login", clusterName).
 		Env(cluster.Env(profile)).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Args(r.AdditionalFlags()...).
-		Run()
+		Run(); err != nil {
+		return errors.Join(err, stash.Restore())
+	}
+
+	return stash.Discard()
+}
+
+// stash holds a file moved aside so a failed operation can put it back.
+type stash struct {
+	path string
+	// copy is empty when the path did not exist, in which case Restore only has
+	// to remove whatever was written in its place.
+	copy string
+}
+
+// stashFile moves path out of the way if it exists. Call Restore to put it back
+// on failure, or Discard once the operation has succeeded.
+func stashFile(path string) (*stash, error) {
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		return &stash{path: path}, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	copyPath := path + ".posh-stash"
+	if err := os.Rename(path, copyPath); err != nil {
+		return nil, err
+	}
+
+	return &stash{path: path, copy: copyPath}, nil
+}
+
+// Restore puts the original file back, discarding anything written in its place.
+func (s *stash) Restore() error {
+	if err := ignoreNotExist(os.Remove(s.path)); err != nil {
+		return err
+	}
+
+	if s.copy == "" {
+		return nil
+	}
+
+	return os.Rename(s.copy, s.path)
+}
+
+// Discard drops the preserved copy, keeping whatever now sits at the path.
+func (s *stash) Discard() error {
+	if s.copy == "" {
+		return nil
+	}
+
+	return ignoreNotExist(os.Remove(s.copy))
+}
+
+func ignoreNotExist(err error) error {
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+
+	return err
 }
 
 func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
