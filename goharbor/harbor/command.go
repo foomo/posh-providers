@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"os"
+	"strings"
 
 	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
@@ -144,6 +145,8 @@ func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
 		username = *user.Login
 	} else if username, err = util.Prompt("github username"); err != nil {
 		return err
+	} else {
+		username = strings.TrimSpace(username)
 	}
 
 	pterm.Info.Println("registry: " + c.harbor.Config().DockerRegistry())

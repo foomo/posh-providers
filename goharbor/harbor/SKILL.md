@@ -34,15 +34,9 @@ unreachable from here.
 calls the **GitHub** API with `GITHUB_TOKEN` from the environment and uses that
 account's login as the Harbor username — so the identity comes from GitHub, not from
 Harbor or from this config, which only makes sense where Harbor authenticates
-through GitHub OIDC. When that call fails it prompts on stdin instead, and the helper
-it uses returns the input **including the trailing newline**, which is never
-trimmed. Since posh joins arguments into a single `sh -c` line, that newline
-terminates the line rather than separating two words: anything the provider appends
-after the username becomes a *second* shell command. With nothing appended the
-username is last and the login still works, so this only surfaces when arguments are
-forwarded — `harbor docker -- --password-stdin` reports `sh: 2: --password-stdin: not
-found` instead of a login result. Prefer having `GITHUB_TOKEN` set so the prompt path
-is never taken.
+through GitHub OIDC. When that call fails it prompts on stdin instead, which needs a
+human at the keyboard — prefer having `GITHUB_TOKEN` set so the prompt path is never
+taken.
 
 Forwarding is of limited use on this verb anyway: posh keeps the `--` separator, so it
 too is handed to `docker login` as an argument. Both forwarded slots go to that one
