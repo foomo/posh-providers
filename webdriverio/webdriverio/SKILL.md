@@ -19,11 +19,6 @@ then proceeds with `E2E_BASE_URL` set to just the mode's host prefix and port, a
 resolved. The tests fail confusingly rather than the command refusing the argument. Completion offers
 only configured names, so this bites on typed or scripted invocations.
 
-**The `browserstack` mode panics when `browserStack:` is not configured.** Without `--ci`, that mode
-dereferences `*c.cfg.BrowserStack` unconditionally, so a project that defines a mode named
-`browserstack` but no BrowserStack secret crashes at execute time rather than erroring. Verified by
-dereferencing the nil pointer.
-
 #### Behaviour
 
 **The mode name `browserstack` is a magic string, not a config flag.** `execute` compares
@@ -34,8 +29,8 @@ in config silently turns the integration off; nothing warns.
 
 **`--ci` takes precedence over the mode and skips credential resolution.** The branch order is `--ci`
 first, so `--ci` sets `E2E_ENV=ci` and BrowserStack is never contacted even in `browserstack` mode —
-no 1Password lookup, no `BROWSERSTACK_*` variables. It also happens to be the way to use that mode
-without the panic above.
+no 1Password lookup, no `BROWSERSTACK_*` variables. Selecting the `browserstack` mode without a
+`browserStack:` config errors, naming the missing key.
 
 **Almost everything reaches the runner as an environment variable, not a flag.** `LOG_LEVEL`,
 `E2E_ENV`, `E2E_BASE_URL`, `BASIC_AUTH`, `HEADLESS`, `debug`, `SCENARIOS` and the BrowserStack set are

@@ -20,6 +20,7 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -200,8 +201,8 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // every discovered directory serially until one fails; that the tests hit a
 // real configured environment with TLS verification disabled; that neither
 // <site> nor <env> is validated, so a typo yields an empty base URL; that the
-// mode name "browserstack" is a magic string that panics when the matching
-// secret is unset; or that most flags reach the runner as environment
+// mode name "browserstack" is a magic string requiring a matching secret; or
+// that most flags reach the runner as environment
 // variables the project's own wdio.conf.ts has to read.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
@@ -238,6 +239,12 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	if log.MustGet(ifs.GetBool("ci"))(c.l) {
 		envs = append(envs, fmt.Sprintf("E2E_ENV=%s", "ci"))
 	} else if mode == "browserstack" {
+		// "browserstack" is a magic mode name rather than a declared one, so a
+		// project can select it without having configured the secret it needs.
+		if c.cfg.BrowserStack == nil {
+			return errors.New(`mode "browserstack" requires the browserStack config key to be set`)
+		}
+
 		secret := *c.cfg.BrowserStack
 		secret.Field = "username"
 
