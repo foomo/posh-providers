@@ -32,20 +32,12 @@ before any of these verbs work.
 
 #### Behaviour
 
-**Multiple source paths do not aggregate correctly.** The provider discovers one
-directory per matching manifest and passes them as a single
-`--aggregate_paths=<a> <b> <c>` argument. Because posh joins arguments into one
-`sh -c` line, the shell splits that on the spaces — so `license_finder` receives
-`--aggregate_paths=<a>` plus `<b>` and `<c>` as bare positional arguments. Upstream
-declares the option as a Thor `type: :array`, and Thor stops collecting at the value
-attached with `=`, so only the **first** discovered path is aggregated; the rest
-arrive as positionals that `action_items` and `report` do not accept. A project with
-one source directory works; one with several does not scan what it appears to.
-Verified by running the joined line through `sh -c` and reading Thor's option parser.
-Treat a report from a multi-project repository as covering one project until this is
-fixed. To confirm what a run really covered, compare the path list the provider logs
-against `license_finder project_roots`, which prints the directories upstream would
-scan — that verb is not in this tree, so run it directly.
+**`action_items` and `report` cover every discovered source directory, not the
+current one.** The provider walks for each configured `sources` manifest and passes
+every match after `--aggregate_paths`, so a multi-project repository yields one
+combined report. The path list is logged before the run; to confirm what upstream
+would scan, compare it against `license_finder project_roots`, which is not in this
+tree and has to be run directly.
 
 Discovery walks the checkout from `.` for each configured `sources` filename,
 ignoring dotted directories, `vendor` and `node_modules`, and uses each match's

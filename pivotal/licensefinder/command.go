@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path"
 	"sort"
-	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command"
@@ -206,7 +205,7 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // show that the add/remove verbs rewrite a version-controlled decisions file and
 // are policy changes rather than build steps, that a non-zero exit is the
 // intended signal while a zero exit can mean nothing was scanned, or that
-// multiple discovered source paths do not aggregate correctly.
+// every discovered source path is aggregated into one combined report.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -240,11 +239,11 @@ func (c *Command) removeIgnored(ctx context.Context, r *readline.Readline) error
 }
 
 func (c *Command) actionItems(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r, "action_items", c.aggregatePaths(ctx))
+	return c.execute(ctx, r, append([]string{"action_items"}, c.aggregatePaths(ctx)...)...)
 }
 
 func (c *Command) report(ctx context.Context, r *readline.Readline) error {
-	return c.execute(ctx, r, "report", c.aggregatePaths(ctx))
+	return c.execute(ctx, r, append([]string{"report"}, c.aggregatePaths(ctx)...)...)
 }
 
 func (c *Command) execute(ctx context.Context, r *readline.Readline, args ...string) error {
@@ -262,7 +261,9 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline, args ...str
 		Run()
 }
 
-func (c *Command) aggregatePaths(ctx context.Context) string {
+// aggregatePaths returns the --aggregate_paths flag and one quoted argument per
+// discovered source directory.
+func (c *Command) aggregatePaths(ctx context.Context) []string {
 	var paths []string
 	for _, file := range c.cfg.Sources {
 		paths = append(paths, c.paths(ctx, file)...)
@@ -276,7 +277,16 @@ func (c *Command) aggregatePaths(ctx context.Context) string {
 		c.l.Info("└  " + value)
 	}
 
-	return "--aggregate_paths=" + strings.Join(paths, " ")
+	if len(paths) == 0 {
+		return nil
+	}
+
+	ret := []string{"--aggregate_paths"}
+	for _, value := range paths {
+		ret = append(ret, "'"+value+"'")
+	}
+
+	return ret
 }
 
 //nolint:forcetypeassert
