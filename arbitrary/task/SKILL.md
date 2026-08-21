@@ -38,35 +38,32 @@ backwards.** Each precondition command is run in order, and the *first one that
 succeeds* aborts the whole task as a no-op: the task is considered already
 satisfied, and its prompt, deps and cmds are skipped. A precondition that fails
 merely moves on to the next. So a precondition that succeeds means "nothing to
-do here", and the task reports success without running anything. Its progress
-line is also mislabelled - it counts against the number of `cmds`, not the
-number of preconditions, so it prints things like `{1|3}` when there is only one
-precondition.
+do here", and the task reports success without running anything.
 
 Tasks come from two places that are merged: the `tasks` map in the posh config,
 and one task per `*.yaml` file in the configured `path` (the file's basename is
-the task name). **File tasks silently overwrite config tasks of the same name.**
-The merged set is cached for the session, so a task file added or edited after
-the shell started is not picked up until the cache is cleared.
+the task name). **A file task silently takes precedence over a config task of
+the same name.** The merged set is cached for the session, so a task file added
+or edited after the shell started is not picked up until the cache is cleared.
 
 `hidden: true` only removes a task from tab completion. It remains runnable by
 name and as a dependency - it is a tidiness flag, not access control.
 
-The `sudo` field on a task is **not read by anything**. Escalation is decided
-solely by whether a command string starts with `sudo `; setting `sudo: true`
-does nothing.
+Escalation is decided solely by whether a command string starts with `sudo `,
+which is re-spawned as `sudo sh -c ...`. There is no per-task flag for it: the
+privilege is visible only in the command text itself.
 
-The README's config sample uses a `confirm:` key, but the field is `prompt:`.
-A task written from that sample gets no confirmation at all and runs
-immediately - which is the dangerous direction to be wrong in.
+The confirmation field is `prompt:`. Unknown keys in a task are silently
+ignored, so a misspelling means the task runs with no confirmation at all -
+the dangerous direction to be wrong in.
 
 #### Configuration
 
 Config key `task` by default, overridable via `WithConfigKey` (and the command
 renameable via `CommandWithName`) - note the config-key option here is
 `WithConfigKey`, not the `CommandWithConfigKey` some siblings use. Confirm both
-against the project's own posh config. The README's sample additionally shows
-the key as `tasks:`, which does not match the default either.
+against the project's own posh config. Tasks live under `task.tasks`, with
+`task.path` pointing at a directory of one-task-per-file YAML.
 
 Field shapes: [`arbitrary/task/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/arbitrary/task/config.schema.json).
 That URL is also the schema's `$id`, so it is the `$defs` key the same schema is

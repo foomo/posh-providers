@@ -37,10 +37,6 @@
           "type": "string",
           "description": "Dir to execute the task in"
         },
-        "sudo": {
-          "type": "boolean",
-          "description": "Run as sudo"
-        },
         "description": {
           "type": "string",
           "description": "Description of the task"

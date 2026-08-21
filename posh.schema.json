@@ -601,10 +601,6 @@
               "description": "Dir to execute the task in",
               "type": "string"
             },
-            "sudo": {
-              "description": "Run as sudo",
-              "type": "boolean"
-            },
             "description": {
               "description": "Description of the task",
               "type": "string"
