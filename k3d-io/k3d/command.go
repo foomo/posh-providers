@@ -4,6 +4,8 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
@@ -126,7 +128,7 @@ func NewCommand(l log.Logger, k3d *K3d, cache cache.Cache, kubectl *kubectl.Kube
 			},
 			{
 				Name:        "down",
-				Description: "Delete the cluster, its kubeconfig and the shared registry",
+				Description: "Delete the cluster and its kubeconfig; also the shared registry if it is the last one",
 				Args:        tree.Args{nameArg},
 				Execute:     inst.down,
 			},
@@ -168,7 +170,7 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 
 // Skill implements the optional command.Skiller interface. The catalog lists
 // seven verbs against a cluster name and cannot show that a single registry is
-// shared by every cluster and torn down by any `down`; that `up` silently
+// shared by every cluster and torn down with the last of them; that `up` silently
 // no-ops on an existing cluster rather than reconciling its config; that the
 // k3d cluster is named after the config's `alias` while its kubeconfig is
 // named after the argument; or that `install` runs `helm upgrade --force`,
@@ -437,8 +439,21 @@ func (c *Command) down(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
+	// The registry is shared by every cluster, so it may only be removed once the
+	// last one is gone - deleting it while another cluster is up leaves that
+	// cluster unable to pull from it.
 	if registry != nil {
-		// TODO check if empty
+		remaining, err := c.remainingClusters(ctx, cfg)
+		if err != nil {
+			return err
+		}
+
+		if len(remaining) > 0 {
+			c.l.Infof("keeping shared registry %q, still used by: %s", cfg.Registry.Name, strings.Join(remaining, ", "))
+
+			return nil
+		}
+
 		// delete registry
 		if err := shell.New(ctx, c.l, "k3d", "registry", "delete", cfg.Registry.Name).Run(); err != nil {
 			return err
@@ -446,4 +461,36 @@ func (c *Command) down(ctx context.Context, r *readline.Readline) error {
 	}
 
 	return nil
+}
+
+// remainingClusters returns the names of the configured clusters that are still
+// running, so `down` can tell whether it removed the last user of the shared
+// registry.
+func (c *Command) remainingClusters(ctx context.Context, cfg *Config) ([]string, error) {
+	clusters, err := c.k3d.Clusters(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	running := make(map[string]struct{}, len(clusters))
+	for _, cluster := range clusters {
+		running[cluster.Name] = struct{}{}
+	}
+
+	var ret []string
+
+	for name := range cfg.Clusters {
+		clusterCfg, err := cfg.Cluster(name)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, ok := running[clusterCfg.AliasName()]; ok {
+			ret = append(ret, clusterCfg.AliasName())
+		}
+	}
+
+	sort.Strings(ret)
+
+	return ret, nil
 }

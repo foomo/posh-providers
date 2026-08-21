@@ -11,7 +11,7 @@
         },
         "registry": {
           "$ref": "#/$defs/ConfigRegistry",
-          "description": "Container registry shared by every cluster below. Created on the first\n`up` and deleted by any `down`, including while other clusters use it."
+          "description": "Container registry shared by every cluster below. Created on the first\n`up` and deleted once the last cluster is brought down."
         },
         "clusters": {
           "additionalProperties": {

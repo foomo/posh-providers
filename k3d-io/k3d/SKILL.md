@@ -1,16 +1,12 @@
 #### Hazards
 
-**`down` deletes the shared registry, even while other clusters are still using it.** The config holds
-exactly **one** `registry:` for all clusters, and `down` deletes it whenever it exists — the code
-carries the author's own `// TODO check if empty` at that line. So with two clusters up, tearing one
-down removes the registry the other is pulling from, and that cluster keeps running with a broken
-image source. Bring the registry back with `up` on any cluster. Verified by tracing the config shape
-against the teardown order.
-
 **`down` is a delete, not a shutdown.** Despite reading like the opposite of `up`, it runs
-`k3d cluster delete`, removes the kubeconfig from disk and then deletes the registry — everything in
-the cluster is gone, not stopped. The verbs for stopping and starting are `pause` and `resume`.
-Requires approval.
+`k3d cluster delete` and removes the kubeconfig from disk — everything in the cluster is gone, not
+stopped. The verbs for stopping and starting are `pause` and `resume`. Requires approval.
+
+The config holds exactly **one** `registry:` shared by every cluster, so `down` removes it only once
+the last configured cluster is gone; while another is still up it logs which ones and leaves the
+registry alone.
 
 **`install` runs `helm upgrade --install --force`.** `--force` makes helm replace resources rather than
 patch them, so immutable fields are handled by delete-and-recreate — which for a Deployment or a
@@ -32,8 +28,8 @@ traefik settings against the current config. Changing a cluster's config and re-
 appears to work and changes nothing; `down` then `up` is what applies it.
 
 **`up` creates the registry only when it is missing**, so the first cluster brought up creates it and
-later ones reuse it. Combined with the teardown hazard above, registry lifetime is "from the first
-`up` to the first `down`", not per-cluster.
+later ones reuse it. Its lifetime spans the whole set: from the first `up` until the last cluster's
+`down`.
 
 **The k3d cluster name is not necessarily the argument.** Every verb takes the config *key* as its
 argument, then acts on `alias:` if the cluster sets one, falling back to the key. So `k3d up local`
@@ -98,7 +94,8 @@ posh execute k3d resume local
 # remove the chart
 posh execute k3d uninstall local base
 
-# delete the cluster, its kubeconfig AND the shared registry
+# delete the cluster and its kubeconfig; the shared registry goes
+# too, but only once no other configured cluster is left running
 posh execute k3d down local
 
 # extra k3d flags after --

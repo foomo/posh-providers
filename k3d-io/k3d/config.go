@@ -13,7 +13,7 @@ type (
 		// Helm charts installable with the install/uninstall verbs.
 		Charts ConfigCharts `json:"charts" yaml:"charts"`
 		// Container registry shared by every cluster below. Created on the first
-		// `up` and deleted by any `down`, including while other clusters use it.
+		// `up` and deleted once the last cluster is brought down.
 		Registry ConfigRegistry `json:"registry" yaml:"registry"`
 		// Clusters that can be created, keyed by the name used as the argument.
 		Clusters map[string]ConfigCluster `json:"clusters" yaml:"clusters"`

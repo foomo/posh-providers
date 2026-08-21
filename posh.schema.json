@@ -1798,7 +1798,7 @@
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json/$defs/ConfigCharts"
             },
             "registry": {
-              "description": "Container registry shared by every cluster below. Created on the first\n`up` and deleted by any `down`, including while other clusters use it.",
+              "description": "Container registry shared by every cluster below. Created on the first\n`up` and deleted once the last cluster is brought down.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json/$defs/ConfigRegistry"
             },
             "clusters": {
