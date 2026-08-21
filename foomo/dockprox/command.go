@@ -3,6 +3,7 @@ package dockprox
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"os/exec"
 
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
@@ -17,6 +18,13 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// Task ids registered with gokazi. They are distinct because the two verbs run
+// different command lines and gokazi identifies a process by its args.
+const (
+	taskServe   = "dockprox.serve"
+	taskMenubar = "dockprox.menubar"
+)
 
 type (
 	Command struct {
@@ -68,10 +76,21 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 		return nil, err
 	}
 
-	inst.gk.Add("dockprox", gokaziconfig.Task{
+	// One task per verb: gokazi matches a running process by requiring every
+	// registered arg to appear in its command line, and `menubar` runs a bare
+	// `dockprox menubar` with no config path. Registering a single task with the
+	// config arg meant a menubar process was never found - so `stop` reported
+	// nothing running and the already-running guard let `start` launch a second
+	// dockprox on the same ports.
+	inst.gk.Add(taskServe, gokaziconfig.Task{
 		Name:        "dockprox",
 		Description: inst.cfg.Config,
 		Args:        []string{inst.cfg.Config},
+	})
+	inst.gk.Add(taskMenubar, gokaziconfig.Task{
+		Name:        "dockprox",
+		Description: "menubar",
+		Args:        []string{"menubar"},
 	})
 
 	inst.commandTree = tree.New(&tree.Node{
@@ -85,12 +104,12 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "stop",
-				Description: "Stop the running dockprox process; does not find one started by menubar",
+				Description: "Stop the running dockprox process, whether started by start or menubar",
 				Execute:     inst.stop,
 			},
 			{
 				Name:        "menubar",
-				Description: "Start the dockprox menubar app; needs a desktop session and cannot be stopped by stop",
+				Description: "Start the dockprox menubar app; needs a desktop session",
 				Execute:     inst.menubar,
 			},
 		},
@@ -131,9 +150,8 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 
 // Skill implements the optional command.Skiller interface. The rendered tree
 // cannot show that this manages a background process outliving the command, that
-// `stop` cannot find one started by `menubar` because the registered task
-// matches on the config-path argument only `start` passes, or that what the
-// proxy binds lives in the config file rather than anywhere in the tree.
+// `menubar` needs a graphical session, or that what the proxy binds lives in the
+// config file rather than anywhere in the tree.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -145,15 +163,37 @@ func (c *Command) Skill(ctx context.Context) string {
 func (c *Command) start(ctx context.Context, r *readline.Readline) error {
 	c.l.Info("starting dockprox")
 
-	return c.gk.Start(ctx, "dockprox", exec.CommandContext(ctx, "dockprox", "serve", "--config", c.cfg.Config))
+	return c.gk.Start(ctx, taskServe, exec.CommandContext(ctx, "dockprox", "serve", "--config", c.cfg.Config))
 }
 
 func (c *Command) menubar(ctx context.Context, r *readline.Readline) error {
 	c.l.Info("starting dockprox menubar")
 
-	return c.gk.Start(ctx, "dockprox", exec.CommandContext(ctx, "dockprox", "menubar"))
+	return c.gk.Start(ctx, taskMenubar, exec.CommandContext(ctx, "dockprox", "menubar"))
 }
 
+// stop stops whichever dockprox is running: `start` and `menubar` register
+// different tasks, so both have to be tried. Both ids are always registered, so
+// the one that is not running reports ErrNotRunning - expected here, not a
+// failure. Only a genuine error aborts.
 func (c *Command) stop(ctx context.Context, r *readline.Readline) error {
-	return c.gk.Stop(ctx, "dockprox")
+	var stopped bool
+
+	for _, id := range []string{taskServe, taskMenubar} {
+		if err := c.gk.Stop(ctx, id); err != nil {
+			if errors.Is(err, gokazi.ErrNotRunning) {
+				continue
+			}
+
+			return err
+		}
+
+		stopped = true
+	}
+
+	if !stopped {
+		c.l.Info("no dockprox process running")
+	}
+
+	return nil
 }

@@ -6,24 +6,9 @@ as soon as the process is up and the proxy keeps running after the command
 finishes, holding whatever ports its config binds. Use the `gokazi` command, or
 this provider's prompt checker, to see whether it is actually running.
 
-**`stop` cannot stop a process started by `menubar`.** The task registered at
-construction carries `Args: [<config path>]`, and gokazi matches a running
-process by requiring every registered argument to appear in its command line
-(`findProcess`, arg gate). `start` runs
-`dockprox serve --config <config path>`, which contains it and is therefore
-stoppable; `menubar` runs a bare `dockprox menubar`, which does not - so after
-`menubar`, `stop` reports nothing running and the process is left behind for the
-user to kill by hand. Verified against the matching rule, not by reading alone.
-
-The same mismatch means `start` and `menubar` are **not** mutually exclusive
-despite sharing one gokazi id. gokazi refuses a second `start` only when it can
-*find* the first, so `menubar` followed by `start` launches a second dockprox
-rather than reporting `already running` - two proxies competing for the same
-ports.
-
-`menubar` starts a **desktop menubar application**, not a headless proxy. It is
-not useful under an agent and, per the above, not stoppable through this command
-either; leave it to a human at a graphical session.
+`menubar` starts a **desktop menubar application**, not a headless proxy. It
+needs a graphical session, so it is not useful under an agent; leave it to a
+human. `stop` does stop it.
 
 What the proxy actually does is invisible from here. `start` passes the
 configured file to `dockprox serve`, and that file decides which ports are bound
@@ -41,16 +26,17 @@ invocation comes from one config key, and unmatched arguments are not forwarded
 to the `dockprox` binary. Whatever you type after the verb is ignored, so there
 is no way to reach an upstream flag from here.
 
-Both `start` and `menubar` register under the single gokazi id `dockprox`, so
-unlike the sibling background providers there is no per-name selection: this
-command manages exactly one process. It shares the registry with `gokazi`,
-`kubeforward`, `ssh` and `gost`, so a bare `gokazi stop` reaches this process
-too.
+`start` and `menubar` register separate gokazi ids (`dockprox.serve` and
+`dockprox.menubar`) because gokazi identifies a process by its arguments and the
+two run different command lines. `stop` tries both, so it stops whichever is
+running, and each verb refuses to start when its own process is already up. There
+is still no per-name selection: this command manages one proxy. The registry is
+shared with `gokazi`, `kubeforward`, `ssh` and `gost`, so a bare `gokazi stop`
+reaches these processes too.
 
 `Checker()` builds its **own** `gokazi.Gokazi` and registers a task named
-`dockprox` with no `Args`, which is a looser match than the command's own task -
-so the prompt can report `Running` for a menubar process that `stop` will not
-find. A green prompt entry is not a promise that `stop` will work.
+`dockprox` with no `Args`, a looser match that reports either process as
+`Running`.
 
 #### Configuration
 
