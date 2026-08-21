@@ -14,6 +14,7 @@ require (
 	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.53.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.22.0
 )
 
@@ -38,7 +39,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/pterm/pterm v0.12.83 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/term v0.45.0 // indirect

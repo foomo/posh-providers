@@ -4,13 +4,10 @@
 each `*.mjml` source it derives an output path and compiles onto it with no
 diff, confirmation or backup. Hand-edits to a generated `.html` are lost.
 
-**The `path` argument does not narrow what gets compiled.** It is accepted,
-validated, logged - `Running mjml under "<path>"` - and used as a cache key, but
-the file lookup it feeds ignores it and always walks the whole project. So
-`mjml emails/newsletter` compiles **every** `*.mjml` under a `/src/` directory
-in the repo, exactly as a bare `mjml` would, while reporting that it is working
-under the path you gave. Treat this command as project-wide regardless of its
-argument; there is currently no way to compile a subset.
+**The `path` argument scopes the run.** Given one, only `*.mjml` files under a
+`/src/` directory below that path are compiled; omitted, the whole project is
+walked. So a bare `mjml` rewrites every template in the repo — check the argument
+before running it, since the wide form is the default.
 
 **Compiles run concurrently and failures are not isolated.** `--parallel N`
 runs N at once (default: one at a time). The group uses a shared context, so the

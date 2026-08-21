@@ -129,8 +129,8 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 }
 
 // Skill implements the optional command.Skiller interface. The rendered tree
-// shows a path argument that does not actually narrow the run, and cannot show
-// that only sources under a /src/ segment are compiled, that outputs are
+// shows a path argument but cannot show that omitting it walks the whole
+// project, that only sources under a /src/ segment are compiled, that outputs are
 // derived by whole-string substitution, or that a failure cancels the
 // concurrent group mid-way.
 func (c *Command) Skill(ctx context.Context) string {
@@ -191,8 +191,12 @@ func (c *Command) files(ctx context.Context, root string) []string {
 		cacheKey += strings.ReplaceAll(value, "/", "-")
 	}
 
+	if root == "" {
+		root = "."
+	}
+
 	return c.cache.Get(cacheKey, func() any {
-		if value, err := files.Find(ctx, ".", "*.mjml"); err != nil {
+		if value, err := files.Find(ctx, root, "*.mjml"); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return []string{}
 		} else {
