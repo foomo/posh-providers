@@ -131,8 +131,8 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 
 // Skill implements the optional command.Skiller interface. A task name reveals
 // nothing about what it runs: the prose names the arbitrary-shell and sudo
-// escalation, the recursive deps with no cycle guard, and the inverted sense of
-// precondition, where a succeeding check skips the task entirely.
+// escalation, the recursive deps with no cycle guard, and that a precondition
+// which succeeds skips the task rather than enabling it.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -196,7 +196,7 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		}
 
 		sh.Env = append(os.Environ(), task.Env...)
-		c.l.Infof("🔧 | {%d|%d} %s: %s", i+1, len(task.Cmds), taskID, cmd)
+		c.l.Infof("🔧 | {%d|%d} %s: %s", i+1, len(task.Precondition), taskID, cmd)
 
 		if err := sh.Run(); err == nil {
 			return nil
