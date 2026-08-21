@@ -157,9 +157,8 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 
 // Skill implements the optional command.Skiller interface. The rendered tree
 // cannot show that a route may embed 1Password credentials in the opened URL,
-// that the router silently decides which environment is reached, or that the
-// route lookup stops descending after one level so deeper routes are
-// unreachable.
+// that the router silently decides which environment is reached, or that each
+// argument after the router descends one level of the configured route tree.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }

@@ -20,14 +20,9 @@ you do not recognise.
 
 #### Behaviour
 
-**Routes nested more than two levels deep are unreachable.** The lookup walks the
-route tree but `break`s after the first match instead of descending
-(`config.go`, `RoutesForPath`), so it only ever goes one level down. A route at
-`<router> <a> <b>` resolves; one at `<router> <a> <b> <c>` yields an empty path
-and is rejected by validation with `invalid [route] argument`. The failure is
-safe - it never opens a wrong URL - but a deeply nested config simply cannot be
-reached from here, and tab completion at that depth shows nothing. Flatten the
-config if you need those routes.
+**Routes nest to any depth.** Each argument after the router descends one level
+of the config's `routes` tree, so `<router> <a> <b> <c>` resolves the route
+configured at that path and completion offers its children.
 
 An unknown router or route is rejected before anything opens: `invalid [router]
 argument` / `invalid [route] argument`. Both arguments are required.
@@ -70,8 +65,8 @@ that use no credentials.
 # Opens router.url + route.path in the browser
 posh execute open my-router my-route
 
-# Nested one level - the deepest reachable form
-posh execute open my-router admin users
+# Each further argument descends one level of the route tree
+posh execute open my-router admin users detail
 ```
 
 #### References
