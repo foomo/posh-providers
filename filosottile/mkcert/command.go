@@ -153,10 +153,10 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 }
 
 // Skill implements the optional command.Skiller interface. The catalog cannot
-// show that `install` touches the system trust store and, because it forwards
-// its own node name, also mints a stray install.pem into the project root; that
-// `generate` and `create` overwrite unencrypted keys without prompting; or that
-// the two verbs derive output filenames differently for the same certificate.
+// show that `install` touches the system trust store rather than project state;
+// that `generate` and `create` overwrite unencrypted keys without prompting; or
+// that the two verbs derive output filenames differently for the same
+// certificate.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -167,7 +167,7 @@ func (c *Command) Skill(ctx context.Context) string {
 
 func (c *Command) install(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "mkcert", "-install").
-		Args(r.Args()...).
+		Args(r.Args().From(1)...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Run()
@@ -200,7 +200,7 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) caroot(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "mkcert", "-CAROOT").
-		Args(r.Args()...).
+		Args(r.Args().From(1)...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Run()
@@ -208,7 +208,7 @@ func (c *Command) caroot(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) uninstall(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "mkcert", "-uninstall").
-		Args(r.Args()...).
+		Args(r.Args().From(1)...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Run()

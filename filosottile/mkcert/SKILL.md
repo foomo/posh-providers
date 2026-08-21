@@ -6,18 +6,6 @@ waiting for a TTY rather than failing. Once it succeeds, every browser and tool
 on the host trusts certificates minted by this CA until `uninstall` runs. Require
 manual approval; it changes machine-wide state, not project state.
 
-`install` also mints a stray certificate as a side effect. It runs
-`mkcert -install install`, appending its own node name to the command line
-because it forwards `r.Args()` unfiltered, and upstream treats a positional
-argument after `-install` as a hostname to issue for. `install` matches
-mkcert's hostname pattern, so nothing errors: the CA is installed and then
-`install.pem` and `install-key.pem` are written **into the current working
-directory** — the project root, since this verb sets no working directory —
-overwriting those two files if they already exist. Delete them afterwards, and do
-not read their presence as a configured certificate. `caroot` and `uninstall`
-forward their node name the same way, but upstream returns before reading
-positional arguments, so for those two it is inert.
-
 `uninstall` removes the CA from the trust store without deleting it from disk, so
 previously issued certificates stop being trusted while the files stay behind and
 still look valid. Certificates already generated are not reissued by a later
@@ -80,8 +68,7 @@ before generating anything.
 # Orientation: where the CA lives. Read-only.
 posh execute mkcert caroot
 
-# Trust the local CA. Prompts for sudo and writes a stray install.pem
-# into the project root; needs approval.
+# Trust the local CA. Prompts for sudo; needs approval.
 posh execute mkcert install
 
 # Regenerate every certificate listed in the config.
