@@ -33,9 +33,10 @@ change what `lint` does.
 
 Naming linters filters the set: `lint go tsc` runs exactly those. Matching is
 against each linter's `Name()`, which is the command name it registers under.
-If none of the names match, the command fails with `unknown linter: [...]`
-rather than silently running nothing - but a *partial* match is not reported, so
-`lint go bogus` quietly runs only `go`.
+A name matching no registered linter is warned about individually
+(`unknown linter: <name>`) and the linters that did match still run, so a typo
+is visible without blocking the rest. If *no* name matches there is nothing to
+run and the command fails instead.
 
 A failing linter's exit status propagates, so this command is usable as a CI
 gate - subject to the cancellation caveat above.

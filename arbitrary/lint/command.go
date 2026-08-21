@@ -133,6 +133,15 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 			}
 		}
 
+		// Warn per name that matched nothing. The filter above only ever errored
+		// when *every* name missed, so `lint go bogus` ran `go` and never
+		// mentioned `bogus` - which reads as "both linters passed".
+		for _, name := range names {
+			if slices.ContainsFunc(linters, func(lt Linter) bool { return lt.Name() == name }) {
+				c.l.Warn("unknown linter:", name)
+			}
+		}
+
 		if len(linters) == 0 {
 			return errors.Errorf("unknown linter: %s", names)
 		}
