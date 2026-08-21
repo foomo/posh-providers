@@ -86,8 +86,22 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 		Optional:    true,
 		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 			return inst.cache.GetSuggests("remotes", func() any {
-				out, _ := exec.CommandContext(ctx, "rclone", "listremotes").Output()
-				ret := strings.Split(strings.Trim(string(out), "\n"), "\n")
+				out, err := exec.CommandContext(ctx, "rclone", "listremotes").Output()
+				if err != nil {
+					inst.l.Debug("failed to list remotes", err.Error())
+					return suggests.List([]string{})
+				}
+
+				// Split on an empty output yields [""], which renders as a single
+				// blank suggestion and reads as "one remote exists" rather than
+				// "none" - so drop empty entries instead of offering them.
+				var ret []string
+
+				for line := range strings.SplitSeq(string(out), "\n") {
+					if line = strings.TrimSpace(line); line != "" {
+						ret = append(ret, line)
+					}
+				}
 
 				return suggests.List(ret)
 			})
@@ -304,7 +318,7 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // remote data, that `sync` decides which side to erase from the argument order,
 // that unlisted rclone verbs still work through the passthrough root, that
 // `init` overwrites the config file and needs a 1Password session, or that an
-// empty remote list completes as one blank suggestion.
+// remote list is read from the generated config, so it is empty until `init`.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }

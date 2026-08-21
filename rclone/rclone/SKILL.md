@@ -39,13 +39,11 @@ provider blocks.
 #### Behaviour
 
 `<remote>` completes from `rclone listremotes`, which reads the generated config
-file, so before `init` has run there are no remotes to offer. The suggester
-splits that output on newlines without discarding empties, so an empty result
-yields **one blank suggestion** rather than none — completion looks like a remote
-exists when the config is missing entirely. It also discards the exec error
-(`out, _ :=`), so a missing binary, an unreadable config and a genuinely empty
-config are indistinguishable. Read the config key below to learn which remotes
-should exist rather than trusting completion. The list is cached per shell
+file, so before `init` has run there are no remotes to offer and completion is
+empty. A failed lookup — a missing binary, an unreadable config — is logged at
+debug level and also yields nothing, so an empty list does not by itself
+distinguish "no remotes" from "could not ask". Read the config key below to learn
+which remotes should exist rather than trusting completion. The list is cached per shell
 session, so remotes added by `init` or by upstream `rclone config` need a
 `cache clear` before they appear.
 
