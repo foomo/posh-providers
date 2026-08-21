@@ -15,6 +15,7 @@ import (
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 )
 
@@ -173,6 +174,36 @@ func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Validate rejects a cluster or database name that is not configured.
+//
+// GetCluster/GetDatabase index the config map and return a zero value rather
+// than an error, so without this an unknown name reached `connect` as hostname
+// "" and port 0, and reached `disconnect` as a `--hostname ` substring matching
+// every cloudflared process. The ClusterExists/DatabaseExists helpers existed
+// for this and had no callers.
+func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
+	// Args are [<subtree> <verb> <name>?]; the name is optional on disconnect,
+	// where omitting it deliberately means "all of them".
+	if r.Args().LenLt(3) {
+		return nil
+	}
+
+	name := r.Args().At(2)
+
+	switch r.Args().At(0) {
+	case "cluster":
+		if !c.beam.Config().ClusterExists(name) {
+			return errors.Errorf("invalid [cluster] argument: %s", name)
+		}
+	case "database":
+		if !c.beam.Config().DatabaseExists(name) {
+			return errors.Errorf("invalid [database] argument: %s", name)
+		}
+	}
+
+	return nil
+}
+
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
@@ -194,8 +225,7 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // Skill implements the optional command.Skiller interface. The rendered tree
 // cannot show that `disconnect` with no name closes every tunnel and matches on
 // hostname alone, that `kubeconfig` overwrites kubectl's file from 1Password,
-// that an unknown name silently resolves to an empty config rather than an
-// error, or that the gokazi tasks this provider registers are never used.
+// or that the gokazi tasks this provider registers are never used.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }

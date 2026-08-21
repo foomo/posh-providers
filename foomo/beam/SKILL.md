@@ -24,13 +24,11 @@ there - a config written by `gcloud`, `az`, or by hand. It needs a working
 any kubectl-based command against that cluster, and know that it is the file
 those commands will then use.
 
-**An unknown name is not rejected - it silently does nothing useful.** There is
-no `Validate`, and `GetCluster`/`GetDatabase` return a zero-value struct for a
-name that is not in the config rather than an error. So a typo reaches
-`connect` as an empty hostname and port `0`: the tunnel is opened against
-nothing, and `disconnect` matches `--hostname ` against every cloudflared
-process. Check the name against the config before running either verb; tab
-completion is the reliable source.
+A name that is not in the config is rejected up front as
+`invalid [cluster] argument` / `invalid [database] argument`. Note the two
+namespaces are separate: a database name is not valid where a cluster is
+expected. Omitting the name on `disconnect` is still allowed and still means
+every tunnel.
 
 `connect` refuses to open a second tunnel for a hostname that already has one,
 returning `connection already exists` as an error rather than succeeding
