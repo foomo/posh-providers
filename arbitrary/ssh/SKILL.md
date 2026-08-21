@@ -28,13 +28,9 @@ failing fast. Configure `identityFile`/`identityAgent` and a known host before
 running it unattended. `socks5 start` does set `-o BatchMode=yes` along with
 `ExitOnForwardFailure` and keepalives, so it fails instead of prompting.
 
-**`port: 0` does not auto-assign for a port forward.** `StartPortForward`
-computes a free port into a local variable (`ssh.go:107`) but then builds the
-flag from the raw config value (`-L <c.Port>:...`, `ssh.go:117`), so a `0`
-reaches `ssh` verbatim and the computed port is only used in the "ready at"
-message. The log line therefore names a port nothing is listening on, and the
-forward is not usable. Set an explicit `port` for every port forward.
-`socks5 start` does use the computed value and auto-assigns correctly.
+**`port: 0` auto-assigns a free local port**, for both port forwards and socks5
+tunnels. The chosen port is only reported in the "ready at" log line, so an
+agent that needs to connect has to read that line rather than the config.
 
 #### Behaviour
 

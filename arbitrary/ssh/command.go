@@ -173,7 +173,7 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that these verbs manage background processes outliving the shell,
 // that an omitted name makes start/stop act on every configured entry, that
 // `pfw start` blocks on an interactive auth prompt where `socks5 start` does
-// not, or that `port: 0` fails to auto-assign for a port forward.
+// not, or that `port: 0` auto-assigns a free port reported only in the log.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
