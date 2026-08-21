@@ -20,6 +20,11 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// ErrZipRequired is returned instead of dereferencing a nil *zip.Zip: the
+// provider accepts CommandWithZip as an option, so a project can reach the
+// compression paths without having wired one.
+var ErrZipRequired = errors.New("compressing a dump requires the zip provider; pass postgres.CommandWithZip(...) when constructing the command")
+
 type (
 	Command struct {
 		l           log.Logger
@@ -86,8 +91,12 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 					fs.Internal().Bool("dump", false, "use dump format")
 					fs.Internal().String("zip-cred", "", "configured zip credential name")
 
-					if err := fs.Internal().SetValues("zip-cred", inst.zip.Config().CredentialNames()...); err != nil {
-						return err
+					// The zip provider is optional, so its credential names can only
+					// be offered when one was wired.
+					if inst.zip != nil {
+						if err := fs.Internal().SetValues("zip-cred", inst.zip.Config().CredentialNames()...); err != nil {
+							return err
+						}
 					}
 
 					return nil
@@ -149,8 +158,12 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 					connectionFlags(fs)
 					fs.Internal().String("zip-cred", "", "configured zip credential name")
 
-					if err := fs.Internal().SetValues("zip-cred", inst.zip.Config().CredentialNames()...); err != nil {
-						return err
+					// The zip provider is optional, so its credential names can only
+					// be offered when one was wired.
+					if inst.zip != nil {
+						if err := fs.Internal().SetValues("zip-cred", inst.zip.Config().CredentialNames()...); err != nil {
+							return err
+						}
 					}
 
 					return nil
@@ -202,7 +215,7 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // Skill implements the optional command.Skiller interface. The rendered tree
 // cannot show that the connection target falls back to the environment, that
 // `restore --clean` drops objects first, that the dump filename is generated
-// rather than chosen, or that omitting CommandWithZip makes dump/restore panic.
+// rather than chosen, or that compression needs CommandWithZip to have been wired.
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -270,6 +283,10 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 	}
 
 	if log.MustGet(ifs.GetBool("zip"))(c.l) {
+		if c.zip == nil {
+			return ErrZipRequired
+		}
+
 		c.l.Info("Compressing database dump...")
 
 		if err := c.zip.Create(ctx, filename); err != nil {
@@ -278,6 +295,10 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 	}
 
 	if cred := log.MustGet(ifs.GetString("zip-cred"))(c.l); cred != "" {
+		if c.zip == nil {
+			return ErrZipRequired
+		}
+
 		c.l.Info("Securing database dump...")
 
 		if err := c.zip.CreateWithPassword(ctx, filename, cred); err != nil {

@@ -27,12 +27,10 @@ not behave literally.
 
 #### Behaviour
 
-**Without a zip provider, `dump` and `restore` panic.** `CommandWithZip` is
-optional, but both leaves call `inst.zip.Config()` while building their flags,
-which dereferences nil when the option was not passed. The README's own example
-(`postgres.NewCommand(l)`) omits it, so a project following the README gets a
-nil-pointer panic the moment it completes or runs either verb. Always construct
-with `CommandWithZip`.
+**Compression needs the zip provider.** `CommandWithZip` is optional: without it
+the `--zip-cred` flag offers no values and `dump --zip`/`--zip-cred` fails with a
+message naming the option, rather than compressing. The other verbs are
+unaffected.
 
 `dump` names the file itself: `<dirname>/<database>-<YYYYMMDDhhmmss>` plus
 `.sql`, or `.dump` when `--dump` is set - which also forces `--format=custom`.
@@ -71,7 +69,7 @@ The command cannot be renamed; `CommandWithZip` is the only option. `psql`,
 `pg_dump` and `pg_restore` must all be on `PATH`.
 
 **The README is not this provider's** - it is titled "POSH gotsrpc provider".
-Only its dependency list applies, and its plugin snippet is the one that panics.
+Only its dependency list applies; its plugin snippet omits `CommandWithZip`, so compression is unavailable to a project wired from it.
 
 #### Examples
 
@@ -90,4 +88,4 @@ posh execute postgres run-cmd "SELECT count(*) FROM users" --dbname mydb
 
 - [`pg_dump`](https://www.postgresql.org/docs/current/app-pgdump.html) / [`pg_restore`](https://www.postgresql.org/docs/current/app-pgrestore.html) / [`psql`](https://www.postgresql.org/docs/current/app-psql.html)
 - [`arbitrary/zip`](https://github.com/foomo/posh-providers/blob/main/arbitrary/zip/README.md) - supplies the credentials `--zip-cred` names
-- [Provider README](https://github.com/foomo/posh-providers/blob/main/postgres/README.md) - note its title says gotsrpc and its snippet omits `CommandWithZip`
+- [Provider README](https://github.com/foomo/posh-providers/blob/main/postgres/README.md) - note its title says gotsrpc and its snippet omits `CommandWithZip`, so compression is not wired
