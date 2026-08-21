@@ -106,7 +106,7 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // Skill implements the optional command.Skiller interface. The rendered tree
 // cannot show that an omitted path regenerates from every gotsrpc.yml in the
 // project, that doing so overwrites generated sources named only in those
-// files, or that forwarded flags have every "--" rewritten to "-".
+// files, or that a forwarded flag has its leading "--" rewritten to "-".
 func (c *Command) Skill(ctx context.Context) string {
 	return skill
 }
@@ -125,7 +125,11 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	flags := make([]string, len(r.Flags()))
 	for i, flag := range r.Flags() {
-		flags[i] = strings.ReplaceAll(flag, "--", "-")
+		if after, ok := strings.CutPrefix(flag, "--"); ok {
+			flags[i] = "-" + after
+		} else {
+			flags[i] = flag
+		}
 	}
 
 	for _, value := range paths {

@@ -20,12 +20,9 @@ that succeeds prints nothing but the per-path `gotsrpc: <path>` line, so
 #### Behaviour
 
 `--debug` is the only flag this tree models, but any flag you pass is forwarded
-after being rewritten: **every `--` in the flag string is replaced with a single
-`-`**, because the upstream binary uses single-dash long flags. That rewrite is
-a blind string replacement over the whole argument, so a flag whose *value*
-contains `--` is silently corrupted too (`--out=a--b` becomes `-out=a-b`).
-Pass such values as additional args after a `--` separator, which are forwarded
-untouched.
+after being rewritten: a leading `--` becomes a single `-`, because the upstream
+binary uses single-dash long flags. Only the prefix is rewritten, so a value
+containing `--` survives intact.
 
 Validation is stricter than the argument name suggests: the path must be an
 existing **file**, not a directory, and only one may be given. Both a missing
