@@ -2,10 +2,14 @@ package k3d
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -15,6 +19,15 @@ import (
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -85,7 +98,7 @@ func NewCommand(l log.Logger, k3d *K3d, cache cache.Cache, kubectl *kubectl.Kube
 		Nodes: tree.Nodes{
 			{
 				Name:        "up",
-				Description: "Spin up configured cluster",
+				Description: "Create the shared registry and the cluster; no-op if the cluster exists",
 				Args:        tree.Args{nameArg},
 				Execute:     inst.up,
 			},
@@ -109,19 +122,19 @@ func NewCommand(l log.Logger, k3d *K3d, cache cache.Cache, kubectl *kubectl.Kube
 			},
 			{
 				Name:        "install",
-				Description: "Install predified charts",
+				Description: "Install or upgrade a predefined chart into the cluster",
 				Args:        tree.Args{nameArg, chartArg},
 				Execute:     inst.install,
 			},
 			{
 				Name:        "uninstall",
-				Description: "Uninstall predefined charts",
+				Description: "Uninstall a predefined chart from the cluster",
 				Args:        tree.Args{nameArg, chartArg},
 				Execute:     inst.uninstall,
 			},
 			{
 				Name:        "down",
-				Description: "Shut down configured cluster",
+				Description: "Delete the cluster and its kubeconfig; also the shared registry if it is the last one",
 				Args:        tree.Args{nameArg},
 				Execute:     inst.down,
 			},
@@ -153,6 +166,39 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog lists
+// seven verbs against a cluster name and cannot show that a single registry is
+// shared by every cluster and torn down with the last of them; that `up` silently
+// no-ops on an existing cluster rather than reconciling its config; that the
+// k3d cluster is named after the config's `alias` while its kubeconfig is
+// named after the argument; that `install` runs `helm upgrade --force`, which
+// replaces rather than patches; or that `install` and `uninstall`, unlike the
+// other verbs, never check their name against `clusters:`.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the local-cluster lifecycle a request would ask for, plus the registry,
+// since "my local cluster is gone" and "the image will not pull" are the
+// symptoms that should pull this file in.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with this project's local k3d/k3s clusters - creating or " +
+			"deleting one, stopping and restarting it, fetching its kubeconfig, or installing " +
+			"and removing one of the project's predefined helm charts into it. Also for the " +
+			"shared local container registry these clusters pull from, and for \"which local " +
+			"clusters exist\".",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -415,8 +461,21 @@ func (c *Command) down(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
+	// The registry is shared by every cluster, so it may only be removed once the
+	// last one is gone - deleting it while another cluster is up leaves that
+	// cluster unable to pull from it.
 	if registry != nil {
-		// TODO check if empty
+		remaining, err := c.remainingClusters(ctx, cfg)
+		if err != nil {
+			return err
+		}
+
+		if len(remaining) > 0 {
+			c.l.Infof("keeping shared registry %q, still used by: %s", cfg.Registry.Name, strings.Join(remaining, ", "))
+
+			return nil
+		}
+
 		// delete registry
 		if err := shell.New(ctx, c.l, "k3d", "registry", "delete", cfg.Registry.Name).Run(); err != nil {
 			return err
@@ -424,4 +483,36 @@ func (c *Command) down(ctx context.Context, r *readline.Readline) error {
 	}
 
 	return nil
+}
+
+// remainingClusters returns the names of the configured clusters that are still
+// running, so `down` can tell whether it removed the last user of the shared
+// registry.
+func (c *Command) remainingClusters(ctx context.Context, cfg *Config) ([]string, error) {
+	clusters, err := c.k3d.Clusters(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	running := make(map[string]struct{}, len(clusters))
+	for _, cluster := range clusters {
+		running[cluster.Name] = struct{}{}
+	}
+
+	var ret []string
+
+	for name := range cfg.Clusters {
+		clusterCfg, err := cfg.Cluster(name)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, ok := running[clusterCfg.AliasName()]; ok {
+			ret = append(ret, clusterCfg.AliasName())
+		}
+	}
+
+	sort.Strings(ret)
+
+	return ret, nil
 }

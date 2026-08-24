@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/hashicorp/terraform",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/hashicorp/terraform/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Backend": {
@@ -28,7 +28,8 @@
     "Config": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Directory holding one subdirectory per workspace. Workspace names are\ndiscovered from it rather than configured: any child directory containing\n`.tf` files and not prefixed with `.` or `_` becomes a valid `workspace`\nargument, whether or not it appears under `subscriptions`."
         },
         "tenantId": {
           "type": "string",
@@ -38,13 +39,15 @@
           "additionalProperties": {
             "$ref": "#/$defs/Subscription"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Per-workspace Azure subscription and backend settings, keyed by workspace\ndirectory name. Optional: a workspace with no entry still runs, but gets no\n`ARM_SUBSCRIPTION_ID` and no `-backend-config` flags on `init`."
         },
         "servicePrincipals": {
           "additionalProperties": {
             "$ref": "#/$defs/ServicePrincipal"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Service principals selectable with `--service-principal`, keyed by the name\noffered in completion. Selecting one overrides the default Azure auth chain\nfor that invocation, including the subscription."
         }
       },
       "additionalProperties": false,
@@ -62,7 +65,7 @@
         },
         "clientSecret": {
           "type": "string",
-          "description": "Application client secret"
+          "description": "Application client secret, in plaintext. Held in the project config and\nexported as ARM_CLIENT_SECRET, so keep it out of version control."
         },
         "subscriptionId": {
           "type": "string",
@@ -84,7 +87,7 @@
         },
         "proxy": {
           "type": "string",
-          "description": "Named SSH proxy for this workspace"
+          "description": "Named SSH proxy for this workspace. Unused — nothing in this provider reads\nit, so setting it has no effect."
         }
       },
       "additionalProperties": false,

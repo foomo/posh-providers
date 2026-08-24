@@ -35,22 +35,23 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
 ```yaml
 ## Open
-tasks:
-  init:
-    cmds: ['posh execute bun install', 'posh execute go mod tidy']
-  brew-nss:
-    hidden: true
-    confirm: If you're using Firefox, do you want me to install 'nss'?
-    cmds: ['brew install nss']
-  mkcert-install:
-    hidden: true
-    confirm: Do you need me to install the mkcert root certificate (only required once)?
-    cmds: ['posh execute mkcert install']
-  k3d-up:
-    deps: ['brew-nss', 'mkcert-install']
-    cmds:
-      - posh execute mkcert generate
-      - posh execute k3d up local
-      - posh execute cache clear
+task:
+  tasks:
+    init:
+      cmds: ['posh execute bun install', 'posh execute go mod tidy']
+    brew-nss:
+      hidden: true
+      prompt: If you're using Firefox, do you want me to install 'nss'?
+      cmds: ['brew install nss']
+    mkcert-install:
+      hidden: true
+      prompt: Do you need me to install the mkcert root certificate (only required once)?
+      cmds: ['posh execute mkcert install']
+    k3d-up:
+      deps: ['brew-nss', 'mkcert-install']
+      cmds:
+        - posh execute mkcert generate
+        - posh execute k3d up local
+        - posh execute cache clear
 ```
 

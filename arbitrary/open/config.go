@@ -36,10 +36,12 @@ func (c ConfigRouter) RouteForPath(paths []string) ConfigRoute {
 func (c ConfigRouter) RoutesForPath(paths []string) map[string]ConfigRoute {
 	routes := c.Routes
 	for _, path := range paths {
-		if value, ok := routes[path]; ok {
-			routes = value.Routes
+		value, ok := routes[path]
+		if !ok {
 			break
 		}
+
+		routes = value.Routes
 	}
 
 	return routes

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/golang-migrate/migrate",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/golang-migrate/migrate/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -9,13 +9,15 @@
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object"
+          "type": "object",
+          "description": "SourcesMap maps a source name to a golang-migrate source URL, e.g.\n`file://migrations`. The names are the values the `source` argument accepts."
         },
         "databases": {
           "additionalProperties": {
             "type": "string"
           },
-          "type": "object"
+          "type": "object",
+          "description": "DatabasesMap maps a database name to a golang-migrate database URL, e.g.\n`pgx5://user:password@localhost:5432/db?sslmode=disable`. The names are the\nvalues the `database` argument accepts. A value may contain 1Password\nsecret references, which are resolved at execution time."
         }
       },
       "additionalProperties": false,

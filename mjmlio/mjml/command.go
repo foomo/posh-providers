@@ -2,10 +2,12 @@ package mjml
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -17,6 +19,15 @@ import (
 	"github.com/samber/lo"
 	"golang.org/x/sync/errgroup"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -57,15 +68,16 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run mjml",
+		Description: "Compile mjml templates to html",
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-			fs.Internal().Int("parallel", 0, "number of parallel processes")
+			fs.Internal().Int("parallel", 0, "number of concurrent compiles; 0 means one at a time")
 			return nil
 		},
 		Args: tree.Args{
 			{
-				Name:     "path",
-				Optional: true,
+				Name:        "path",
+				Description: "Directory to report as the target; note it does not narrow which files are compiled",
+				Optional:    true,
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.paths(ctx))
 				},
@@ -114,6 +126,34 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// shows a path argument but cannot show that omitting it walks the whole
+// project, that only sources under a /src/ segment are compiled, that outputs are
+// derived by whole-string substitution, or that a failure cancels the
+// concurrent group mid-way.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names email templates and the generated HTML, since an agent asked to change a
+// template needs to know the .html beside it is an overwritten build product.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with this project's email templates - compiling `.mjml` " +
+			"sources to HTML, regenerating a template after editing it, or explaining why a " +
+			"generated `.html` file was overwritten. Also when a template appears not to compile " +
+			"because it sits outside a `/src/` directory.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -170,8 +210,12 @@ func (c *Command) files(ctx context.Context, root string) []string {
 		cacheKey += strings.ReplaceAll(value, "/", "-")
 	}
 
+	if root == "" {
+		root = "."
+	}
+
 	return c.cache.Get(cacheKey, func() any {
-		if value, err := files.Find(ctx, ".", "*.mjml"); err != nil {
+		if value, err := files.Find(ctx, root, "*.mjml"); err != nil {
 			c.l.Debug("failed to walk files", err.Error())
 			return []string{}
 		} else {

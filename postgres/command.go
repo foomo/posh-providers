@@ -2,11 +2,14 @@ package postgres
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/foomo/posh-providers/arbitrary/zip"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -14,6 +17,20 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
+// ErrZipRequired is returned instead of dereferencing a nil *zip.Zip: the
+// provider accepts CommandWithZip as an option, so a project can reach the
+// compression paths without having wired one.
+var ErrZipRequired = errors.New("compressing a dump requires the zip provider; pass postgres.CommandWithZip(...) when constructing the command")
 
 type (
 	Command struct {
@@ -58,7 +75,7 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "postgres",
-		Description: "Postgres utilities",
+		Description: "Run psql, or dump and restore databases",
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 			connectionFlags(fs)
 			return nil
@@ -81,8 +98,12 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 					fs.Internal().Bool("dump", false, "use dump format")
 					fs.Internal().String("zip-cred", "", "configured zip credential name")
 
-					if err := fs.Internal().SetValues("zip-cred", inst.zip.Config().CredentialNames()...); err != nil {
-						return err
+					// The zip provider is optional, so its credential names can only
+					// be offered when one was wired.
+					if inst.zip != nil {
+						if err := fs.Internal().SetValues("zip-cred", inst.zip.Config().CredentialNames()...); err != nil {
+							return err
+						}
 					}
 
 					return nil
@@ -94,21 +115,22 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 					},
 					{
 						Name:        "dirname",
-						Description: "Path to the dump file",
+						Description: "Directory the timestamped dump file is written into",
 					},
 				},
 				Execute: inst.dump,
 			},
 			{
 				Name:        "run-cmd",
-				Description: "Run only single command",
+				Description: "Run a single SQL command with psql",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					connectionFlags(fs)
 					return nil
 				},
 				Args: tree.Args{
 					{
-						Name: "command",
+						Name:        "command",
+						Description: "SQL passed to psql via --command",
 					},
 				},
 				Execute: inst.runCommand,
@@ -122,7 +144,8 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 				},
 				Args: tree.Args{
 					{
-						Name: "filename",
+						Name:        "filename",
+						Description: "SQL file passed to psql via --file",
 					},
 				},
 				Execute: inst.runFile,
@@ -142,8 +165,12 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 					connectionFlags(fs)
 					fs.Internal().String("zip-cred", "", "configured zip credential name")
 
-					if err := fs.Internal().SetValues("zip-cred", inst.zip.Config().CredentialNames()...); err != nil {
-						return err
+					// The zip provider is optional, so its credential names can only
+					// be offered when one was wired.
+					if inst.zip != nil {
+						if err := fs.Internal().SetValues("zip-cred", inst.zip.Config().CredentialNames()...); err != nil {
+							return err
+						}
 					}
 
 					return nil
@@ -184,6 +211,33 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that the connection target falls back to the environment, that
+// `restore --clean` drops objects first, that the dump filename is generated
+// rather than chosen, or that compression needs CommandWithZip to have been wired.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the database tasks and the psql/pg_dump/pg_restore binaries, since a
+// request arrives as "back up the database" or as the name of the tool.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with a Postgres database from this shell - taking a " +
+			"backup or dump, restoring one, running a SQL query or a .sql script, or opening " +
+			"an interactive psql session. Also for pg_dump, pg_restore and psql themselves, " +
+			"or when a dump needs compressing or password-protecting.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -249,6 +303,10 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 	}
 
 	if log.MustGet(ifs.GetBool("zip"))(c.l) {
+		if c.zip == nil {
+			return ErrZipRequired
+		}
+
 		c.l.Info("Compressing database dump...")
 
 		if err := c.zip.Create(ctx, filename); err != nil {
@@ -257,6 +315,10 @@ func (c *Command) dump(ctx context.Context, r *readline.Readline) error {
 	}
 
 	if cred := log.MustGet(ifs.GetString("zip-cred"))(c.l); cred != "" {
+		if c.zip == nil {
+			return ErrZipRequired
+		}
+
 		c.l.Info("Securing database dump...")
 
 		if err := c.zip.CreateWithPassword(ctx, filename, cred); err != nil {

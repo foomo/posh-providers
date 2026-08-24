@@ -2,8 +2,11 @@ package tempo
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"strings"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -11,6 +14,15 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -62,11 +74,11 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Browse Temporal workflows",
+		Description: "Open the tempo terminal UI against a configured Temporal server",
 		Args: tree.Args{
 			{
 				Name:        "name",
-				Description: "Name of the configured connection profile.",
+				Description: "Profile name from the profiles config, resolved to its url",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					var ret []goprompt.Suggest
 
@@ -106,6 +118,34 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that this is a blocking full-screen TUI unusable unattended, or
+// that the profile silently selects which Temporal server's workflows become
+// terminable from inside the UI.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names Temporal workflow symptoms rather than the tool, since a caller asks
+// about a stuck workflow without knowing which client is wired up.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when inspecting or administering Temporal workflows - finding a failed, " +
+			"stuck or long-running workflow execution, reading its event history, terminating or " +
+			"cancelling it, or checking which Temporal namespace and server a configured profile " +
+			"points at. Note the tool is an interactive terminal UI, so it cannot be driven " +
+			"unattended.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

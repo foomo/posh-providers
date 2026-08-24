@@ -68,7 +68,7 @@ func (t *Cloudflared) Config() Config {
 	return t.cfg
 }
 
-func (t *Cloudflared) Disonnect(ctx context.Context, access Access) error {
+func (t *Cloudflared) Disconnect(ctx context.Context, access Access) error {
 	ps, err := process.Processes()
 	if err != nil {
 		return err

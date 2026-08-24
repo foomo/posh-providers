@@ -7,6 +7,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Config maps an environment name to the Grafana server, org and credentials
+// gcx is run against. The keys are the names accepted as this command's first
+// argument.
 type Config map[string]ConfigEnv
 
 // EnvNames returns the names of all environment configurations.

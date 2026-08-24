@@ -2,12 +2,14 @@ package pnpm
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/foomo/posh-providers/pkg/npm"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -18,6 +20,15 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -54,28 +65,30 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 		},
 		Nodes: tree.Nodes{
 			{
-				Name: "workspace",
+				Name:        "workspace",
+				Description: "Run a pnpm command inside a workspace package directory",
 				Nodes: tree.Nodes{
 					{
 						Name:        "path",
-						Description: "Location to execute",
+						Description: "Workspace package directory to run in",
 						Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.paths(ctx))
 						},
 						Nodes: tree.Nodes{
 							{
-								Name: "run",
+								Name:        "run",
+								Description: "Run a package.json script in that directory",
 								Args: tree.Args{
 									{
 										Name:        "script",
-										Description: "Run scripts",
+										Description: "Script name from the directory's package.json",
 										Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 											return suggests.List(inst.scripts(ctx, r.Args().At(1)))
 										},
 									},
 								},
 								Execute: func(ctx context.Context, r *readline.Readline) error {
-									return inst.run(ctx, r.Args().At(1), r.Args().At(3))
+									return inst.run(ctx, r, r.Args().At(1), r.Args().At(3))
 								},
 							},
 							{
@@ -105,18 +118,18 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 			},
 			{
 				Name:        "run",
-				Description: "Run script",
+				Description: "Run a package.json script in the project root",
 				Args: tree.Args{
 					{
 						Name:        "script",
-						Description: "Run scripts",
+						Description: "Script name from the project's package.json",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.scripts(ctx, "."))
 						},
 					},
 				},
 				Execute: func(ctx context.Context, r *readline.Readline) error {
-					return inst.run(ctx, ".", r.Args().At(1))
+					return inst.run(ctx, r, ".", r.Args().At(1))
 				},
 			},
 			{
@@ -165,13 +178,41 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
 
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that unlisted pnpm subcommands still work, that `run` executes
+// whatever package.json defines, that `workspace` retargets a verb at another
+// package.json, or that nothing after a `--` separator is forwarded.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the package-management tasks rather than the tool, since the passthrough
+// means any pnpm verb is reachable and the workspace retargeting is the trap.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when managing this project's JavaScript or TypeScript dependencies with " +
+			"pnpm - installing or adding packages, running a package.json script, auditing for " +
+			"vulnerabilities, listing installed versions, or running any of those inside one " +
+			"workspace package rather than the project root.",
+	}
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
-func (c *Command) run(ctx context.Context, dirname, script string) error {
+func (c *Command) run(ctx context.Context, r *readline.Readline, dirname, script string) error {
 	return shell.New(ctx, c.l, "pnpm", "run", script).
 		Dir(dirname).
+		Args(r.Flags()...).
 		Run()
 }
 
@@ -204,7 +245,7 @@ func (c *Command) paths(ctx context.Context) []string {
 
 		{
 			filename := env.Path("pnpm-workspace.yaml")
-			if _, err := os.Stat(filename); errors.Is(err, os.ErrExist) {
+			if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
 				// do nothing
 			} else if err != nil {
 				c.l.Debug("failed to stat workspace file", err.Error())

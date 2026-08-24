@@ -1,18 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/goharbor/harbor",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/goharbor/harbor/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
       "properties": {
         "url": {
-          "type": "string"
+          "type": "string",
+          "description": "Harbor base URL including scheme, e.g. `https://harbor.example.org`. Passed\nto `docker login` as-is; the registry host is derived from it by stripping a\n`https://` prefix, so an `http://` URL or a trailing slash is not handled."
         },
         "authUrl": {
-          "type": "string"
+          "type": "string",
+          "description": "Login page opened in a browser by `auth`, typically the OIDC entry point\n(`\u003curl\u003e/c/oidc/login`). Opened by `docker` too, so the CLI secret can be\ncopied from the profile page."
         },
         "project": {
-          "type": "string"
+          "type": "string",
+          "description": "Harbor project used to build the throwaway image reference the auth check\npulls. Not used by `auth` or `docker`."
         }
       },
       "additionalProperties": false,

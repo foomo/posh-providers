@@ -10,16 +10,27 @@ import (
 
 type (
 	Config struct {
-		Charts   ConfigCharts             `json:"charts" yaml:"charts"`
-		Registry ConfigRegistry           `json:"registry" yaml:"registry"`
+		// Helm charts installable with the install/uninstall verbs.
+		Charts ConfigCharts `json:"charts" yaml:"charts"`
+		// Container registry shared by every cluster below. Created on the first
+		// `up` and deleted once the last cluster is brought down.
+		Registry ConfigRegistry `json:"registry" yaml:"registry"`
+		// Clusters that can be created, keyed by the name used as the argument.
 		Clusters map[string]ConfigCluster `json:"clusters" yaml:"clusters"`
 	}
 	ConfigCharts struct {
-		Path   string `json:"path" yaml:"path"`
+		// Directory holding one subdirectory per chart, relative to the project
+		// root. Its subdirectory names are what the chart argument completes to.
+		Path string `json:"path" yaml:"path"`
+		// Prefix prepended to the chart name to form the target namespace, so
+		// chart "base" with prefix "shared-" installs into "shared-base".
 		Prefix string `json:"prefix" yaml:"prefix"`
 	}
 	ConfigRegistry struct {
+		// Registry name passed to k3d, which prefixes it with "k3d-" for the
+		// actual container and hostname.
 		Name string `json:"name" yaml:"name"`
+		// Host port the registry binds to.
 		Port string `json:"port" yaml:"port"`
 	}
 	ConfigCluster struct {

@@ -2,9 +2,12 @@ package stackit
 
 import (
 	"context"
+	_ "embed"
+	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -13,6 +16,15 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -72,7 +84,7 @@ func NewCommand(l log.Logger, cache cache.Cache, stackit *Stackit, kubectl *kube
 		Nodes: tree.Nodes{
 			{
 				Name:        "auth",
-				Description: "Login to the stackit cloud provider",
+				Description: "Log in to STACKIT interactively, opening a browser",
 				Execute:     inst.auth,
 			},
 			{
@@ -84,15 +96,15 @@ func NewCommand(l log.Logger, cache cache.Cache, stackit *Stackit, kubectl *kube
 						Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.stackit.Config().ProjectNames())
 						},
-						Description: "Project to run against",
+						Description: "Project to run against, keyed as configured under projects",
 						Nodes: tree.Nodes{
 							{
 								Name:        "kubeconfig",
-								Description: "Retrieve credentials to access remote cluster.",
+								Description: "Create a short-lived kubeconfig for the cluster under the kubectl config path",
 								Args: tree.Args{
 									{
 										Name:        "cluster",
-										Description: "Name of the cluster.",
+										Description: "Cluster to create the kubeconfig for, keyed as configured under the project",
 										Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 											project, err := inst.stackit.Config().Project(r.Args().At(1))
 											if err != nil {
@@ -104,7 +116,7 @@ func NewCommand(l log.Logger, cache cache.Cache, stackit *Stackit, kubectl *kube
 									},
 								},
 								Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
-									fs.Internal().String("profile", "", "Store credentials in given profile.")
+									fs.Internal().String("profile", "", "Kubectl config profile to store the kubeconfig under")
 									return fs.Internal().SetValues("profile", "stackit")
 								},
 								Execute: inst.kubeconfig,
@@ -141,6 +153,35 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog renders
+// <project> and <cluster> as plain placeholders and cannot show that both are
+// local aliases mapping to a UUID and a different real cluster name; that
+// `kubeconfig` writes an expiring credential into the checkout; or that upstream
+// prompts for confirmation and the flag that would skip it cannot be delivered
+// through this command.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names STACKIT and SKE explicitly and ends on the interactivity, since both
+// verbs need a human and that is what an agent needs to learn before trying.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with STACKIT cloud from this project - logging in to " +
+			"STACKIT, or creating a kubeconfig for one of its SKE Kubernetes clusters so " +
+			"kubectl can reach it. Both verbs are interactive and need a human at the " +
+			"terminal, so read this before attempting either unattended.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

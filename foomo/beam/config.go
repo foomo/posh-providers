@@ -7,7 +7,9 @@ import (
 )
 
 type Config struct {
-	Clusters  map[string]Cluster  `json:"clusters" yaml:"clusters"`
+	// Clusters reachable through a cloudflared tunnel, keyed by the name the command accepts
+	Clusters map[string]Cluster `json:"clusters" yaml:"clusters"`
+	// Databases reachable through a cloudflared tunnel, keyed by the name the command accepts
 	Databases map[string]Database `json:"databases" yaml:"databases"`
 }
 

@@ -2,8 +2,11 @@ package mkcert
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"strings"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -13,6 +16,15 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -87,16 +99,16 @@ func NewCommand(l log.Logger, opts ...Option) (*Command, error) {
 			},
 			{
 				Name:        "generate",
-				Description: "Generate configured certificates",
+				Description: "Generate every configured certificate, overwriting existing files",
 				Execute:     inst.generate,
 			},
 			{
 				Name:        "create",
-				Description: "Creat a new certificate for the given names",
+				Description: "Create a new certificate for the given names into the certificate path",
 				Args: []*tree.Arg{
 					{
 						Name:        "names",
-						Description: "List of names including wildcard",
+						Description: "Hostnames, wildcards, IPs, URLs or emails to include in the certificate",
 						Repeat:      true,
 					},
 				},
@@ -141,13 +153,42 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
 
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog cannot
+// show that `install` touches the system trust store rather than project state;
+// that `generate` and `create` overwrite unencrypted keys without prompting; or
+// that the two verbs derive output filenames differently for the same
+// certificate.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the browser-level TLS symptoms, since that is what sends someone looking
+// for a local certificate rather than the name of the tool that mints one.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when setting up HTTPS for local development - issuing a trusted " +
+			"certificate for a local hostname or wildcard domain, regenerating this " +
+			"project's certificates, or installing and removing the local CA from the " +
+			"system trust store. Also when a local site shows a certificate warning, " +
+			"ERR_CERT_AUTHORITY_INVALID, or an x509 unknown-authority error.",
+	}
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) install(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "mkcert", "-install").
-		Args(r.Args()...).
+		Args(r.Args().From(1)...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Run()
@@ -180,7 +221,7 @@ func (c *Command) generate(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) caroot(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "mkcert", "-CAROOT").
-		Args(r.Args()...).
+		Args(r.Args().From(1)...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Run()
@@ -188,7 +229,7 @@ func (c *Command) caroot(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) uninstall(ctx context.Context, r *readline.Readline) error {
 	return shell.New(ctx, c.l, "mkcert", "-uninstall").
-		Args(r.Args()...).
+		Args(r.Args().From(1)...).
 		Args(r.Flags()...).
 		Args(r.AdditionalArgs()...).
 		Run()

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/azure/az",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/azure/az/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Artifactory": {

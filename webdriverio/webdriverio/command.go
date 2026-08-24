@@ -3,6 +3,7 @@ package webdriverio
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"fmt"
 	"net/url"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -18,8 +20,18 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -105,7 +117,7 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 									fs.Default().String("spec", "", "Run suite on specific specs")
 									fs.Default().String("suite", "", "Run suite on test suite")
 									fs.Internal().String("tag", "", "Run suite on specific tag")
-									fs.Internal().String("scenario", "", "Run suite on specific specs")
+									fs.Internal().String("scenario", "", "Run suite on specific scenarios")
 									fs.Internal().String("log-level", "info", "Set the log level")
 									fs.Internal().Bool("ci", false, "Run suite on CI")
 									fs.Internal().Bool("headless", false, "Run suite in headless mode")
@@ -139,9 +151,10 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 								},
 								Args: tree.Args{
 									{
-										Name:     "path",
-										Repeat:   false,
-										Optional: true,
+										Name:        "path",
+										Description: "Directory holding e2e/wdio.conf.ts; every discovered directory if omitted",
+										Repeat:      false,
+										Optional:    true,
 										Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 											return suggests.List(inst.paths(ctx))
 										},
@@ -183,6 +196,37 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
 
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog shows
+// three arguments and a flag list, and cannot show that omitting [path] runs
+// every discovered directory serially until one fails; that the tests hit a
+// real configured environment with TLS verification disabled; that neither
+// <site> nor <env> is validated, so a typo yields an empty base URL; that the
+// mode name "browserstack" is a magic string requiring a matching secret; or
+// that most flags reach the runner as environment
+// variables the project's own wdio.conf.ts has to read.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the environment selection and BrowserStack, since those are the two ways
+// a run reaches further than "run the tests" suggests.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when running this project's end-to-end or browser tests - running a " +
+			"suite or a single feature file against a named site and environment, running " +
+			"headless or in debug mode, filtering by Cucumber tag or scenario, or running on " +
+			"BrowserStack. Note runs hit a real configured environment, not a local sandbox.",
+	}
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
@@ -214,6 +258,12 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	if log.MustGet(ifs.GetBool("ci"))(c.l) {
 		envs = append(envs, fmt.Sprintf("E2E_ENV=%s", "ci"))
 	} else if mode == "browserstack" {
+		// "browserstack" is a magic mode name rather than a declared one, so a
+		// project can select it without having configured the secret it needs.
+		if c.cfg.BrowserStack == nil {
+			return errors.New(`mode "browserstack" requires the browserStack config key to be set`)
+		}
+
 		secret := *c.cfg.BrowserStack
 		secret.Field = "username"
 

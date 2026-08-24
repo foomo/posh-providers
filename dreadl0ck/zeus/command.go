@@ -2,11 +2,13 @@ package zeus
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
@@ -15,6 +17,15 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l     log.Logger
@@ -43,7 +54,51 @@ func (c *Command) Name() string {
 }
 
 func (c *Command) Description() string {
-	return "run zeus on target"
+	return "Run zeus in the given directory, or bootstrap a new one"
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command. The command is not tree based, so
+// the CommandInfo is built by hand.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return command.CommandInfo{
+		FullPath:    c.name,
+		Description: c.Description(),
+		Arguments: []command.ArgInfo{
+			{
+				Name:        "path",
+				Description: "Path of the zeus directory; bootstraps a new one if it does not exist",
+			},
+			{
+				Name:        "args",
+				Description: "Arguments forwarded verbatim to the zeus binary",
+				Optional:    true,
+				Repeat:      true,
+			},
+		},
+	}
+}
+
+// Skill implements the optional command.Skiller interface. The command has no
+// subcommand tree at all, so the catalog can only show two placeholders: it
+// cannot show that the forwarded arguments are the real surface, that a
+// non-existent path bootstraps rather than errors, or that the path is the zeus
+// directory whose parent zeus is actually run in.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names zeus directories and build targets, since the tool is obscure enough
+// that an agent will only recognise it from the artefacts in the checkout.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when the checkout has zeus directories - running a zeus build target " +
+			"for a service or subproject, listing what targets exist, or bootstrapping a new " +
+			"zeus installation. Also when a build step is defined by zeus scripts rather than " +
+			"a Makefile or package.json.",
+	}
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -95,13 +150,14 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return `Find and run zeus at the given path.
 
+The path is the zeus directory itself; zeus is run in its parent directory.
 If the given path doesn't exist, it will bootstrap a new zeus installation.
 
 Usage:
   zeus [path] <args>...
 
 Examples:
-  gomod tidy ./path
+  zeus ./svc/zeus build
 `
 }
 

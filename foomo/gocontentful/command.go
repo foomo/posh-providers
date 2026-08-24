@@ -2,12 +2,14 @@ package gocontentful
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -18,6 +20,15 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -60,15 +71,16 @@ func NewCommand(l log.Logger, cache cache.Cache, op *onepassword.OnePassword, op
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run gocontentful",
+		Description: "Generate Contentful client code from gocontentful.yaml files",
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 			fs.Default().Bool("debug", false, "show debug output")
 			return nil
 		},
 		Args: tree.Args{
 			{
-				Name:     "path",
-				Optional: true,
+				Name:        "path",
+				Description: "Path to a gocontentful.yaml; every one found in the project if omitted",
+				Optional:    true,
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.paths(ctx))
 				},
@@ -117,6 +129,35 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that each run deletes gocontentful*.go before regenerating, that
+// an omitted path does so for every config in the project, that a 1Password
+// secret is resolved and sent to the Contentful API, or that `Config` describes
+// the discovered yaml file rather than a posh config key.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The triggers name
+// the generated artefacts, since the usual way in is a compile error or a stale
+// type after a content model change rather than a request naming this command.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when this project's generated Contentful client code needs " +
+			"regenerating - after a content type or content model change, or when the " +
+			"gocontentful*.go files are stale, missing or fail to compile. Also for " +
+			"gocontentful.yaml files and Contentful space, environment or content type " +
+			"configuration.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

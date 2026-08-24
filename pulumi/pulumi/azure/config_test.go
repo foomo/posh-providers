@@ -8,6 +8,7 @@ import (
 
 	testingx "github.com/foomo/go/testing"
 	tagx "github.com/foomo/go/testing/tag"
+	"github.com/foomo/posh-providers/pkg/testutils"
 	pulumi "github.com/foomo/posh-providers/pulumi/pulumi/azure"
 	"github.com/invopop/jsonschema"
 	"github.com/pkg/errors"
@@ -25,8 +26,16 @@ func TestConfig(t *testing.T) {
 	reflector := new(jsonschema.Reflector)
 	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/pulumi/pulumi/azure", "./"))
+	// Backend embeds onepassword.Secret, documented in another module.
+	//
+	// AddGoComments rebuilds each key from the base package by walking up once
+	// per ".." in the directory, so the base needs one filler segment per level
+	// of nesting above the repo root - two here, one for a provider directly
+	// under it. Get it wrong and the keys silently miss, leaving the properties
+	// undocumented rather than erroring.
+	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/onepassword/x/y", "../../../onepassword"))
 	schema := reflector.Reflect(&pulumi.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/pulumi/pulumi/azure"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/pulumi/pulumi/azure/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 
@@ -40,4 +49,6 @@ func TestConfig(t *testing.T) {
 	if !assert.Equal(t, string(expected), string(actual)) {
 		require.NoError(t, os.WriteFile(filename, actual, 0600))
 	}
+
+	testutils.AssertDocumentedConfig(t, filename)
 }

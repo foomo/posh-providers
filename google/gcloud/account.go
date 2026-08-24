@@ -5,7 +5,10 @@ import (
 )
 
 type Account struct {
-	Name  string              `json:"name" yaml:"name"`
-	Email string              `json:"email" yaml:"email"`
-	Key   *onepassword.Secret `json:"key" yaml:"key"`
+	// Account identity passed to gcloud as --account
+	Name string `json:"name" yaml:"name"`
+	// Email of the account, for reference only
+	Email string `json:"email" yaml:"email"`
+	// 1Password document holding the service account key; without it, login falls back to an interactive browser prompt
+	Key *onepassword.Secret `json:"key" yaml:"key"`
 }

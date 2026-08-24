@@ -8,6 +8,9 @@ import (
 )
 
 type Config struct {
+	// STACKIT projects addressable by this command, keyed by the name accepted as
+	// the `project` argument. The key is a local alias and need not match the
+	// project's name in STACKIT.
 	Projects map[string]Project `json:"projects" yaml:"projects"`
 }
 

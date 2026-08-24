@@ -2,9 +2,12 @@ package open
 
 import (
 	"context"
+	_ "embed"
 	"net/url"
+	"strings"
 
 	"github.com/foomo/posh-providers/onepassword"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -13,6 +16,15 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -66,10 +78,11 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Open an external url",
+		Description: "Open a configured url in the browser",
 		Args: tree.Args{
 			{
-				Name: "router",
+				Name:        "router",
+				Description: "Router name from the open config, supplying the base url",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					var ret []goprompt.Suggest
 					for s, router := range inst.cfg {
@@ -80,8 +93,9 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 				},
 			},
 			{
-				Name:   "route",
-				Repeat: true,
+				Name:        "route",
+				Description: "Route name under the router; repeat to descend nested routes",
+				Repeat:      true,
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					var ret []goprompt.Suggest
 
@@ -140,6 +154,34 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that a route may embed 1Password credentials in the opened URL,
+// that the router silently decides which environment is reached, or that each
+// argument after the router descends one level of the configured route tree.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the phrasings that mean "take me to that environment's UI", since the
+// value here is the project's own router/route names rather than the act of
+// opening a browser.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when opening one of this project's configured web URLs in a browser - " +
+			"a service's admin UI, dashboard or console for a named environment such as local, " +
+			"staging or production. Also when asking which URLs or environments the project has, " +
+			"or when a target needs basic-auth credentials fetched from 1Password.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

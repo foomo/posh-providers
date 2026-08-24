@@ -7,88 +7,8 @@
     {
       "type": "object",
       "properties": {
-        "rclone": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1rclone~1rclone"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "terraform": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "cdktf": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1cdktf"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "az": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "gcloud": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1gcloud"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "chrome": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1chrome"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "terragrunt": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1gruntwork-io~1terragrunt"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "doctl": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1digitalocean~1doctl"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "op": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1onepassword~1op"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "cloudflared": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1cloudflare~1cloudflared"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "zip": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1zip"
+        "open": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1open~1config.schema.json"
         }
       }
     },
@@ -96,47 +16,23 @@
       "type": "object",
       "properties": {
         "task": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1task"
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1task~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "open": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1open"
+        "zip": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1zip~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "stern": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1stern~1stern"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "gcx": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1grafana~1gcx"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "k6": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1grafana~1k6"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "k3d": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d"
+        "az": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1azure~1az~1config.schema.json"
         }
       }
     },
@@ -144,23 +40,23 @@
       "type": "object",
       "properties": {
         "gh": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1cli~1cli"
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1cli~1cli~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "tempo": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1tempo"
+        "cloudflared": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1cloudflare~1cloudflared~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "gnat": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1gnat"
+        "doctl": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1digitalocean~1doctl~1config.schema.json"
         }
       }
     },
@@ -168,39 +64,7 @@
       "type": "object",
       "properties": {
         "etcd": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1etcd-io~1etcd"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "hygen": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1jondot~1hygen"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "sqlc": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1sqlc-dev~1sqlc"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "mkcert": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1filosottile~1mkcert"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "licensefinder": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pivotal~1licensefinder"
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1etcd-io~1etcd~1config.schema.json"
         }
       }
     },
@@ -208,23 +72,111 @@
       "type": "object",
       "properties": {
         "docusaurus": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1facebook~1docusaurus"
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1facebook~1docusaurus~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "stackit": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1stackitcloud~1stackit"
+        "mkcert": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1filosottile~1mkcert~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "slack": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1slack-go~1slack"
+        "beam": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1beam~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "gocontentful": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1gocontentful~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "sesamy": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1sesamy~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "squadron": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1squadron~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "gnat": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1gnat~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "tempo": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1tempo~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "harbor": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1goharbor~1harbor~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "migrate": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1golang-migrate~1migrate~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "chrome": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1google~1chrome~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "gcloud": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1google~1gcloud~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "gcx": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1gcx~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "k6": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1k6~1config.schema.json"
         }
       }
     },
@@ -232,7 +184,79 @@
       "type": "object",
       "properties": {
         "teleport": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1gravitational~1teleport"
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1gravitational~1teleport~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "terragrunt": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1gruntwork-io~1terragrunt~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "cdktf": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1cdktf~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "terraform": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1terraform~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "hygen": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1jondot~1hygen~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "k3d": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kubectl": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1kubernetes~1kubectl~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "kubeforward": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1kubernetes~1kubeforward~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1onepassword~1op~1config.schema.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "licensefinder": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pivotal~1licensefinder~1config.schema.json"
         }
       }
     },
@@ -242,10 +266,10 @@
         "pulumi": {
           "oneOf": [
             {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1azure"
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1azure~1config.schema.json"
             },
             {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1gcloud"
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1gcloud~1config.schema.json"
             }
           ]
         }
@@ -254,64 +278,40 @@
     {
       "type": "object",
       "properties": {
-        "gocontentful": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1gocontentful"
+        "rclone": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1rclone~1rclone~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "beam": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1beam"
+        "slack": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1slack-go~1slack~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "sesamy": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1sesamy"
+        "sqlc": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1sqlc-dev~1sqlc~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "squadron": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1squadron"
+        "stackit": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stackitcloud~1stackit~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "kubeforward": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubeforward"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "kubectl": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubectl"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "webdriverio": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio"
-        }
-      }
-    },
-    {
-      "type": "object",
-      "properties": {
-        "migrate": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1golang-migrate~1migrate"
+        "stern": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stern~1stern~1config.schema.json"
         }
       }
     },
@@ -319,15 +319,15 @@
       "type": "object",
       "properties": {
         "bruno": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1usebruno~1bruno"
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1usebruno~1bruno~1config.schema.json"
         }
       }
     },
     {
       "type": "object",
       "properties": {
-        "harbor": {
-          "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1goharbor~1harbor"
+        "webdriverio": {
+          "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json"
         }
       }
     }
@@ -481,110 +481,80 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/rclone/rclone": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/arbitrary/open/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1rclone~1rclone/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1open~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
           "type": "object",
-          "properties": {
-            "path": {
-              "type": "string"
-            },
-            "config": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/hashicorp/terraform": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform/$defs/Config",
-      "$defs": {
-        "Backend": {
-          "type": "object",
-          "properties": {
-            "resourceGroupName": {
-              "description": "Resource group containing the storage account",
-              "type": "string"
-            },
-            "storageAccountName": {
-              "description": "Storage account name",
-              "type": "string"
-            },
-            "containerName": {
-              "description": "Blob container name",
-              "type": "string"
-            },
-            "key": {
-              "description": "State file key (defaults to <workspace>.tfstate)",
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
+          "additionalProperties": {
+            "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1open~1config.schema.json/$defs/ConfigRouter"
+          }
         },
-        "Config": {
+        "ConfigRoute": {
           "type": "object",
           "properties": {
             "path": {
+              "description": "Route path",
               "type": "string"
             },
-            "tenantId": {
-              "description": "Azure tenant ID — sets ARM_TENANT_ID for all workspaces; required for CLI auth via az login --allow-no-subscriptions",
+            "description": {
+              "description": "Route description",
               "type": "string"
             },
-            "subscriptions": {
+            "routes": {
+              "description": "Child routes",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform/$defs/Subscription"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1open~1config.schema.json/$defs/ConfigRoute"
               }
             },
-            "servicePrincipals": {
+            "basicAuth": {
+              "description": "Basic authentication secret",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1open~1config.schema.json/$defs/Secret"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ConfigRouter": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "description": "Router base url",
+              "type": "string"
+            },
+            "routes": {
+              "description": "Router Child routes",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform/$defs/ServicePrincipal"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1open~1config.schema.json/$defs/ConfigRoute"
               }
-            }
-          },
-          "additionalProperties": false
-        },
-        "ServicePrincipal": {
-          "type": "object",
-          "properties": {
-            "tenantId": {
-              "description": "Tenant ID",
-              "type": "string"
             },
-            "clientId": {
-              "description": "Application client ID",
-              "type": "string"
-            },
-            "clientSecret": {
-              "description": "Application client secret",
-              "type": "string"
-            },
-            "subscriptionId": {
-              "description": "Azure subscription ID",
+            "description": {
+              "description": "Router descriotion",
               "type": "string"
             }
           },
           "additionalProperties": false
         },
-        "Subscription": {
+        "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
-            "id": {
-              "description": "Azure subscription ID",
+            "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
-            "backend": {
-              "description": "Backend state storage configuration",
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1terraform/$defs/Backend"
+            "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
+              "type": "string"
             },
-            "proxy": {
-              "description": "Named SSH proxy for this workspace",
+            "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
+              "type": "string"
+            },
+            "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -592,17 +562,114 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/hashicorp/cdktf": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/arbitrary/task/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1hashicorp~1cdktf/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1task~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
           "type": "object",
           "properties": {
             "path": {
+              "description": "Path to the directory containing tasks",
               "type": "string"
             },
-            "outPath": {
+            "tasks": {
+              "description": "Task configurations",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1task~1config.schema.json/$defs/Task"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Task": {
+          "type": "object",
+          "properties": {
+            "prompt": {
+              "description": "Prompt string to confirm execution",
+              "type": "string"
+            },
+            "env": {
+              "description": "Task environment variables",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "dir": {
+              "description": "Dir to execute the task in",
+              "type": "string"
+            },
+            "description": {
+              "description": "Description of the task",
+              "type": "string"
+            },
+            "precondition": {
+              "description": "Precondition to cancel the execution of a task and its dependencies",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "deps": {
+              "description": "Dependencies to run",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "cmds": {
+              "description": "Commands to execute",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "hidden": {
+              "description": "Don't show in the completion list",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/arbitrary/zip/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1zip~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "credentials": {
+              "description": "Named 1Password secrets holding archive passwords, keyed by the name accepted by --cred",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1zip~1config.schema.json/$defs/Secret"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
+          "type": "object",
+          "properties": {
+            "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
+              "type": "string"
+            },
+            "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
+              "type": "string"
+            },
+            "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
+              "type": "string"
+            },
+            "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -610,9 +677,9 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/azure/az": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/azure/az/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1azure~1az~1config.schema.json/$defs/Config",
       "$defs": {
         "Artifactory": {
           "type": "object",
@@ -665,14 +732,14 @@
               "description": "Subscription configurations",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Subscription"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1azure~1az~1config.schema.json/$defs/Subscription"
               }
             },
             "servicePrincipals": {
               "description": "Authentication service principals",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/ServicePrincipal"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1azure~1az~1config.schema.json/$defs/ServicePrincipal"
               }
             }
           },
@@ -707,21 +774,21 @@
               "description": "Vaults available within the subscription",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Vault"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1azure~1az~1config.schema.json/$defs/Vault"
               }
             },
             "clusters": {
               "description": "Clusters available within the subscription",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Cluster"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1azure~1az~1config.schema.json/$defs/Cluster"
               }
             },
             "artifactories": {
               "description": "Artifactorys available within the subscription",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1azure~1az/$defs/Artifactory"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1azure~1az~1config.schema.json/$defs/Artifactory"
               }
             }
           },
@@ -743,38 +810,78 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/google/gcloud": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/cli/cli/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1gcloud/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1cli~1cli~1config.schema.json/$defs/Config",
       "$defs": {
-        "Account": {
+        "Config": {
           "type": "object",
           "properties": {
-            "name": {
+            "scopes": {
+              "description": "Required OAuth scopes per gh hostname.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/cloudflare/cloudflared/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1cloudflare~1cloudflared~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Access": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "description": "Access mode passed to `cloudflared access`, e.g. tcp or ssh",
               "type": "string"
             },
-            "email": {
+            "hostname": {
+              "description": "Hostname of the Cloudflare Access target to tunnel to",
               "type": "string"
             },
-            "key": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1gcloud/$defs/Secret"
+            "port": {
+              "description": "Local port the tunnel listens on, bound to 127.0.0.1",
+              "type": "integer"
             }
           },
           "additionalProperties": false
         },
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Path used as HOME for every cloudflared call, keeping its credentials per project",
+              "type": "string"
+            },
+            "access": {
+              "description": "Access configurations, keyed by the name given to `access connect`",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1cloudflare~1cloudflared~1config.schema.json/$defs/Access"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/digitalocean/doctl/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1digitalocean~1doctl~1config.schema.json/$defs/Config",
+      "$defs": {
         "Cluster": {
           "type": "object",
           "properties": {
             "name": {
-              "type": "string"
-            },
-            "project": {
-              "type": "string"
-            },
-            "region": {
-              "type": "string"
-            },
-            "account": {
+              "description": "Cluster ID or name passed to doctl. The README's sample uses the cluster\nUUID, which is also what the generated kubeconfig's credential plugin\nrequires. The kubeconfig filename comes from the map key instead, unless\n`CommandWithClusterNameFn` overrides it.",
               "type": "string"
             }
           },
@@ -784,36 +891,222 @@
           "type": "object",
           "properties": {
             "configPath": {
+              "description": "Path to the doctl config file holding the API token, relative to the project\nroot. Exported as `DIGITALOCEAN_CONFIG` at shell startup, so every doctl\ninvocation in the session reads this file rather than the user's own; written\nby `auth init`.",
               "type": "string"
             },
-            "accounts": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1gcloud/$defs/Account"
-              }
-            },
             "clusters": {
+              "description": "Clusters addressable by this command, keyed by the name accepted as the\n`cluster` argument. The key is a local alias; `name` holds the value passed\nto doctl.",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1gcloud/$defs/Cluster"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1digitalocean~1doctl~1config.schema.json/$defs/Cluster"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/etcd-io/etcd/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1etcd-io~1etcd~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Cluster": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Cluster name, matched against both the `cluster` argument and the kubectl\ncluster whose kubeconfig is used to reach the pod.",
+              "type": "string"
+            },
+            "podName": {
+              "description": "Name of the etcd pod to exec into. Must be an exact pod name, not a\ndeployment or label selector.",
+              "type": "string"
+            },
+            "namespace": {
+              "description": "Namespace the etcd pod runs in.",
+              "type": "string"
+            },
+            "paths": {
+              "description": "etcd keys offered as completions for the `path` argument. Advisory only — any\nkey can be typed, whether listed or not.",
+              "type": "array",
+              "items": {
+                "type": "string"
               }
             }
           },
           "additionalProperties": false
         },
+        "Config": {
+          "type": "object",
+          "properties": {
+            "configPath": {
+              "description": "Directory the `edit` verb writes its scratch copy of a value into, before and\nafter editing. Created at shell startup; resolved against the project root, so\nthe file — which holds real etcd contents — lands inside the checkout.",
+              "type": "string"
+            },
+            "clusters": {
+              "description": "Clusters this command can reach. Only clusters listed here are offered, and\ncompletion additionally requires a matching kubeconfig to exist.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1etcd-io~1etcd~1config.schema.json/$defs/Cluster"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/facebook/docusaurus/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1facebook~1docusaurus~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "sourcePath": {
+              "description": "Path to the docusaurus site, added into the image at build time",
+              "type": "string"
+            },
+            "localPort": {
+              "description": "Host port mapped to the container's port 3000",
+              "type": "string"
+            },
+            "nodeTag": {
+              "description": "Node base image tag to build against",
+              "type": "string"
+            },
+            "imageTag": {
+              "description": "Tag of the image being built and run",
+              "type": "string"
+            },
+            "imageName": {
+              "description": "Name of the image being built and run",
+              "type": "string"
+            },
+            "volumes": {
+              "description": "Additional docker volume mounts, environment variables are expanded",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/filosottile/mkcert/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1filosottile~1mkcert~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Certificate": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Basename of the generated pair, written as `<name>.pem` and\n`<name>-key.pem`. Does not need to be one of `names`.",
+              "type": "string"
+            },
+            "names": {
+              "description": "Hostnames, wildcards, IPs, URLs or emails the certificate is valid for.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "properties": {
+            "certificatePath": {
+              "description": "Directory the generated certificates and keys are written to, relative to\nthe project root. Required by `generate` and `create`, which both refuse to\nrun when it is empty; created on demand if missing.",
+              "type": "string"
+            },
+            "certificates": {
+              "description": "Certificates generated by `generate`, one mkcert invocation each.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1filosottile~1mkcert~1config.schema.json/$defs/Certificate"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/foomo/beam/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1beam~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Cluster": {
+          "type": "object",
+          "properties": {
+            "port": {
+              "description": "Local port the tunnel binds on 127.0.0.1",
+              "type": "integer"
+            },
+            "hostname": {
+              "description": "Cloudflare Access hostname the tunnel connects to",
+              "type": "string"
+            },
+            "kubeconfig": {
+              "description": "1Password document holding the kubeconfig; $PORT in it is replaced with the port above",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1beam~1config.schema.json/$defs/Secret"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "properties": {
+            "clusters": {
+              "description": "Clusters reachable through a cloudflared tunnel, keyed by the name the command accepts",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1beam~1config.schema.json/$defs/Cluster"
+              }
+            },
+            "databases": {
+              "description": "Databases reachable through a cloudflared tunnel, keyed by the name the command accepts",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1beam~1config.schema.json/$defs/Database"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Database": {
+          "type": "object",
+          "properties": {
+            "port": {
+              "description": "Local port the tunnel binds on 127.0.0.1",
+              "type": "integer"
+            },
+            "hostname": {
+              "description": "Cloudflare Access hostname the tunnel connects to",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -821,9 +1114,241 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/google/chrome": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/foomo/gocontentful/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1chrome/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1gocontentful~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "description": "Config is the schema of a `gocontentful.yaml` file discovered in the project, not of a key in the posh config.",
+          "type": "object",
+          "properties": {
+            "spaceId": {
+              "description": "Contentful space id to generate against",
+              "type": "string"
+            },
+            "cmaKey": {
+              "description": "Contentful management API key, typically a 1Password secret reference",
+              "type": "string"
+            },
+            "environment": {
+              "description": "Contentful environment; defaults to \"master\" when empty",
+              "type": "string"
+            },
+            "region": {
+              "description": "Contentful API region",
+              "type": "string"
+            },
+            "contentTypes": {
+              "description": "Content types to generate code for",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/foomo/sesamy/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1sesamy~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "description": "Config maps a config set name to the sesamy YAML files that are merged, in order, to produce the config each command runs with.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/foomo/squadron/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1squadron~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Cluster": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Cluser name",
+              "type": "string"
+            },
+            "notify": {
+              "description": "Enable notification by default",
+              "type": "boolean"
+            },
+            "confirm": {
+              "description": "Enable confirmation",
+              "type": "boolean"
+            },
+            "fleets": {
+              "description": "Cluster fleet names",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Path to the squadron root",
+              "type": "string"
+            },
+            "clusters": {
+              "description": "Cluster configurations",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1squadron~1config.schema.json/$defs/Cluster"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/galaxy/gnat/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1gnat~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "theme": {
+              "description": "Theme is the gnat color theme, passed to the CLI via -theme.",
+              "type": "string"
+            },
+            "configDir": {
+              "description": "ConfigDir specifies the $XDG_CONFIG_HOME where configuration files are stored.",
+              "type": "string"
+            },
+            "profiles": {
+              "description": "Profiles maps a name to a NATS server profile; names autocomplete in the shell.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1gnat~1config.schema.json/$defs/Profile"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Profile": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "description": "URL is the NATS server URL, passed to the CLI via -url.",
+              "type": "string"
+            },
+            "description": {
+              "description": "Description is shown in shell autocompletion.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/galaxy/tempo/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1tempo~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "theme": {
+              "description": "Theme is the tempo color theme, passed to the CLI via --theme.",
+              "type": "string"
+            },
+            "configDir": {
+              "description": "ConfigDir specifies the $XDG_CONFIG_HOME where configuration files are stored.",
+              "type": "string"
+            },
+            "profiles": {
+              "description": "Profiles maps a name to a Temporal connection profile; names autocomplete in the shell.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1tempo~1config.schema.json/$defs/Profile"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Profile": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "description": "URL is the Temporal server address (host:port), passed to the CLI via --address.",
+              "type": "string"
+            },
+            "description": {
+              "description": "Description is shown in shell autocompletion.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/goharbor/harbor/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1goharbor~1harbor~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "description": "Harbor base URL including scheme, e.g. `https://harbor.example.org`. Passed\nto `docker login` as-is; the registry host is derived from it by stripping a\n`https://` prefix, so an `http://` URL or a trailing slash is not handled.",
+              "type": "string"
+            },
+            "authUrl": {
+              "description": "Login page opened in a browser by `auth`, typically the OIDC entry point\n(`<url>/c/oidc/login`). Opened by `docker` too, so the CLI secret can be\ncopied from the profile page.",
+              "type": "string"
+            },
+            "project": {
+              "description": "Harbor project used to build the throwaway image reference the auth check\npulls. Not used by `auth` or `docker`.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/golang-migrate/migrate/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1golang-migrate~1migrate~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "sources": {
+              "description": "SourcesMap maps a source name to a golang-migrate source URL, e.g.\n`file://migrations`. The names are the values the `source` argument accepts.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "databases": {
+              "description": "DatabasesMap maps a database name to a golang-migrate database URL, e.g.\n`pgx5://user:password@localhost:5432/db?sslmode=disable`. The names are the\nvalues the `database` argument accepts. A value may contain 1Password\nsecret references, which are resolved at execution time.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/google/chrome/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1google~1chrome~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
           "type": "object",
@@ -844,7 +1369,7 @@
               "description": "Named environments, each with an optional proxy and default URL",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1google~1chrome/$defs/Profile"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1google~1chrome~1config.schema.json/$defs/Profile"
               }
             }
           },
@@ -862,7 +1387,7 @@
               "type": "string"
             },
             "proxy": {
-              "description": "Named SSH proxy from the global proxies config",
+              "description": "Proxy passed verbatim to Chrome as --proxy-server, e.g. socks5://localhost:1080",
               "type": "string"
             },
             "incognito": {
@@ -874,32 +1399,45 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/gruntwork-io/terragrunt": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/google/gcloud/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1gruntwork-io~1terragrunt/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1google~1gcloud~1config.schema.json/$defs/Config",
       "$defs": {
-        "Config": {
+        "Account": {
           "type": "object",
           "properties": {
-            "path": {
+            "name": {
+              "description": "Account identity passed to gcloud as --account",
               "type": "string"
             },
-            "cachePath": {
+            "email": {
+              "description": "Email of the account, for reference only",
               "type": "string"
+            },
+            "key": {
+              "description": "1Password document holding the service account key; without it, login falls back to an interactive browser prompt",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1google~1gcloud~1config.schema.json/$defs/Secret"
             }
           },
           "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/digitalocean/doctl": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1digitalocean~1doctl/$defs/Config",
-      "$defs": {
+        },
         "Cluster": {
           "type": "object",
           "properties": {
             "name": {
+              "description": "Name of the cluster in GKE, which may differ from the key used to select it",
+              "type": "string"
+            },
+            "project": {
+              "description": "Google cloud project the cluster belongs to",
+              "type": "string"
+            },
+            "region": {
+              "description": "Google cloud region the cluster runs in",
+              "type": "string"
+            },
+            "account": {
+              "description": "Account key to authenticate as; passed to gcloud as --account when set",
               "type": "string"
             }
           },
@@ -909,102 +1447,44 @@
           "type": "object",
           "properties": {
             "configPath": {
+              "description": "Path used as CLOUDSDK_CONFIG, keeping gcloud state per project; created on startup",
               "type": "string"
+            },
+            "accounts": {
+              "description": "Account configurations, keyed by the name given to `gcloud login`",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1google~1gcloud~1config.schema.json/$defs/Account"
+              }
             },
             "clusters": {
+              "description": "Cluster configurations, keyed by the name given to `gcloud kubeconfig`",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1digitalocean~1doctl/$defs/Cluster"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/onepassword/op": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1onepassword~1op/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "account": {
-              "type": "string"
-            },
-            "tokenFilename": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/cloudflare/cloudflared": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1cloudflare~1cloudflared/$defs/Config",
-      "$defs": {
-        "Access": {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string"
-            },
-            "hostname": {
-              "type": "string"
-            },
-            "port": {
-              "type": "integer"
-            }
-          },
-          "additionalProperties": false
-        },
-        "Config": {
-          "type": "object",
-          "properties": {
-            "path": {
-              "type": "string"
-            },
-            "access": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1cloudflare~1cloudflared/$defs/Access"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/arbitrary/zip": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1zip/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "credentials": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1zip/$defs/Secret"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1google~1gcloud~1config.schema.json/$defs/Cluster"
               }
             }
           },
           "additionalProperties": false
         },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },
@@ -1012,203 +1492,15 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/arbitrary/task": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/grafana/gcx/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1task/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1gcx~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
-          "type": "object",
-          "properties": {
-            "path": {
-              "description": "Path to the directory containing tasks",
-              "type": "string"
-            },
-            "tasks": {
-              "description": "Task configurations",
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1task/$defs/Task"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Task": {
-          "type": "object",
-          "properties": {
-            "prompt": {
-              "description": "Prompt string to confirm execution",
-              "type": "string"
-            },
-            "env": {
-              "description": "Task environment variables",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "dir": {
-              "description": "Dir to execute the task in",
-              "type": "string"
-            },
-            "sudo": {
-              "description": "Run as sudo",
-              "type": "boolean"
-            },
-            "description": {
-              "description": "Description of the task",
-              "type": "string"
-            },
-            "precondition": {
-              "description": "Precondition to cancel the execution of a task and its dependencies",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "deps": {
-              "description": "Dependencies to run",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "cmds": {
-              "description": "Commands to execute",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "hidden": {
-              "description": "Don't show in the completion list",
-              "type": "boolean"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/arbitrary/open": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1open/$defs/Config",
-      "$defs": {
-        "Config": {
+          "description": "Config maps an environment name to the Grafana server, org and credentials gcx is run against.",
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1open/$defs/ConfigRouter"
-          }
-        },
-        "ConfigRoute": {
-          "type": "object",
-          "properties": {
-            "path": {
-              "description": "Route path",
-              "type": "string"
-            },
-            "description": {
-              "description": "Route description",
-              "type": "string"
-            },
-            "routes": {
-              "description": "Child routes",
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1open/$defs/ConfigRoute"
-              }
-            },
-            "basicAuth": {
-              "description": "Basic authentication secret",
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1open/$defs/Secret"
-            }
-          },
-          "additionalProperties": false
-        },
-        "ConfigRouter": {
-          "type": "object",
-          "properties": {
-            "url": {
-              "description": "Router base url",
-              "type": "string"
-            },
-            "routes": {
-              "description": "Router Child routes",
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1arbitrary~1open/$defs/ConfigRoute"
-              }
-            },
-            "description": {
-              "description": "Router descriotion",
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "Secret": {
-          "type": "object",
-          "properties": {
-            "account": {
-              "type": "string"
-            },
-            "vault": {
-              "type": "string"
-            },
-            "item": {
-              "type": "string"
-            },
-            "field": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/stern/stern": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1stern~1stern/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "queries": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1stern~1stern/$defs/Query"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Query": {
-          "type": "object",
-          "properties": {
-            "query": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "queries": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1stern~1stern/$defs/Query"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/grafana/gcx": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1grafana~1gcx/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1grafana~1gcx/$defs/ConfigEnv"
+            "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1gcx~1config.schema.json/$defs/ConfigEnv"
           }
         },
         "ConfigEnv": {
@@ -1245,20 +1537,22 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/grafana/k6": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/grafana/k6/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1grafana~1k6/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1k6~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
           "type": "object",
           "properties": {
             "path": {
+              "description": "Directory holding the `*.k6.js` scenario scripts and their `*.secret.tpl`\ntemplates. Created at shell startup if missing, and the root the `scenario`\nargument is resolved against.",
               "type": "string"
             },
             "envs": {
+              "description": "Environments selectable as the first argument, keyed by the name offered in\ncompletion. Each entry's keys are upper-cased and passed to k6 as environment\nvariables, so they are visible to the scenario via `__ENV`.",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1grafana~1k6/$defs/Env"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1k6~1config.schema.json/$defs/Env"
               }
             }
           },
@@ -1272,23 +1566,246 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/k3d-io/k3d": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/gravitational/teleport/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1gravitational~1teleport~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Directory holding the teleport session state, exported as TELEPORT_HOME\nwhen the provider is constructed. Relative to the project root.",
+              "type": "string"
+            },
+            "labels": {
+              "description": "Labels every cluster, app and database must carry to be listed. Combined\ninto a single tsh --query expression with &&; omit to list everything.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "hostname": {
+              "description": "Teleport proxy to authenticate against, e.g. \"teleport.example.com:443\".",
+              "type": "string"
+            },
+            "kubernetes": {
+              "description": "Kubernetes-specific settings.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1gravitational~1teleport~1config.schema.json/$defs/Kubernetes"
+            },
+            "apps": {
+              "description": "Extra arguments passed to `tsh apps login`, keyed by app name. Prepended\nbefore the app name itself; apps not listed here still work.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "database": {
+              "description": "Database-specific settings.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1gravitational~1teleport~1config.schema.json/$defs/Database"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Database": {
+          "type": "object",
+          "properties": {
+            "user": {
+              "description": "Database user to log in as. Overridden by the TELEPORT_DATABASE_USER\nenvironment variable when it is set.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Kubernetes": {
+          "type": "object",
+          "properties": {
+            "aliases": {
+              "description": "Display names for kube clusters, keyed by the real teleport cluster name.\nCompletion offers the alias and it is mapped back before login, so the\nvalues must be unique and must not collide with another cluster's real\nname; a configuration that breaks either rule is rejected when the alias\nis resolved.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/gruntwork-io/terragrunt/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1gruntwork-io~1terragrunt~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Root of the terragrunt tree. Environments, sites and stacks are all\ndiscovered beneath it as `<path>/envs/<env>/<site>/<stack>/terragrunt.hcl`,\nso this single value determines the whole command surface; nothing else is\nconfigured.",
+              "type": "string"
+            },
+            "cachePath": {
+              "description": "Directory terragrunt downloads remote modules into, exported as\n`TERRAGRUNT_DOWNLOAD` at shell startup. Resolved against the project root, so\nleaving it unset points the download cache at the checkout itself.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/hashicorp/cdktf/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1cdktf~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Directory the cdktf app lives in; every verb runs with this as its working\ndirectory. Also the root walked for `*.stack.yaml` files to discover stack\nnames.",
+              "type": "string"
+            },
+            "outPath": {
+              "description": "Directory cdktf synthesizes into. Used only by `unlock`, which runs\nterraform in `<outPath>/stacks/<stack>`, so leaving it unset breaks that\nverb while every other one still works.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/hashicorp/terraform/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1terraform~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Backend": {
+          "type": "object",
+          "properties": {
+            "resourceGroupName": {
+              "description": "Resource group containing the storage account",
+              "type": "string"
+            },
+            "storageAccountName": {
+              "description": "Storage account name",
+              "type": "string"
+            },
+            "containerName": {
+              "description": "Blob container name",
+              "type": "string"
+            },
+            "key": {
+              "description": "State file key (defaults to <workspace>.tfstate)",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Directory holding one subdirectory per workspace. Workspace names are\ndiscovered from it rather than configured: any child directory containing\n`.tf` files and not prefixed with `.` or `_` becomes a valid `workspace`\nargument, whether or not it appears under `subscriptions`.",
+              "type": "string"
+            },
+            "tenantId": {
+              "description": "Azure tenant ID — sets ARM_TENANT_ID for all workspaces; required for CLI auth via az login --allow-no-subscriptions",
+              "type": "string"
+            },
+            "subscriptions": {
+              "description": "Per-workspace Azure subscription and backend settings, keyed by workspace\ndirectory name. Optional: a workspace with no entry still runs, but gets no\n`ARM_SUBSCRIPTION_ID` and no `-backend-config` flags on `init`.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1terraform~1config.schema.json/$defs/Subscription"
+              }
+            },
+            "servicePrincipals": {
+              "description": "Service principals selectable with `--service-principal`, keyed by the name\noffered in completion. Selecting one overrides the default Azure auth chain\nfor that invocation, including the subscription.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1terraform~1config.schema.json/$defs/ServicePrincipal"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "ServicePrincipal": {
+          "type": "object",
+          "properties": {
+            "tenantId": {
+              "description": "Tenant ID",
+              "type": "string"
+            },
+            "clientId": {
+              "description": "Application client ID",
+              "type": "string"
+            },
+            "clientSecret": {
+              "description": "Application client secret, in plaintext. Held in the project config and\nexported as ARM_CLIENT_SECRET, so keep it out of version control.",
+              "type": "string"
+            },
+            "subscriptionId": {
+              "description": "Azure subscription ID",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Subscription": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Azure subscription ID",
+              "type": "string"
+            },
+            "backend": {
+              "description": "Backend state storage configuration",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1terraform~1config.schema.json/$defs/Backend"
+            },
+            "proxy": {
+              "description": "Named SSH proxy for this workspace. Unused — nothing in this provider reads\nit, so setting it has no effect.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/jondot/hygen/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1jondot~1hygen~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "templatePath": {
+              "description": "Directory holding the template directories; its parent becomes HYGEN_TMPLS",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/k3d-io/k3d/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
           "type": "object",
           "properties": {
             "charts": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d/$defs/ConfigCharts"
+              "description": "Helm charts installable with the install/uninstall verbs.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json/$defs/ConfigCharts"
             },
             "registry": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d/$defs/ConfigRegistry"
+              "description": "Container registry shared by every cluster below. Created on the first\n`up` and deleted once the last cluster is brought down.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json/$defs/ConfigRegistry"
             },
             "clusters": {
+              "description": "Clusters that can be created, keyed by the name used as the argument.",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1k3d-io~1k3d/$defs/ConfigCluster"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json/$defs/ConfigCluster"
               }
             }
           },
@@ -1298,9 +1815,11 @@
           "type": "object",
           "properties": {
             "path": {
+              "description": "Directory holding one subdirectory per chart, relative to the project\nroot. Its subdirectory names are what the chart argument completes to.",
               "type": "string"
             },
             "prefix": {
+              "description": "Prefix prepended to the chart name to form the target namespace, so\nchart \"base\" with prefix \"shared-\" installs into \"shared-base\".",
               "type": "string"
             }
           },
@@ -1339,9 +1858,11 @@
           "type": "object",
           "properties": {
             "name": {
+              "description": "Registry name passed to k3d, which prefixes it with \"k3d-\" for the\nactual container and hostname.",
               "type": "string"
             },
             "port": {
+              "description": "Host port the registry binds to.",
               "type": "string"
             }
           },
@@ -1349,160 +1870,15 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/cli/cli": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/kubernetes/kubectl/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1cli~1cli/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1kubernetes~1kubectl~1config.schema.json/$defs/Config",
       "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "scopes": {
-              "description": "Required OAuth scopes per gh hostname.",
-              "type": "object",
-              "additionalProperties": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/galaxy/tempo": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1tempo/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "theme": {
-              "description": "Theme is the tempo color theme, passed to the CLI via --theme.",
-              "type": "string"
-            },
-            "configDir": {
-              "description": "ConfigDir specifies the $XDG_CONFIG_HOME where configuration files are stored.",
-              "type": "string"
-            },
-            "profiles": {
-              "description": "Profiles maps a name to a Temporal connection profile; names autocomplete in the shell.",
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1tempo/$defs/Profile"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Profile": {
-          "type": "object",
-          "properties": {
-            "url": {
-              "description": "URL is the Temporal server address (host:port), passed to the CLI via --address.",
-              "type": "string"
-            },
-            "description": {
-              "description": "Description is shown in shell autocompletion.",
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/galaxy/gnat": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1gnat/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "theme": {
-              "description": "Theme is the gnat color theme, passed to the CLI via -theme.",
-              "type": "string"
-            },
-            "configDir": {
-              "description": "ConfigDir specifies the $XDG_CONFIG_HOME where configuration files are stored.",
-              "type": "string"
-            },
-            "profiles": {
-              "description": "Profiles maps a name to a NATS server profile; names autocomplete in the shell.",
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1galaxy~1gnat/$defs/Profile"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Profile": {
-          "type": "object",
-          "properties": {
-            "url": {
-              "description": "URL is the NATS server URL, passed to the CLI via -url.",
-              "type": "string"
-            },
-            "description": {
-              "description": "Description is shown in shell autocompletion.",
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/etcd-io/etcd": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1etcd-io~1etcd/$defs/Config",
-      "$defs": {
-        "Cluster": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "podName": {
-              "type": "string"
-            },
-            "namespace": {
-              "type": "string"
-            },
-            "paths": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
         "Config": {
           "type": "object",
           "properties": {
             "configPath": {
-              "type": "string"
-            },
-            "clusters": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1etcd-io~1etcd/$defs/Cluster"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/jondot/hygen": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1jondot~1hygen/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "templatePath": {
+              "description": "ConfigPath to store kubeconfigs",
               "type": "string"
             }
           },
@@ -1510,560 +1886,14 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/sqlc-dev/sqlc": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/kubernetes/kubeforward/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1sqlc-dev~1sqlc/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "tempDir": {
-              "type": "string"
-            },
-            "cacheDir": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/filosottile/mkcert": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1filosottile~1mkcert/$defs/Config",
-      "$defs": {
-        "Certificate": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "names": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Config": {
-          "type": "object",
-          "properties": {
-            "certificatePath": {
-              "type": "string"
-            },
-            "certificates": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1filosottile~1mkcert/$defs/Certificate"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/pivotal/licensefinder": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pivotal~1licensefinder/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "logPath": {
-              "type": "string"
-            },
-            "decisionsPath": {
-              "type": "string"
-            },
-            "sources": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/facebook/docusaurus": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1facebook~1docusaurus/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "sourcePath": {
-              "type": "string"
-            },
-            "localPort": {
-              "type": "string"
-            },
-            "nodeTag": {
-              "type": "string"
-            },
-            "imageTag": {
-              "type": "string"
-            },
-            "imageName": {
-              "type": "string"
-            },
-            "volumes": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/stackitcloud/stackit": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1stackitcloud~1stackit/$defs/Config",
-      "$defs": {
-        "Cluster": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "Config": {
-          "type": "object",
-          "properties": {
-            "projects": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1stackitcloud~1stackit/$defs/Project"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Project": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "clusters": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1stackitcloud~1stackit/$defs/Cluster"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/slack-go/slack": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1slack-go~1slack/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "token": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1slack-go~1slack/$defs/Secret"
-            },
-            "channels": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              }
-            },
-            "webhooks": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1slack-go~1slack/$defs/Secret"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Secret": {
-          "type": "object",
-          "properties": {
-            "account": {
-              "type": "string"
-            },
-            "vault": {
-              "type": "string"
-            },
-            "item": {
-              "type": "string"
-            },
-            "field": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/gravitational/teleport": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1gravitational~1teleport/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "path": {
-              "type": "string"
-            },
-            "labels": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              }
-            },
-            "hostname": {
-              "type": "string"
-            },
-            "kubernetes": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1gravitational~1teleport/$defs/Kubernetes"
-            },
-            "apps": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            },
-            "database": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1gravitational~1teleport/$defs/Database"
-            }
-          },
-          "additionalProperties": false
-        },
-        "Database": {
-          "type": "object",
-          "properties": {
-            "user": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "Kubernetes": {
-          "type": "object",
-          "properties": {
-            "aliases": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/pulumi/pulumi/azure": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1azure/$defs/Config",
-      "$defs": {
-        "Backend": {
-          "type": "object",
-          "properties": {
-            "location": {
-              "type": "string"
-            },
-            "container": {
-              "type": "string"
-            },
-            "subscription": {
-              "type": "string"
-            },
-            "resourceGroup": {
-              "type": "string"
-            },
-            "storageAccount": {
-              "type": "string"
-            },
-            "passphrase": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1azure/$defs/Secret"
-            }
-          },
-          "additionalProperties": false
-        },
-        "Config": {
-          "type": "object",
-          "properties": {
-            "path": {
-              "type": "string"
-            },
-            "configPath": {
-              "type": "string"
-            },
-            "backends": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1azure/$defs/Backend"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Secret": {
-          "type": "object",
-          "properties": {
-            "account": {
-              "type": "string"
-            },
-            "vault": {
-              "type": "string"
-            },
-            "item": {
-              "type": "string"
-            },
-            "field": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/pulumi/pulumi/gcloud": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1gcloud/$defs/Config",
-      "$defs": {
-        "Backend": {
-          "type": "object",
-          "properties": {
-            "location": {
-              "type": "string"
-            },
-            "bucket": {
-              "type": "string"
-            },
-            "project": {
-              "type": "string"
-            },
-            "passphrase": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1gcloud/$defs/Secret"
-            }
-          },
-          "additionalProperties": false
-        },
-        "Config": {
-          "type": "object",
-          "properties": {
-            "path": {
-              "type": "string"
-            },
-            "configPath": {
-              "type": "string"
-            },
-            "backends": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1pulumi~1pulumi~1gcloud/$defs/Backend"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Secret": {
-          "type": "object",
-          "properties": {
-            "account": {
-              "type": "string"
-            },
-            "vault": {
-              "type": "string"
-            },
-            "item": {
-              "type": "string"
-            },
-            "field": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/foomo/gocontentful": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1gocontentful/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "spaceId": {
-              "type": "string"
-            },
-            "cmaKey": {
-              "type": "string"
-            },
-            "environment": {
-              "type": "string"
-            },
-            "region": {
-              "type": "string"
-            },
-            "contentTypes": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/foomo/beam": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1beam/$defs/Config",
-      "$defs": {
-        "Cluster": {
-          "type": "object",
-          "properties": {
-            "port": {
-              "type": "integer"
-            },
-            "hostname": {
-              "type": "string"
-            },
-            "kubeconfig": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1beam/$defs/Secret"
-            }
-          },
-          "additionalProperties": false
-        },
-        "Config": {
-          "type": "object",
-          "properties": {
-            "clusters": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1beam/$defs/Cluster"
-              }
-            },
-            "databases": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1beam/$defs/Database"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Database": {
-          "type": "object",
-          "properties": {
-            "port": {
-              "type": "integer"
-            },
-            "hostname": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        "Secret": {
-          "type": "object",
-          "properties": {
-            "account": {
-              "type": "string"
-            },
-            "vault": {
-              "type": "string"
-            },
-            "item": {
-              "type": "string"
-            },
-            "field": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/foomo/sesamy": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1sesamy/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1kubernetes~1kubeforward~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
           "type": "object",
           "additionalProperties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/foomo/squadron": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1squadron/$defs/Config",
-      "$defs": {
-        "Cluster": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "description": "Cluser name",
-              "type": "string"
-            },
-            "notify": {
-              "description": "Enable notification by default",
-              "type": "boolean"
-            },
-            "confirm": {
-              "description": "Enable confirmation",
-              "type": "boolean"
-            },
-            "fleets": {
-              "description": "Cluster fleet names",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "Config": {
-          "type": "object",
-          "properties": {
-            "path": {
-              "description": "Path to the squadron root",
-              "type": "string"
-            },
-            "clusters": {
-              "description": "Cluster configurations",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1foomo~1squadron/$defs/Cluster"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/kubernetes/kubeforward": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubeforward/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubeforward/$defs/PortForward"
+            "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1kubernetes~1kubeforward~1config.schema.json/$defs/PortForward"
           }
         },
         "PortForward": {
@@ -2094,15 +1924,19 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/kubernetes/kubectl": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/onepassword/op/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1kubernetes~1kubectl/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1onepassword~1op~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
           "type": "object",
           "properties": {
-            "configPath": {
-              "description": "ConfigPath to store kubeconfigs",
+            "account": {
+              "description": "Account this provider signs in to and resolves every secret against, as a\nsign-in subdomain or account UUID. `register` appends `.1password.eu` to it,\nso that verb assumes an EU-hosted account.",
+              "type": "string"
+            },
+            "tokenFilename": {
+              "description": "Optional file the session token is written to and reloaded from, so a session\nsurvives restarting the shell. Written mode 0600 and holding a live\ncredential, so keep it out of version control; leave unset to keep the\nsession in the process environment only.",
               "type": "string"
             }
           },
@@ -2110,33 +1944,408 @@
         }
       }
     },
-    "https://github.com/foomo/posh-providers/webdriverio/webdriverio": {
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/pivotal/licensefinder/config.schema.json": {
       "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio/$defs/Config",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pivotal~1licensefinder~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "logPath": {
+              "description": "Directory license_finder writes its log to, passed as `--log-directory`.",
+              "type": "string"
+            },
+            "decisionsPath": {
+              "description": "File recording the approval decisions, passed as `--decisions-file`. Every\n`add`/`remove` verb rewrites this file, so it is the provider's only\npersistent state and belongs in version control.",
+              "type": "string"
+            },
+            "sources": {
+              "description": "Dependency-manifest filenames to search the project for, e.g. `go.mod` or\n`yarn.lock`. Each match's containing directory becomes a scanned project;\nthe manifests themselves are never read here.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/pulumi/pulumi/azure/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1azure~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Backend": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "description": "Location is the Azure region the resource group and storage account are\ncreated in. Only read by `backend create`; it is not used when logging in\nor running a stack.",
+              "type": "string"
+            },
+            "container": {
+              "description": "Container is the blob container holding the pulumi state. Used as\nazblob://<container> for both `backend login` and PULUMI_BACKEND_URL.",
+              "type": "string"
+            },
+            "subscription": {
+              "description": "Subscription is the Azure subscription ID owning the backend. Exported as\nARM_SUBSCRIPTION_ID for every stack operation, so it also decides which\nsubscription the stack's own resources are created in.",
+              "type": "string"
+            },
+            "resourceGroup": {
+              "description": "ResourceGroup holds the storage account. Read by `backend create` and by\nthe storage key lookup every stack operation performs.",
+              "type": "string"
+            },
+            "storageAccount": {
+              "description": "StorageAccount holds the container. Exported as AZURE_STORAGE_ACCOUNT,\nand its access key is fetched from Azure on every stack operation.",
+              "type": "string"
+            },
+            "passphrase": {
+              "description": "Passphrase resolves the pulumi config passphrase from 1Password and is\nexported as PULUMI_CONFIG_PASSPHRASE. Every stack operation resolves it,\nso all of them require an unlocked 1Password session.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1azure~1config.schema.json/$defs/Secret"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Path to the directory holding one sub directory per environment, each\ncontaining one sub directory per pulumi project. Environment and project\ncompletion read this tree from disk, so an environment that is configured\nunder Backends but missing here cannot be selected.",
+              "type": "string"
+            },
+            "configPath": {
+              "description": "ConfigPath is exported as PULUMI_HOME, relocating pulumi's own state\n(credentials, plugins, templates) into the project. Resolved through\nenv.Path, so a relative value is taken from the project root.",
+              "type": "string"
+            },
+            "backends": {
+              "description": "Backends maps an environment name to the Azure blob container holding its\npulumi state. The key is the <env> argument, so it must match a directory\nname below Path.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1azure~1config.schema.json/$defs/Backend"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
+          "type": "object",
+          "properties": {
+            "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
+              "type": "string"
+            },
+            "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
+              "type": "string"
+            },
+            "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
+              "type": "string"
+            },
+            "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/pulumi/pulumi/gcloud/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1gcloud~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Backend": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "description": "Location is the Google Cloud location the bucket is created in. Only read\nby `backend create`; it is not used when logging in or running a stack.",
+              "type": "string"
+            },
+            "bucket": {
+              "description": "Bucket is the Google Cloud Storage bucket holding the pulumi state. Used\nas gs://<bucket> for both `backend login` and PULUMI_BACKEND_URL.",
+              "type": "string"
+            },
+            "project": {
+              "description": "Project is the Google Cloud project owning the bucket. Exported as\nGOOGLE_PROJECT for every stack operation.",
+              "type": "string"
+            },
+            "passphrase": {
+              "description": "Passphrase resolves the pulumi config passphrase from 1Password and is\nexported as PULUMI_CONFIG_PASSPHRASE. Every stack operation resolves it,\nso all of them require an unlocked 1Password session.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1gcloud~1config.schema.json/$defs/Secret"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Path to the directory holding one sub directory per environment, each\ncontaining one sub directory per pulumi project. Environment and project\ncompletion read this tree from disk, so an environment that is configured\nunder Backends but missing here cannot be selected.",
+              "type": "string"
+            },
+            "configPath": {
+              "description": "ConfigPath is exported as PULUMI_HOME, relocating pulumi's own state\n(credentials, plugins, templates) into the project. Resolved through\nenv.Path, so a relative value is taken from the project root.",
+              "type": "string"
+            },
+            "backends": {
+              "description": "Backends maps an environment name to the Google Cloud Storage bucket\nholding its pulumi state. The key is the <env> argument, so it must match\na directory name below Path.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1gcloud~1config.schema.json/$defs/Backend"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
+          "type": "object",
+          "properties": {
+            "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
+              "type": "string"
+            },
+            "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
+              "type": "string"
+            },
+            "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
+              "type": "string"
+            },
+            "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/rclone/rclone/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1rclone~1rclone~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Path of the generated rclone configuration file, relative to the project\nroot. Exported as RCLONE_CONFIG for every command in the shell session, so\nrclone reads this file instead of the user's own ~/.config/rclone.",
+              "type": "string"
+            },
+            "config": {
+              "description": "Config is the rclone configuration file template in rclone's INI format,\nwritten verbatim to Path by `rclone init`. Values may contain 1Password\nsecret references (op://vault/item/field), which are resolved by piping\nthe template through `op inject`.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/slack-go/slack/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1slack-go~1slack~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1slack-go~1slack~1config.schema.json/$defs/Secret"
+            },
+            "channels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "webhooks": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1slack-go~1slack~1config.schema.json/$defs/Secret"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
+          "type": "object",
+          "properties": {
+            "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
+              "type": "string"
+            },
+            "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
+              "type": "string"
+            },
+            "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
+              "type": "string"
+            },
+            "field": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/sqlc-dev/sqlc/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1sqlc-dev~1sqlc~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "tempDir": {
+              "description": "Directory passed to sqlc as SQLCTMPDIR, resolved relative to the project root",
+              "type": "string"
+            },
+            "cacheDir": {
+              "description": "Directory passed to sqlc as SQLCCACHE, resolved relative to the project root",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/stackitcloud/stackit/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stackitcloud~1stackit~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Cluster": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Real SKE cluster name, passed to the CLI as the positional argument. The\nkubeconfig filename comes from the map key instead, unless\n`CommandWithClusterNameFn` overrides it.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Config": {
+          "type": "object",
+          "properties": {
+            "projects": {
+              "description": "STACKIT projects addressable by this command, keyed by the name accepted as\nthe `project` argument. The key is a local alias and need not match the\nproject's name in STACKIT.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stackitcloud~1stackit~1config.schema.json/$defs/Project"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Project": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "STACKIT project UUID, passed to the CLI as `--project-id`.",
+              "type": "string"
+            },
+            "clusters": {
+              "description": "SKE clusters in this project, keyed by the name accepted as the `cluster`\nargument. The key is a local alias; `name` holds the real cluster name.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stackitcloud~1stackit~1config.schema.json/$defs/Cluster"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/stern/stern/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stern~1stern~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "queries": {
+              "description": "Named queries selectable by the `query` verb, keyed by the name typed as its\nfirst argument. Nested arbitrarily deep: each additional argument descends one\nlevel, and every level's `query` arguments are appended in order.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stern~1stern~1config.schema.json/$defs/Query"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "Query": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Arguments passed verbatim to stern when this level is selected, e.g. a pod\nregex plus flags. Concatenated with every ancestor level's arguments, so a\nnested entry refines its parent rather than replacing it.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "queries": {
+              "description": "Further queries nested under this one, selected by appending their name as\nanother argument.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stern~1stern~1config.schema.json/$defs/Query"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/usebruno/bruno/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1usebruno~1bruno~1config.schema.json/$defs/Config",
+      "$defs": {
+        "Config": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "description": "Path to the Bruno collection; environment variables are expanded",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "https://raw.githubusercontent.com/foomo/posh-providers/main/webdriverio/webdriverio/config.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
           "type": "object",
           "properties": {
             "dirs": {
+              "description": "Unused. Test directories are discovered by walking for wdio.conf.ts,\nnever read from here.",
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
             "modes": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio/$defs/ConfigModes"
+              "description": "Run modes, keyed by name and suggested as the first argument. The key\n\"browserstack\" additionally selects the BrowserStack backend.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/ConfigModes"
             },
             "sites": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio/$defs/ConfigSites"
+              "description": "Sites to test, keyed by name and suggested as the second argument.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/ConfigSites"
             },
             "secrets": {
+              "description": "Unused. Declared but read by nothing; only Sites[..].Auth and\nBrowserStack resolve secrets.",
               "type": "object",
               "additionalProperties": {
-                "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio/$defs/Secret"
+                "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/Secret"
               }
             },
             "browserStack": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio/$defs/Secret"
+              "description": "1Password item holding the BrowserStack credentials, read from its\n\"username\" and \"password\" fields. Required when the \"browserstack\"\nmode is used without --ci; the command panics if it is unset.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/Secret"
             }
           },
           "additionalProperties": false
@@ -2145,9 +2354,11 @@
           "type": "object",
           "properties": {
             "auth": {
-              "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio/$defs/Secret"
+              "description": "1Password item holding basic auth credentials for this environment,\nread from its \"username\" and \"password\" fields. Omit for no basic auth.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/Secret"
             },
             "domain": {
+              "description": "Base domain for this environment, e.g. \"staging.example.com\". The mode's\nhost prefix and port are applied on top of it.",
               "type": "string"
             }
           },
@@ -2156,16 +2367,18 @@
         "ConfigEnvs": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio/$defs/ConfigEnv"
+            "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/ConfigEnv"
           }
         },
         "ConfigMode": {
           "type": "object",
           "properties": {
             "port": {
+              "description": "Port appended to the site domain, e.g. \"8443\". Omit for the default port.",
               "type": "string"
             },
             "hostPrefix": {
+              "description": "Subdomain prepended to the site domain, e.g. \"local\". Omit for none.",
               "type": "string"
             }
           },
@@ -2174,88 +2387,33 @@
         "ConfigModes": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio/$defs/ConfigMode"
+            "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/ConfigMode"
           }
         },
         "ConfigSites": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1webdriverio~1webdriverio/$defs/ConfigEnvs"
+            "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/ConfigEnvs"
           }
         },
         "Secret": {
+          "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://<vault>/<item>/<field>`, resolved against Account.",
           "type": "object",
           "properties": {
             "account": {
+              "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID.",
               "type": "string"
             },
             "vault": {
+              "description": "Vault is the name or UUID of the vault holding the item.",
               "type": "string"
             },
             "item": {
+              "description": "Item is the name or UUID of the item within the vault.",
               "type": "string"
             },
             "field": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/golang-migrate/migrate": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1golang-migrate~1migrate/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "sources": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              }
-            },
-            "databases": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/usebruno/bruno": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1usebruno~1bruno/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "path": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      }
-    },
-    "https://github.com/foomo/posh-providers/goharbor/harbor": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$ref": "#/$defs/https:~1~1github.com~1foomo~1posh-providers~1goharbor~1harbor/$defs/Config",
-      "$defs": {
-        "Config": {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "authUrl": {
-              "type": "string"
-            },
-            "project": {
+              "description": "Field is the name of the field to read from the item, e.g. `password`.",
               "type": "string"
             }
           },

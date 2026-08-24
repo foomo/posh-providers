@@ -2,12 +2,14 @@ package bun
 
 import (
 	"context"
+	_ "embed"
 	"path"
 	"strings"
 
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh-providers/pkg/npm"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
@@ -16,6 +18,15 @@ import (
 	"github.com/foomo/posh/pkg/util/files"
 	"github.com/foomo/posh/pkg/util/suggests"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l           log.Logger
@@ -110,11 +121,12 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 		Flags:       globalFlags(nil),
 		Nodes: tree.Nodes{
 			{
-				Name: "workspace",
+				Name:        "workspace",
+				Description: "Run a bun command inside a workspace package directory",
 				Nodes: tree.Nodes{
 					{
 						Name:        "path",
-						Description: "Location to execute",
+						Description: "Workspace package directory to run in",
 						Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 							return suggests.List(inst.paths(ctx))
 						},
@@ -188,7 +200,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 							},
 							{
 								Name:        "patch",
-								Description: "Prepare a package for patchin",
+								Description: "Prepare a package for patching",
 								Flags:       globalFlags(nil),
 								Execute:     inst.runWorkspace,
 							},
@@ -281,7 +293,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 						Description: "Package name",
 					},
 				},
-				Description: "Prepare a package for patchin",
+				Description: "Prepare a package for patching",
 				Flags:       globalFlags(nil),
 				Execute:     inst.run,
 			},
@@ -332,6 +344,34 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that unlisted bun subcommands still work, that `run` executes
+// whatever package.json defines, that `workspace` retargets a verb at another
+// package.json, or that several value-taking flags are declared here as bools
+// and only affect completion, since forwarding is verbatim.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the tasks and the runtime, since bun serves as package manager, test
+// runner and script runner and an agent may arrive from any of the three.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with this project's JavaScript or TypeScript code through " +
+			"bun - installing, adding, updating or removing dependencies, running a package.json " +
+			"script, running bun tests, executing a package binary with `bun x`, checking outdated " +
+			"dependencies, or doing any of those inside one workspace package.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

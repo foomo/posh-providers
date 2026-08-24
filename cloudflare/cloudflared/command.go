@@ -2,10 +2,14 @@ package cloudflared
 
 import (
 	"context"
+	_ "embed"
 	"encoding/base64"
 	"os"
 	"os/exec"
+	"strings"
 
+	"github.com/foomo/posh/pkg/agent"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -15,6 +19,15 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -67,12 +80,12 @@ func NewCommand(l log.Logger, cloudflared *Cloudflared, opts ...CommandOption) (
 				Nodes: tree.Nodes{
 					{
 						Name:        "list",
-						Description: "list forward access",
+						Description: "List forward access",
 						Execute:     inst.accessList,
 					},
 					{
 						Name:        "connect",
-						Description: "open access by name ",
+						Description: "Open access by name",
 						Args: tree.Args{
 							{
 								Name:        "name",
@@ -85,8 +98,8 @@ func NewCommand(l log.Logger, cloudflared *Cloudflared, opts ...CommandOption) (
 						Execute: inst.accessConnect,
 					},
 					{
-						Name:        "disconect",
-						Description: "close access by name ",
+						Name:        "disconnect",
+						Description: "Close access by name",
 						Args: tree.Args{
 							{
 								Name:        "name",
@@ -103,7 +116,7 @@ func NewCommand(l log.Logger, cloudflared *Cloudflared, opts ...CommandOption) (
 			},
 			{
 				Name:        "tunnel",
-				Description: "manage tunnels",
+				Description: "Manage tunnels",
 				Nodes: tree.Nodes{
 					{
 						Name:        "login",
@@ -201,6 +214,35 @@ func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog shows
+// the subcommands; what it cannot show is that the access processes are owned
+// by this shell, so the list is empty until something in this session starts
+// one.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the symptoms that should reach for it - an unreachable internal service,
+// a port that should be listening and is not - because that is how the need
+// presents, rather than as "I want to run cloudflared".
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when reaching a private service through a Cloudflare Zero Trust " +
+			"tunnel - opening or closing an Access connection so a local port forwards to an " +
+			"internal host, checking which tunnels are currently up, or diagnosing a " +
+			"connection refused on a port a tunnel should be binding. Also for creating, " +
+			"listing or deleting account-level Cloudflare tunnels and their DNS routes.",
+	}
+}
+
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
@@ -249,7 +291,7 @@ func (c *Command) accessList(ctx context.Context, r *readline.Readline) error {
 		data = append(data, []string{p.PID, p.Cmdline})
 	}
 
-	return pterm.DefaultTable.WithHasHeader(true).WithData(data).Render()
+	return agent.Table(data, agent.WithHeader())
 }
 
 func (c *Command) accessConnect(ctx context.Context, r *readline.Readline) error {
@@ -259,7 +301,7 @@ func (c *Command) accessConnect(ctx context.Context, r *readline.Readline) error
 
 func (c *Command) accessDisconnect(ctx context.Context, r *readline.Readline) error {
 	access := c.cloudflared.Config().GetAccesss(r.Args().At(2))
-	return c.cloudflared.Disonnect(ctx, access)
+	return c.cloudflared.Disconnect(ctx, access)
 }
 
 func (c *Command) tunnelCreate(ctx context.Context, r *readline.Readline) error {

@@ -2,8 +2,11 @@ package harbor
 
 import (
 	"context"
+	_ "embed"
 	"os"
+	"strings"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -15,6 +18,15 @@ import (
 	"github.com/pterm/pterm"
 	"golang.org/x/oauth2"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -55,19 +67,17 @@ func NewCommand(l log.Logger, harbor *Harbor, opts ...CommandOption) *Command {
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run harbor",
+		Description: "Sign in to the configured Harbor registry",
 		Execute:     inst.auth,
 		Nodes: tree.Nodes{
 			{
 				Name:        "auth",
-				Args:        nil,
-				Description: "Sign in to Harbor",
+				Description: "Open the Harbor login page in a browser",
 				Execute:     inst.auth,
 			},
 			{
 				Name:        "docker",
-				Args:        nil,
-				Description: "Configure docker to be able to access registry.",
+				Description: "Log the local docker daemon in to the Harbor registry",
 				Execute:     inst.docker,
 			},
 		},
@@ -100,6 +110,35 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
 
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. Two verbs with no
+// arguments render as almost nothing, so the catalog cannot show that both need
+// a human: that `auth` only launches a browser and reports success regardless,
+// that `docker` logs the whole machine in behind an interactive secret prompt
+// and derives its username from GITHUB_TOKEN, or that the prompt's auth
+// indicator is inferred from a deliberately failing docker pull.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the pull/push authorization failures that send someone looking for a
+// registry login, since neither verb is something an agent seeks out by name.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when authenticating to this project's Harbor container registry - " +
+			"opening its login page or logging the local docker daemon in. Also when a docker " +
+			"pull or push to the registry fails with unauthorized, denied or " +
+			"\"no basic auth credentials\", or an image build cannot fetch a private base image.",
+	}
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
@@ -125,6 +164,8 @@ func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
 		username = *user.Login
 	} else if username, err = util.Prompt("github username"); err != nil {
 		return err
+	} else {
+		username = strings.TrimSpace(username)
 	}
 
 	pterm.Info.Println("registry: " + c.harbor.Config().DockerRegistry())

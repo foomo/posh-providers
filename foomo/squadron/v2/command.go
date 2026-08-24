@@ -2,6 +2,7 @@ package squadron
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"slices"
 	"strconv"
@@ -9,7 +10,9 @@ import (
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh-providers/slack-go/slack"
+	"github.com/foomo/posh/pkg/agent"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	env2 "github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -22,6 +25,15 @@ import (
 	"github.com/pterm/pterm"
 	slackgo "github.com/slack-go/slack"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 const All = "all"
 
@@ -113,9 +125,10 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, cach
 	inst.cache = cache.Get(inst.name)
 
 	unitsArg := &tree.Arg{
-		Name:     "unit",
-		Repeat:   true,
-		Optional: true,
+		Name:        "unit",
+		Description: "Unit within the squadron to target; repeatable, omit for all units",
+		Repeat:      true,
+		Optional:    true,
 		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 			cluster := r.Args().At(0)
 			fleet := r.Args().At(1)
@@ -390,11 +403,13 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, cach
 		Description: "Manage your squadron",
 		Nodes: tree.Nodes{
 			{
-				Name:   "cluster",
-				Values: clusterValues,
+				Name:        "cluster",
+				Description: "Cluster to operate on",
+				Values:      clusterValues,
 				Nodes: tree.Nodes{
 					{
-						Name: "fleet",
+						Name:        "fleet",
+						Description: "Fleet within the selected cluster",
 						Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 							var ret []string
 							if cluster, ok := inst.squadron.cfg.Cluster(r.Args().At(0)); ok {
@@ -405,7 +420,8 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, cach
 						},
 						Nodes: tree.Nodes{
 							{
-								Name: "squadron",
+								Name:        "squadron",
+								Description: "Squadron to operate on, or 'all'",
 								Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 									if value, err := inst.squadron.List(); err != nil {
 										inst.l.Debug(err.Error())
@@ -436,6 +452,33 @@ func (c *Command) Name() string {
 
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog shows
+// three placeholders in a row and cannot show that each is resolved against
+// the one before it, nor that the mutating verbs are refused under an agent.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the deploy verbs and the helm-chart vocabulary rather than the tool,
+// because a request to deploy or roll back rarely names squadron at all.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when deploying to or inspecting a Kubernetes cluster in this " +
+			"project - installing, uninstalling or rolling back a release, diffing the " +
+			"installed chart against local, rendering chart templates, checking release " +
+			"status, or building and pushing the service images a deploy needs. Also for " +
+			"squadron.yaml files, squadrons, units and fleets.",
+	}
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
@@ -508,6 +551,14 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	}
 
 	if slices.Contains([]string{"up", "down", "rollback"}, cmd) && cfgCluster.Confirm {
+		// This project marked the cluster as requiring confirmation, and an
+		// agent has no terminal to confirm on. Refusing is the safe reading:
+		// treating agent mode as consent would silently invert the request for
+		// exactly the clusters someone singled out as needing a human.
+		if agent.IsAgentMode() {
+			return errors.Errorf("%q requires interactive confirmation against '%s:%s'; run it in an interactive shell", cmd, cluster, fleet)
+		}
+
 		result, err := pterm.DefaultInteractiveConfirm.Show(fmt.Sprintf("Are you sure you want to run the command against: '%s:%s'?", cluster, fleet))
 		if err != nil {
 			return err

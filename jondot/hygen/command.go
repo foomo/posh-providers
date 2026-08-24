@@ -2,12 +2,15 @@ package hygen
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -17,6 +20,15 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -74,19 +86,21 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, erro
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run hygen",
-		Args: tree.Args{
-			{
-				Name: "path",
-				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
-					return suggests.List(inst.paths(ctx))
-				},
-			},
-		},
+		Description: "Scaffold files from a hygen template",
+		// No Args here on purpose. The root has no Execute, and its only child
+		// is declared with Values, so completion at position 0 resolves from
+		// that child and never falls through to a root argument - one declared
+		// here is unreachable and only shows up in the rendered usage block,
+		// where it reads as a second, optional way to invoke the command.
 		Nodes: tree.Nodes{
 			{
-				Name:        "template",
-				Description: "Render template",
+				// Values, not a literal segment: this node matches any of the
+				// template directory names the callback offers. describe() renders
+				// a Values node as "<name>", so the name must not carry its own
+				// brackets - and it names the value rather than the concept, since
+				// "<template>" reads as a placeholder for the word "template".
+				Name:        "template-name",
+				Description: "Template directory under the configured template path to render",
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.paths(ctx))
 				},
@@ -96,7 +110,8 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, erro
 				},
 				Args: tree.Args{
 					{
-						Name: "path",
+						Name:        "path",
+						Description: "Target path passed through to hygen; not completed",
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 							return nil
 						},
@@ -149,6 +164,34 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that only the `template` leaf is runnable, that the leaf's own
+// name is forwarded to hygen as an argument, that validation stats that literal
+// word rather than the named template, or that HYGEN_TMPLS is the parent of the
+// configured template path.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// leads with scaffolding a new component from a template, since that is the
+// request an agent will actually receive - the word "hygen" rarely appears in it.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when scaffolding new files from one of this project's own code " +
+			"templates - generating a component, service, package or module skeleton, asking " +
+			"which scaffolds exist, or previewing what a template would write before it " +
+			"writes it. Also for hygen templates and the HYGEN_TMPLS directory.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

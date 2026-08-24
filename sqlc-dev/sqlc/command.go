@@ -2,9 +2,12 @@ package sqlc
 
 import (
 	"context"
+	_ "embed"
 	"path"
+	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -16,6 +19,15 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -51,9 +63,10 @@ func CommandWithConfigKey(v string) CommandOption {
 
 func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
-		name:  "sqlc",
-		l:     l.Named("sqlc"),
-		cache: cache.Get("sqlc"),
+		name:      "sqlc",
+		configKey: "sqlc",
+		l:         l.Named("sqlc"),
+		cache:     cache.Get("sqlc"),
 	}
 
 	for _, opt := range opts {
@@ -68,15 +81,16 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 
 	pathArgs := tree.Args{
 		{
-			Name:     "path",
-			Optional: true,
-			Suggest:  inst.completePaths,
+			Name:        "path",
+			Description: "Path to a sqlc.yaml; every one found in the project if omitted",
+			Optional:    true,
+			Suggest:     inst.completePaths,
 		},
 	}
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run sqlc",
+		Description: "Run sqlc against the project's sqlc.yaml files",
 		Nodes: []*tree.Node{
 			{
 				Name:        "compile",
@@ -93,13 +107,13 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			{
 				Name:        "diff",
 				Args:        pathArgs,
-				Description: "Statically check SQL for syntax and type errors",
+				Description: "Compare generated code against what is on disk",
 				Execute:     inst.run,
 			},
 			{
 				Name:        "vet",
 				Args:        pathArgs,
-				Description: "Statically check SQL for syntax and type errors",
+				Description: "Run configured lint rules against queries",
 				Execute:     inst.run,
 			},
 		},
@@ -131,6 +145,33 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that `generate` overwrites sources for every sqlc.yaml when no
+// path is given, that the root forwards unlisted subcommands, or that
+// `--no-remote` is passed on every invocation.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the artefacts - sqlc.yaml, .sql query files, generated db packages -
+// because that is what a caller sees before knowing the generator's name.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with SQL-generated database code - regenerating Go or " +
+			"TypeScript from .sql query files after editing a query or schema, checking whether " +
+			"the committed generated code is stale, or type-checking and linting queries. Also " +
+			"for sqlc.yaml files and sqlc compile, generate, diff and vet errors.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

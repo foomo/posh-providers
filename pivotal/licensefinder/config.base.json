@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"licensefinder": {
-					"$ref": "https://github.com/foomo/posh-providers/pivotal/licensefinder"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/pivotal/licensefinder/config.schema.json"
 				}
 			}
 		}

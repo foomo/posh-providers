@@ -2,6 +2,7 @@ package golang
 
 import (
 	"context"
+	_ "embed"
 	"path"
 	"slices"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	prompt2 "github.com/c-bata/go-prompt"
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
@@ -21,6 +23,15 @@ import (
 	"golang.org/x/sync/errgroup"
 	"k8s.io/utils/env"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l                log.Logger
@@ -55,16 +66,18 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 	options.Apply(inst, opts...)
 
 	pathModArg := &tree.Arg{
-		Name:     "path",
-		Optional: true,
+		Name:        "path",
+		Description: "Module directory; every directory containing a go.mod if omitted",
+		Optional:    true,
 		Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 			return inst.completePaths(ctx, "go.mod", true)
 		},
 	}
 
 	pathGenerateArg := &tree.Arg{
-		Name:     "path",
-		Optional: true,
+		Name:        "path",
+		Description: "generate.go file; every generate.go in the project if omitted",
+		Optional:    true,
 		Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 			return inst.completePaths(ctx, "generate.go", false)
 		},
@@ -110,7 +123,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 					},
 					{
 						Name:        "upgrade",
-						Description: "Show go mod upgrade",
+						Description: "Upgrade all direct dependencies to their latest version",
 						Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 							fs.Internal().Int("parallel", 0, "Number of parallel processes")
 							return nil
@@ -139,8 +152,9 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 						Description: "Add go.work entry",
 						Args: []*tree.Arg{
 							{
-								Name:    "path",
-								Suggest: nil,
+								Name:        "path",
+								Description: "Module directory to add to go.work; not completed",
+								Suggest:     nil,
 							},
 						},
 						Execute: inst.workUse,
@@ -149,7 +163,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 			},
 			{
 				Name:        "generate",
-				Description: "Run go mod commands",
+				Description: "Run go generate",
 				Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 					fs.Internal().Int("parallel", 0, "Number of parallel processes")
 					return nil
@@ -159,31 +173,31 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 			},
 			{
 				Name:        "clean",
-				Description: "Run golangci lint cache clean",
+				Description: "Clean go and golangci-lint caches",
 				Nodes: tree.Nodes{
 					{
 						Name:        "lint",
-						Description: "Lint cache",
+						Description: "Delete the golangci-lint cache",
 						Execute:     inst.cleanLintCache,
 					},
 					{
 						Name:        "build",
-						Description: "Build cache",
+						Description: "Delete the go build cache (go clean -cache)",
 						Execute:     inst.cleanBuildCache,
 					},
 					{
 						Name:        "mod",
-						Description: "Mod cache",
+						Description: "Delete the shared module download cache (go clean -modcache)",
 						Execute:     inst.cleanModCache,
 					},
 					{
 						Name:        "fuzz",
-						Description: "Fuzz cache",
+						Description: "Delete the fuzz corpus cache (go clean -fuzzcache)",
 						Execute:     inst.cleanFuzzCache,
 					},
 					{
 						Name:        "test",
-						Description: "Test cache",
+						Description: "Delete the cached test results (go clean -testcache)",
 						Execute:     inst.cleanTestCache,
 					},
 				},
@@ -217,15 +231,17 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 				Args: []*tree.Arg{
 					pathModArg,
 					{
-						Name:     "package",
-						Optional: true,
+						Name:        "package",
+						Description: "Package within the module; ./... in every module if omitted",
+						Optional:    true,
 						Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 							return inst.completeTestPackages(ctx, r.Args().At(1))
 						},
 					},
 					{
-						Name:     "test",
-						Optional: true,
+						Name:        "test",
+						Description: "Single test to run; every test in the package if omitted",
+						Optional:    true,
 						Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 							return inst.completeTests(ctx, r.Args().At(1), r.Args().At(2))
 						},
@@ -243,15 +259,17 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 				Args: []*tree.Arg{
 					pathModArg,
 					{
-						Name:     "package",
-						Optional: true,
+						Name:        "package",
+						Description: "Package within the module; ./... in every module if omitted",
+						Optional:    true,
 						Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 							return inst.completeTestPackages(ctx, r.Args().At(1))
 						},
 					},
 					{
-						Name:     "fuzz",
-						Optional: true,
+						Name:        "fuzz",
+						Description: "Fuzz target to fuzz; omitted only replays the existing corpus",
+						Optional:    true,
 						Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 							return inst.completeFuzz(ctx, r.Args().At(1), r.Args().At(2))
 						},
@@ -269,15 +287,17 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 				Args: []*tree.Arg{
 					pathModArg,
 					{
-						Name:     "package",
-						Optional: true,
+						Name:        "package",
+						Description: "Package within the module; ./... in every module if omitted",
+						Optional:    true,
 						Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 							return inst.completeTestPackages(ctx, r.Args().At(1))
 						},
 					},
 					{
-						Name:     "bench",
-						Optional: true,
+						Name:        "bench",
+						Description: "Single benchmark to run; every benchmark in the package if omitted",
+						Optional:    true,
 						Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 							return inst.completeBenchmarks(ctx, r.Args().At(1), r.Args().At(2))
 						},
@@ -299,9 +319,10 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 				Args: []*tree.Arg{
 					pathModArg,
 					{
-						Name:     "package",
-						Repeat:   true,
-						Optional: true,
+						Name:        "package",
+						Description: "Main package to build; every main package in the module if omitted",
+						Repeat:      true,
+						Optional:    true,
 						Suggest: func(ctx context.Context, p tree.Root, r *readline.Readline) []prompt2.Suggest {
 							return inst.completePackages(ctx, r.Args().At(1))
 						},
@@ -337,6 +358,38 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog renders
+// `[path] [package] [target]` as three optional arguments and cannot show that
+// they are read by index - so naming a package requires naming the module first
+// - nor that omitting `[path]` widens every verb to every module in the
+// checkout. It also cannot show that anything after `--` replaces the build
+// tags instead of adding to them, or that implementing Lint(ctx, fix) enrols
+// this provider in `arbitrary/lint`'s project-wide sweep.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the everyday Go tasks rather than the toolchain, since this is the verb an
+// agent reaches for constantly and the build-tag and multi-module traps apply to
+// every one of them.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when building, testing or maintaining this project's Go modules - " +
+			"running tests, benchmarks or fuzzing, tidying or upgrading dependencies, running " +
+			"golangci-lint, running go generate, managing the go.work workspace, or clearing " +
+			"build and module caches. Also when a test compiles the wrong files because of build " +
+			"tags, or a command ran against every module instead of one.",
+	}
 }
 
 func (c *Command) Lint(ctx context.Context, fix bool) error {
@@ -671,7 +724,7 @@ func (c *Command) modUpgrade(ctx context.Context, r *readline.Readline) error {
 	slices.Sort(paths)
 
 	ctx, wg := c.wg(ctx, r)
-	c.l.Info("Running go mod outdated...")
+	c.l.Info("Running go mod upgrade...")
 
 	for _, value := range paths {
 		wg.Go(func() error {
@@ -754,7 +807,6 @@ func (c *Command) lint(ctx context.Context, r *readline.Readline) error {
 			return c.execGolangciLint(ctx, "run").
 				Args(args...).
 				Args(fs.Visited().Args()...).
-				Args(r.Flags()...).
 				Args(r.AdditionalArgs()...).
 				Dir(value).
 				Run()

@@ -2,6 +2,7 @@ package rclone
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -18,6 +20,15 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -76,13 +87,27 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 
 	remoteArg := &tree.Arg{
 		Name:        "remote",
-		Description: "Configure remote",
+		Description: "Configured remote and path, e.g. cloudflare:bucket/dir; a local path also works",
 		Repeat:      true,
 		Optional:    true,
 		Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 			return inst.cache.GetSuggests("remotes", func() any {
-				out, _ := exec.CommandContext(ctx, "rclone", "listremotes").Output()
-				ret := strings.Split(strings.Trim(string(out), "\n"), "\n")
+				out, err := exec.CommandContext(ctx, "rclone", "listremotes").Output()
+				if err != nil {
+					inst.l.Debug("failed to list remotes", err.Error())
+					return suggests.List([]string{})
+				}
+
+				// Split on an empty output yields [""], which renders as a single
+				// blank suggestion and reads as "one remote exists" rather than
+				// "none" - so drop empty entries instead of offering them.
+				var ret []string
+
+				for line := range strings.SplitSeq(string(out), "\n") {
+					if line = strings.TrimSpace(line); line != "" {
+						ret = append(ret, line)
+					}
+				}
 
 				return suggests.List(ret)
 			})
@@ -286,6 +311,35 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// lists 26 verbs identically shaped, so it cannot show which of them delete
+// remote data, that `sync` decides which side to erase from the argument order,
+// that unlisted rclone verbs still work through the passthrough root, that
+// `init` overwrites the config file and needs a 1Password session, or that an
+// remote list is read from the generated config, so it is empty until `init`.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the storage backends and file-transfer verbs, since the request is usually
+// "copy this to the bucket" rather than the name of the tool that does it.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when moving or inspecting files in remote object storage - listing a " +
+			"bucket, copying or syncing files to or from S3, R2, GCS, Azure Blob or similar, " +
+			"comparing local and remote contents, or deleting remote paths. Also for rclone " +
+			"itself, or generating its config file from this project's remotes.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

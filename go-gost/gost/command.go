@@ -2,10 +2,13 @@ package gost
 
 import (
 	"context"
+	_ "embed"
 	"os/exec"
+	"strings"
 
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
 	"github.com/foomo/gokazi/pkg/gokazi"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
@@ -14,6 +17,15 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -79,15 +91,15 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Manage gost processes",
+		Description: "Manage gost tunnels as background processes",
 		Nodes: tree.Nodes{
 			{
 				Name:        "start",
-				Description: "Start a gost process",
+				Description: "Start configured gost processes as background processes; all of them if no name is given",
 				Args: tree.Args{
 					{
 						Name:        "name",
-						Description: "Config names",
+						Description: "Config name; omit to act on every configured process",
 						Repeat:      true,
 						Optional:    true,
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -99,11 +111,11 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "stop",
-				Description: "Stop a gost process",
+				Description: "Stop running gost processes; all of them if no name is given",
 				Args: tree.Args{
 					{
 						Name:        "name",
-						Description: "Config names",
+						Description: "Config name; omit to act on every configured process",
 						Repeat:      true,
 						Optional:    true,
 						Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -143,13 +155,40 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
 
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that these verbs manage background processes, that omitting the
+// name acts on every configured process rather than fewer, or that what a name
+// actually binds and proxies lives in the config file it points at.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// leads with the symptom - an unreachable service or a port that is not
+// listening - because that is what a caller notices before naming gost.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when a local port or proxied route into a remote network needs to be " +
+			"up - starting or stopping the project's configured gost tunnels, or diagnosing a " +
+			"service that is unreachable because its tunnel is not running. Also for gost relay " +
+			"and SOCKS/HTTP proxy processes managed as background tasks.",
+	}
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
 
 func (c *Command) start(ctx context.Context, r *readline.Readline) error {
 	names := c.cfg.Names()
-	if r.Args().LenGt(2) {
+	if r.Args().LenGt(1) {
 		names = r.Args().From(1)
 	}
 
@@ -173,7 +212,7 @@ func (c *Command) start(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) stop(ctx context.Context, r *readline.Readline) error {
 	names := c.cfg.Names()
-	if r.Args().LenGt(2) {
+	if r.Args().LenGt(1) {
 		names = r.Args().From(1)
 	}
 

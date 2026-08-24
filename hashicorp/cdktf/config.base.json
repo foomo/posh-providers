@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"cdktf": {
-					"$ref": "https://github.com/foomo/posh-providers/hashicorp/cdktf"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/hashicorp/cdktf/config.schema.json"
 				}
 			}
 		}

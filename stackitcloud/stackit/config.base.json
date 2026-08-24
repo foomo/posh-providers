@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"stackit": {
-					"$ref": "https://github.com/foomo/posh-providers/stackitcloud/stackit"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/stackitcloud/stackit/config.schema.json"
 				}
 			}
 		}

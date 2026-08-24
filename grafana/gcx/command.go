@@ -2,12 +2,14 @@ package gcx
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"strings"
 
 	exec2 "github.com/foomo/posh-providers/pkg/exec"
 	"github.com/foomo/posh-providers/pkg/os"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -16,6 +18,15 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -70,18 +81,18 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run gcx commands",
+		Description: "Run gcx against a configured Grafana server",
 		Args: tree.Args{
 			{
 				Name:        "env",
-				Description: "Environment name",
+				Description: "Environment name from the gcx config, supplying the server, org and token",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.cfg.EnvNames())
 				},
 			},
 			{
 				Name:        "command",
-				Description: "GCX command",
+				Description: "Command and flags passed through to gcx, completed by gcx itself",
 				Repeat:      true,
 				Optional:    true,
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -117,6 +128,34 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// shows only the env name, not that the second argument is the whole gcx CLI,
+// that the env silently scopes which Grafana server destructive verbs hit, that
+// every call resolves a live credential via 1Password or an executed tokenCmd,
+// or that flags after a `--` separator are dropped.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names Grafana resources rather than the gcx binary, since a request arrives as
+// "export the dashboards", not as the name of the CLI that does it.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when managing a Grafana server's contents from the CLI - listing, " +
+			"exporting, importing, migrating or deleting dashboards, datasources, folders or " +
+			"alert rules - against one of this project's configured Grafana environments. " +
+			"Also for gcx itself, or when a Grafana call fails on a missing token.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

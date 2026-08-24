@@ -1,18 +1,20 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/grafana/k6",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/grafana/k6/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Directory holding the `*.k6.js` scenario scripts and their `*.secret.tpl`\ntemplates. Created at shell startup if missing, and the root the `scenario`\nargument is resolved against."
         },
         "envs": {
           "additionalProperties": {
             "$ref": "#/$defs/Env"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Environments selectable as the first argument, keyed by the name offered in\ncompletion. Each entry's keys are upper-cased and passed to k6 as environment\nvariables, so they are visible to the scenario via `__ENV`."
         }
       },
       "additionalProperties": false,

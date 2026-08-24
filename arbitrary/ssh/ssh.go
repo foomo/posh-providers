@@ -114,7 +114,7 @@ func (s *SSH) StartPortForward(ctx context.Context, name string) error {
 	}
 
 	cmd := exec.CommandContext(ctx, "ssh",
-		"-L", fmt.Sprintf("%d:%s:%d", c.Port, c.Host, c.HostPort),
+		"-L", fmt.Sprintf("%d:%s:%d", port, c.Host, c.HostPort),
 		// "-f", // Run in background after authentication
 		"-M", // Places the ssh client into “master” mode for connection sharing
 		"-n", // Redirects stdin from /dev/null (actually, prevents reading from stdin)

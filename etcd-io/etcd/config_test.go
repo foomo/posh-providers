@@ -9,6 +9,7 @@ import (
 	testingx "github.com/foomo/go/testing"
 	tagx "github.com/foomo/go/testing/tag"
 	"github.com/foomo/posh-providers/etcd-io/etcd"
+	"github.com/foomo/posh-providers/pkg/testutils"
 	"github.com/invopop/jsonschema"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +27,7 @@ func TestConfig(t *testing.T) {
 	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/etcd-io/etcd", "./"))
 	schema := reflector.Reflect(&etcd.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/etcd-io/etcd"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/etcd-io/etcd/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 
@@ -40,4 +41,6 @@ func TestConfig(t *testing.T) {
 	if !assert.Equal(t, string(expected), string(actual)) {
 		require.NoError(t, os.WriteFile(filename, actual, 0600))
 	}
+
+	testutils.AssertDocumentedConfig(t, filename)
 }

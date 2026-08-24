@@ -9,6 +9,7 @@ import (
 
 	"github.com/foomo/posh/pkg/env"
 	"github.com/foomo/posh/pkg/log"
+	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 )
 
@@ -60,6 +61,37 @@ func (c *Cluster) ConfigExists(profile string) bool {
 	}
 
 	return false
+}
+
+// ConfigExistsForFlags reports whether the cluster's kubeconfig exists, taking
+// the profile from the raw --profile flag token rather than from a parsed flag
+// set.
+//
+// It exists for Validate, which posh calls before Execute - and flag sets are
+// only built inside Execute, so r.FlagSets() is nil at validation time and
+// GetString("profile") is unavailable. The raw tokens are in r.Flags() by then,
+// so the profile can still be honoured. Without this, a Validate can only check
+// the profile-less path and will reject a cluster that exists only under a
+// profile.
+func (c *Cluster) ConfigExistsForFlags(flags readline.Args) bool {
+	return c.ConfigExists(Profile(flags))
+}
+
+// Profile returns the value of the --profile flag in a raw, unparsed flag token
+// list, or "" when it is absent. It accepts both "--profile x" and
+// "--profile=x".
+func Profile(flags readline.Args) string {
+	for i, flag := range flags {
+		if value, ok := strings.CutPrefix(flag, "--profile="); ok {
+			return value
+		}
+
+		if flag == "--profile" && len(flags) > i+1 {
+			return flags[i+1]
+		}
+	}
+
+	return ""
 }
 
 func (c *Cluster) DeleteConfig(profile string) error {

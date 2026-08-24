@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"gcx": {
-					"$ref": "https://github.com/foomo/posh-providers/grafana/gcx"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/grafana/gcx/config.schema.json"
 				}
 			}
 		}

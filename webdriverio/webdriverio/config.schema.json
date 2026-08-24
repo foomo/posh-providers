@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/webdriverio/webdriverio",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/webdriverio/webdriverio/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -9,22 +9,27 @@
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "description": "Unused. Test directories are discovered by walking for wdio.conf.ts,\nnever read from here."
         },
         "modes": {
-          "$ref": "#/$defs/ConfigModes"
+          "$ref": "#/$defs/ConfigModes",
+          "description": "Run modes, keyed by name and suggested as the first argument. The key\n\"browserstack\" additionally selects the BrowserStack backend."
         },
         "sites": {
-          "$ref": "#/$defs/ConfigSites"
+          "$ref": "#/$defs/ConfigSites",
+          "description": "Sites to test, keyed by name and suggested as the second argument."
         },
         "secrets": {
           "additionalProperties": {
             "$ref": "#/$defs/Secret"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Unused. Declared but read by nothing; only Sites[..].Auth and\nBrowserStack resolve secrets."
         },
         "browserStack": {
-          "$ref": "#/$defs/Secret"
+          "$ref": "#/$defs/Secret",
+          "description": "1Password item holding the BrowserStack credentials, read from its\n\"username\" and \"password\" fields. Required when the \"browserstack\"\nmode is used without --ci; the command panics if it is unset."
         }
       },
       "additionalProperties": false,
@@ -33,10 +38,12 @@
     "ConfigEnv": {
       "properties": {
         "auth": {
-          "$ref": "#/$defs/Secret"
+          "$ref": "#/$defs/Secret",
+          "description": "1Password item holding basic auth credentials for this environment,\nread from its \"username\" and \"password\" fields. Omit for no basic auth."
         },
         "domain": {
-          "type": "string"
+          "type": "string",
+          "description": "Base domain for this environment, e.g. \"staging.example.com\". The mode's\nhost prefix and port are applied on top of it."
         }
       },
       "additionalProperties": false,
@@ -51,10 +58,12 @@
     "ConfigMode": {
       "properties": {
         "port": {
-          "type": "string"
+          "type": "string",
+          "description": "Port appended to the site domain, e.g. \"8443\". Omit for the default port."
         },
         "hostPrefix": {
-          "type": "string"
+          "type": "string",
+          "description": "Subdomain prepended to the site domain, e.g. \"local\". Omit for none."
         }
       },
       "additionalProperties": false,
@@ -75,20 +84,25 @@
     "Secret": {
       "properties": {
         "account": {
-          "type": "string"
+          "type": "string",
+          "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID."
         },
         "vault": {
-          "type": "string"
+          "type": "string",
+          "description": "Vault is the name or UUID of the vault holding the item."
         },
         "item": {
-          "type": "string"
+          "type": "string",
+          "description": "Item is the name or UUID of the item within the vault."
         },
         "field": {
-          "type": "string"
+          "type": "string",
+          "description": "Field is the name of the field to read from the item, e.g. `password`."
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://\u003cvault\u003e/\u003citem\u003e/\u003cfield\u003e`, resolved against Account."
     }
   }
 }

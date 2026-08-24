@@ -1,12 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/stackitcloud/stackit",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/stackitcloud/stackit/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Cluster": {
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Real SKE cluster name, passed to the CLI as the positional argument. The\nkubeconfig filename comes from the map key instead, unless\n`CommandWithClusterNameFn` overrides it."
         }
       },
       "additionalProperties": false,
@@ -18,7 +19,8 @@
           "additionalProperties": {
             "$ref": "#/$defs/Project"
           },
-          "type": "object"
+          "type": "object",
+          "description": "STACKIT projects addressable by this command, keyed by the name accepted as\nthe `project` argument. The key is a local alias and need not match the\nproject's name in STACKIT."
         }
       },
       "additionalProperties": false,
@@ -27,13 +29,15 @@
     "Project": {
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "STACKIT project UUID, passed to the CLI as `--project-id`."
         },
         "clusters": {
           "additionalProperties": {
             "$ref": "#/$defs/Cluster"
           },
-          "type": "object"
+          "type": "object",
+          "description": "SKE clusters in this project, keyed by the name accepted as the `cluster`\nargument. The key is a local alias; `name` holds the real cluster name."
         }
       },
       "additionalProperties": false,

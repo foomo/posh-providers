@@ -2,15 +2,27 @@ package onepassword
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"path"
+	"strings"
 
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -54,47 +66,47 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Execute 1Password commands",
+		Description: "Sign in to the configured 1Password account for this shell session",
 		Execute:     inst.auth,
 		Nodes: tree.Nodes{
 			{
 				Name:        "auth",
-				Description: "Sign into your account",
+				Description: "Sign in interactively and cache the session for this shell",
 				Execute:     inst.auth,
 			},
 			{
 				Name:        "get",
-				Description: "Retrieve an item",
+				Description: "Print an item as JSON, including its secret fields",
 				Args: tree.Args{
 					{
 						Name:        "id",
-						Description: "Item name or uuid",
+						Description: "Item name or UUID within the configured account",
 					},
 				},
 				Execute: inst.get,
 			},
 			{
 				Name:        "download",
-				Description: "Download a document",
+				Description: "Save a document item to a file, creating parent directories",
 				Args: tree.Args{
 					{
 						Name:        "id",
-						Description: "Item name or uuid",
+						Description: "Item name or UUID within the configured account",
 					},
 					{
 						Name:        "output",
-						Description: "Save the document to the file path instead of stdout",
+						Description: "File path to write the document to; parent directories are created",
 					},
 				},
 				Execute: inst.download,
 			},
 			{
 				Name:        "register",
-				Description: "Register an account",
+				Description: "Add the configured account to the local op CLI, interactively",
 				Args: tree.Args{
 					{
 						Name:        "email",
-						Description: "User email address",
+						Description: "Email address of the 1Password account to add",
 					},
 				},
 				Execute: inst.register,
@@ -127,6 +139,36 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog cannot
+// show that `get` prints secret field values, that `auth` is interactive and
+// echoes the session token, that a bare `op` signs in rather than printing help,
+// or that several other providers resolve their credentials through this one and
+// fail here when the session lapses.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the failure symptoms other providers produce when this session lapses,
+// because that is how an agent usually arrives here - not by asking for 1Password.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when signing in to 1Password for this shell, reading an item or " +
+			"downloading a document from a vault, or adding the account to the local op CLI. " +
+			"Also when another command fails to resolve a secret - reports a missing " +
+			"credential, an expired session, \"not signed in\", or an empty config value that " +
+			"should have come from a vault - since most providers here resolve secrets " +
+			"through this one.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

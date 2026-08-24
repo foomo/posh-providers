@@ -2,10 +2,13 @@ package gotsrpc
 
 import (
 	"context"
+	_ "embed"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -15,6 +18,15 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l           log.Logger
@@ -33,16 +45,17 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 	}
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        "gotsrpc",
-		Description: "Run gotsrpc",
+		Description: "Generate gotsrpc code from gotsrpc.yml files",
 		Flags: func(ctx context.Context, r *readline.Readline, fs *readline.FlagSets) error {
 			fs.Default().Bool("debug", false, "show debug output")
 			return nil
 		},
 		Args: tree.Args{
 			{
-				Name:     "path",
-				Optional: true,
-				Suggest:  inst.completePaths,
+				Name:        "path",
+				Description: "Path to a gotsrpc.yml file; every one found in the project if omitted",
+				Optional:    true,
+				Suggest:     inst.completePaths,
 			},
 		},
 		Execute: inst.execute,
@@ -90,6 +103,33 @@ func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
 
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that an omitted path regenerates from every gotsrpc.yml in the
+// project, that doing so overwrites generated sources named only in those
+// files, or that a forwarded flag has its leading "--" rewritten to "-".
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The triggers name
+// the client/server stubs and the drift between them, since that mismatch is
+// what sends someone looking rather than the generator's name.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when this project's generated RPC stubs need regenerating - after " +
+			"changing a Go service interface or its types, or when the TypeScript client " +
+			"and the Go server have drifted, a generated stub is missing a new method, or " +
+			"generated code fails to compile. Also for gotsrpc.yml files.",
+	}
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------
@@ -104,7 +144,11 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 	flags := make([]string, len(r.Flags()))
 	for i, flag := range r.Flags() {
-		flags[i] = strings.ReplaceAll(flag, "--", "-")
+		if after, ok := strings.CutPrefix(flag, "--"); ok {
+			flags[i] = "-" + after
+		} else {
+			flags[i] = flag
+		}
 	}
 
 	for _, value := range paths {
@@ -112,8 +156,9 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 
 		if out, err := shell.New(ctx, c.l, "gotsrpc").
 			Args(flags...).
-			Args(value).
+			Args(path.Base(value)).
 			Args(r.AdditionalArgs()...).
+			Dir(path.Dir(value)).
 			Output(); err != nil {
 			return errors.Wrap(err, string(out))
 		}

@@ -2,9 +2,12 @@ package helm
 
 import (
 	"context"
+	_ "embed"
+	"strings"
 
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
@@ -13,6 +16,15 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l           log.Logger
@@ -61,10 +73,10 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...options.Option[*
 		fs.Default().Bool("all-namespaces", false, "all namespace scope for this request")
 		fs.Default().Bool("create-namespace", false, "create the release namespace if not present")
 		fs.Default().Bool("dependency-update", false, "update dependencies")
-		fs.Default().Bool("dry-run", false, "assume aws profile")
+		fs.Default().Bool("dry-run", false, "simulate the operation without applying any change")
 		fs.Default().Bool("atomic", false, "delete installation on failure")
 		fs.Default().Bool("wait", false, "wait until all resources a ready")
-		fs.Internal().String("profile", "", "Profile to use.")
+		fs.Internal().String("profile", "", "Subdirectory of kubectl's config path to read the cluster kubeconfig from")
 
 		if r.Args().HasIndex(0) {
 			if err := fs.Internal().SetValues("profile", inst.kubectl.Cluster(r.Args().At(0)).Profiles(ctx)...); err != nil {
@@ -77,14 +89,14 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...options.Option[*
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run helm commands",
+		Description: "Run helm against a cluster, using its kubeconfig",
 		Nodes: tree.Nodes{
 			{
 				Name: "cluster",
 				Values: func(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 					return suggests.List(inst.kubectl.Clusters())
 				},
-				Description: "Cluster to run against",
+				Description: "Cluster name, selecting the kubeconfig every subcommand runs with",
 				Nodes: tree.Nodes{
 					{
 						Name:        "create",
@@ -119,9 +131,10 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...options.Option[*
 						},
 						Args: tree.Args{
 							{
-								Name:     "value",
-								Repeat:   false,
-								Optional: false,
+								Name:        "value",
+								Description: "Which part of the release to download",
+								Repeat:      false,
+								Optional:    false,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return []goprompt.Suggest{
 										{Text: "all", Description: "Download all information for a named release"},
@@ -280,7 +293,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
 		return errors.New("missing [CLUSTER] argument")
-	case !c.kubectl.Cluster(r.Args().At(0)).ConfigExists(""):
+	case !c.kubectl.Cluster(r.Args().At(0)).ConfigExistsForFlags(r.Flags()):
 		return errors.New("invalid [CLUSTER] argument")
 	case r.Args().LenIs(1):
 		return errors.New("missing [CMD] argument")
@@ -295,6 +308,34 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// lists every subcommand without saying which mutate the cluster, that the
+// cluster argument is the only thing scoping them, or that this tree is a
+// hand-maintained mirror rather than a passthrough.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the release-level verbs, because the destructive ones are the reason
+// this file needs to be loaded before the command is run.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with Helm releases on a Kubernetes cluster in this " +
+			"project - installing, upgrading, rolling back or uninstalling a release, listing " +
+			"releases, checking release status or history, rendering or diffing chart " +
+			"templates, or linting and packaging a chart. Also for chart repositories and " +
+			"\"which chart version is deployed\".",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -2,10 +2,13 @@ package terraform
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"os/exec"
+	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	pkgexec "github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
@@ -14,6 +17,15 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -79,7 +91,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 			{
 				Name:        "workspace",
 				Values:      inst.getWorkspaces,
-				Description: "Workspace to operate on",
+				Description: "Workspace directory to run in, discovered under the configured path",
 				Nodes: tree.Nodes{
 					{
 						Name:        "init",
@@ -99,7 +111,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 						Args: tree.Args{
 							{
 								Name:        "target",
-								Description: "Limit to a specific module or resource (optional)",
+								Description: "Restrict to these modules/resources; every resource in the workspace if omitted",
 								Optional:    true,
 								Repeat:      true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -125,7 +137,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 						Args: tree.Args{
 							{
 								Name:        "target",
-								Description: "Limit to a specific module or resource (optional)",
+								Description: "Restrict to these modules/resources; every resource in the workspace if omitted",
 								Optional:    true,
 								Repeat:      true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -152,7 +164,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 						Args: tree.Args{
 							{
 								Name:        "target",
-								Description: "Limit to a specific module or resource (optional)",
+								Description: "Restrict to these modules/resources; every resource in the workspace if omitted",
 								Optional:    true,
 								Repeat:      true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
@@ -184,7 +196,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 						Args: tree.Args{
 							{
 								Name:        "name",
-								Description: "Output name (optional)",
+								Description: "Single output to print; all outputs if omitted",
 								Optional:    true,
 							},
 						},
@@ -256,7 +268,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 							},
 							{
 								Name:        "rm",
-								Description: "Remove instances from the state",
+								Description: "Stop tracking resources in the state, orphaning the real infrastructure",
 								Args: tree.Args{
 									{
 										Name:        "address",
@@ -270,7 +282,7 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 					},
 					{
 						Name:        "unlock",
-						Description: "Unlock a stuck lock on the current workspace",
+						Description: "Force-release the state lock, only safe when no run is in progress",
 						Args: tree.Args{
 							{
 								Name:        "lockId",
@@ -327,6 +339,38 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog cannot
+// show that omitting [target] widens apply/destroy to the whole workspace, that
+// `state rm` orphans live infrastructure rather than deleting it, that <workspace>
+// is discovered from the filesystem rather than from config, that target
+// completion comes from regex-scanning .tf files, or that --service-principal
+// swaps both the credential and the subscription.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the infrastructure-change requests and the state-repair symptoms that
+// should pull this command in, since those are the phrasings a user reaches for
+// rather than the tool's name.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when changing this project's cloud infrastructure with Terraform - " +
+			"planning or applying a change to a workspace, tearing an environment down, " +
+			"reading an output value, importing an existing resource, or inspecting and " +
+			"repairing state. Also when a run failed on a held state lock, when a resource " +
+			"must stop being managed, or when a workspace needs a specific Azure service " +
+			"principal or subscription.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

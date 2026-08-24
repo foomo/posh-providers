@@ -92,7 +92,9 @@ func (i *K3d) Registry(ctx context.Context, name string) (*Registry, error) {
 	return nil, nil //nolint: nilnil
 }
 
-func (i *K3d) Cluster(ctx context.Context, name string) (*Cluster, error) {
+// Clusters returns every k3d cluster currently running, whether or not it is
+// one this project configures.
+func (i *K3d) Clusters(ctx context.Context) ([]*Cluster, error) {
 	out, err := shell.New(ctx, i.l, "k3d", "cluster", "list", "--output", "json").Output()
 	if err != nil {
 		return nil, err
@@ -100,6 +102,15 @@ func (i *K3d) Cluster(ctx context.Context, name string) (*Cluster, error) {
 
 	var clusters []*Cluster
 	if err := json.Unmarshal(out, &clusters); err != nil {
+		return nil, err
+	}
+
+	return clusters, nil
+}
+
+func (i *K3d) Cluster(ctx context.Context, name string) (*Cluster, error) {
+	clusters, err := i.Clusters(ctx)
+	if err != nil {
 		return nil, err
 	}
 

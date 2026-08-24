@@ -3,10 +3,12 @@ package az
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubeconfig"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	pkgexec "github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
@@ -15,6 +17,15 @@ import (
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -378,6 +389,37 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that `raw` is the whole Azure CLI rather than a leaf, that the
+// `vault` delete/set verbs destroy live key vault material without prompting,
+// that `login` needs a browser unless given a service principal, or that
+// `kubeconfig` overwrites credentials and then shells out to a `kubelogin` the
+// provider never checks for.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the Azure tasks a request arrives as - signing in, getting AKS
+// credentials, registry login, reading a key vault - rather than the tree's own
+// verbs, since it is the only text an agent runtime matches on.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with Azure from this project - signing in with " +
+			"`az login` or a service principal, fetching AKS cluster credentials or a " +
+			"kubeconfig, logging Docker into an Azure container registry, or reading and " +
+			"writing Key Vault secrets, keys and certificates. Also for any other Azure " +
+			"CLI command, which is reachable as a passthrough.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -1,18 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/cloudflare/cloudflared",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/cloudflare/cloudflared/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Access": {
       "properties": {
         "type": {
-          "type": "string"
+          "type": "string",
+          "description": "Access mode passed to `cloudflared access`, e.g. tcp or ssh"
         },
         "hostname": {
-          "type": "string"
+          "type": "string",
+          "description": "Hostname of the Cloudflare Access target to tunnel to"
         },
         "port": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Local port the tunnel listens on, bound to 127.0.0.1"
         }
       },
       "additionalProperties": false,
@@ -21,13 +24,15 @@
     "Config": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Path used as HOME for every cloudflared call, keeping its credentials per project"
         },
         "access": {
           "additionalProperties": {
             "$ref": "#/$defs/Access"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Access configurations, keyed by the name given to `access connect`"
         }
       },
       "additionalProperties": false,

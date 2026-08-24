@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"harbor": {
-					"$ref": "https://github.com/foomo/posh-providers/goharbor/harbor"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/goharbor/harbor/config.schema.json"
 				}
 			}
 		}

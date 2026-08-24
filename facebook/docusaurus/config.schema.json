@@ -1,30 +1,36 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/facebook/docusaurus",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/facebook/docusaurus/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
       "properties": {
         "sourcePath": {
-          "type": "string"
+          "type": "string",
+          "description": "Path to the docusaurus site, added into the image at build time"
         },
         "localPort": {
-          "type": "string"
+          "type": "string",
+          "description": "Host port mapped to the container's port 3000"
         },
         "nodeTag": {
-          "type": "string"
+          "type": "string",
+          "description": "Node base image tag to build against"
         },
         "imageTag": {
-          "type": "string"
+          "type": "string",
+          "description": "Tag of the image being built and run"
         },
         "imageName": {
-          "type": "string"
+          "type": "string",
+          "description": "Name of the image being built and run"
         },
         "volumes": {
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "description": "Additional docker volume mounts, environment variables are expanded"
         }
       },
       "additionalProperties": false,

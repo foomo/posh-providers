@@ -2,19 +2,31 @@ package beam
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/foomo/posh-providers/cloudflare/cloudflared"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -59,24 +71,24 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run beam",
+		Description: "Manage cloudflared tunnels to remote clusters and databases",
 		Nodes: tree.Nodes{
 			{
 				Name:        "status",
-				Description: "Show connection status",
+				Description: "List every running cloudflared process, not just this project's",
 				Execute:     inst.status,
 			},
 			{
 				Name:        "cluster",
-				Description: "Manage cluster connection",
+				Description: "Manage cluster tunnels",
 				Nodes: tree.Nodes{
 					{
 						Name:        "connect",
-						Description: "Connect to cluster",
+						Description: "Open a cloudflared tunnel to the cluster",
 						Args: tree.Args{
 							{
 								Name:        "cluster",
-								Description: "Cluster name",
+								Description: "Cluster name from the clusters config",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.beam.cfg.ClusterNames())
 								},
@@ -86,11 +98,11 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 					},
 					{
 						Name:        "kubeconfig",
-						Description: "Download kubeconfig",
+						Description: "Fetch the kubeconfig from 1Password and overwrite kubectl's file for this cluster",
 						Args: tree.Args{
 							{
 								Name:        "cluster",
-								Description: "Cluster name",
+								Description: "Cluster name from the clusters config",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.beam.cfg.ClusterNames())
 								},
@@ -100,11 +112,11 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 					},
 					{
 						Name:        "disconnect",
-						Description: "Disconnect to cluster",
+						Description: "Close cluster tunnels by killing the cloudflared process; all clusters if no name is given",
 						Args: tree.Args{
 							{
 								Name:        "cluster",
-								Description: "Cluster name",
+								Description: "Cluster name from the clusters config; all of them if omitted",
 								Optional:    true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.beam.cfg.ClusterNames())
@@ -117,15 +129,15 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 			},
 			{
 				Name:        "database",
-				Description: "Manage database connection",
+				Description: "Manage database tunnels",
 				Nodes: tree.Nodes{
 					{
 						Name:        "connect",
-						Description: "Connect to database",
+						Description: "Open a cloudflared tunnel to the database",
 						Args: tree.Args{
 							{
 								Name:        "database",
-								Description: "Database name",
+								Description: "Database name from the databases config",
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.beam.cfg.DatabaseNames())
 								},
@@ -135,11 +147,11 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 					},
 					{
 						Name:        "disconnect",
-						Description: "Disconnect to database",
+						Description: "Close database tunnels by killing the cloudflared process; all databases if no name is given",
 						Args: tree.Args{
 							{
 								Name:        "database",
-								Description: "Database name",
+								Description: "Database name from the databases config; all of them if omitted",
 								Optional:    true,
 								Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 									return suggests.List(inst.beam.cfg.DatabaseNames())
@@ -168,6 +180,36 @@ func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Validate rejects a cluster or database name that is not configured.
+//
+// GetCluster/GetDatabase index the config map and return a zero value rather
+// than an error, so without this an unknown name reached `connect` as hostname
+// "" and port 0, and reached `disconnect` as a `--hostname ` substring matching
+// every cloudflared process. The ClusterExists/DatabaseExists helpers existed
+// for this and had no callers.
+func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
+	// Args are [<subtree> <verb> <name>?]; the name is optional on disconnect,
+	// where omitting it deliberately means "all of them".
+	if r.Args().LenLt(3) {
+		return nil
+	}
+
+	name := r.Args().At(2)
+
+	switch r.Args().At(0) {
+	case "cluster":
+		if !c.beam.Config().ClusterExists(name) {
+			return errors.Errorf("invalid [cluster] argument: %s", name)
+		}
+	case "database":
+		if !c.beam.Config().DatabaseExists(name) {
+			return errors.Errorf("invalid [database] argument: %s", name)
+		}
+	}
+
+	return nil
+}
+
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
@@ -178,6 +220,35 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that `disconnect` with no name closes every tunnel and matches on
+// hostname alone, that `kubeconfig` overwrites kubectl's file from 1Password,
+// or that the gokazi tasks this provider registers are never used.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The triggers are
+// the symptoms rather than the tool: someone hitting a refused connection on a
+// local port, or a kubectl call failing against a remote cluster, will not think
+// to name this command.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when reaching a remote cluster or database that is only available " +
+			"through a Cloudflare Access tunnel - opening or closing that tunnel, listing " +
+			"which cloudflared processes are running, or fetching a cluster's kubeconfig " +
+			"from 1Password. Also when a connection to a local tunnel port is refused, or " +
+			"kubectl cannot reach a cluster that needs one.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -243,7 +314,7 @@ func (c *Command) clusterDisconnect(ctx context.Context, r *readline.Readline) e
 		c.l.Info("Disconnecting from cluster: " + name)
 
 		clusterConfig := c.beam.Config().GetCluster(name)
-		if err := c.cloudflared.Disonnect(ctx, cloudflared.Access{
+		if err := c.cloudflared.Disconnect(ctx, cloudflared.Access{
 			Type:     "tcp",
 			Hostname: clusterConfig.Hostname,
 			Port:     clusterConfig.Port,
@@ -280,7 +351,7 @@ func (c *Command) databaseDisconnect(ctx context.Context, r *readline.Readline) 
 		c.l.Info("Disconnecting from database: " + name)
 
 		databaseConfig := c.beam.Config().GetDatabase(name)
-		if err := c.cloudflared.Disonnect(ctx, cloudflared.Access{
+		if err := c.cloudflared.Disconnect(ctx, cloudflared.Access{
 			Type:     "tcp",
 			Hostname: databaseConfig.Hostname,
 			Port:     databaseConfig.Port,

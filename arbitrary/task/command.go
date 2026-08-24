@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"os/exec"
 	"strings"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/c-bata/go-prompt"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
@@ -17,6 +19,15 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/viper"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -70,10 +81,11 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run task scripts",
+		Description: "Run a configured task, executing its shell commands",
 		Args: tree.Args{
 			{
-				Name: "task",
+				Name:        "task",
+				Description: "Task name from the tasks config or the task directory",
 				Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 					var ret []prompt.Suggest
 
@@ -115,6 +127,33 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. A task name reveals
+// nothing about what it runs: the prose names the arbitrary-shell and sudo
+// escalation, the recursive deps with no cycle guard, and that a precondition
+// which succeeds skips the task rather than enabling it.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// leads with the arbitrary-shell nature of a task, because the reason to load
+// this file is to learn what a named task will run before running it.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when running one of this project's named tasks - a setup, bootstrap, " +
+			"init, seed, migrate or teardown shortcut defined in the posh config - or when " +
+			"asking which tasks exist. Load this before running an unfamiliar task: a task is " +
+			"arbitrary shell, may escalate with sudo, and pulls in its dependencies.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -176,7 +215,7 @@ func (c *Command) executeTask(ctx context.Context, taskID string) error {
 		}
 
 		sh.Env = append(os.Environ(), task.Env...)
-		c.l.Infof("🔧 | {%d|%d} %s: %s", i+1, len(task.Cmds), taskID, cmd)
+		c.l.Infof("🔧 | {%d|%d} %s: %s", i+1, len(task.Precondition), taskID, cmd)
 
 		if err := sh.Run(); err == nil {
 			return nil

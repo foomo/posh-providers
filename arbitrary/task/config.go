@@ -1,6 +1,7 @@
 package task
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
 	"sort"
@@ -48,7 +49,13 @@ func (c Config) Names() []string {
 }
 
 func (c Config) AllTasks() (map[string]Task, error) {
-	ret := c.Tasks
+	// Copy rather than alias: the file tasks below are written into this map, and
+	// aliasing c.Tasks would mutate the caller's config - silently replacing a
+	// configured task with a same-named file task - and panic outright when
+	// Tasks is nil but Path is set.
+	ret := make(map[string]Task, len(c.Tasks))
+	maps.Copy(ret, c.Tasks)
+
 	if c.Path != "" {
 		if entries, err := os.ReadDir(c.Path); err == nil {
 			for _, entry := range entries {

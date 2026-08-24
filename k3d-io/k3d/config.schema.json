@@ -1,21 +1,24 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/k3d-io/k3d",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/k3d-io/k3d/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
       "properties": {
         "charts": {
-          "$ref": "#/$defs/ConfigCharts"
+          "$ref": "#/$defs/ConfigCharts",
+          "description": "Helm charts installable with the install/uninstall verbs."
         },
         "registry": {
-          "$ref": "#/$defs/ConfigRegistry"
+          "$ref": "#/$defs/ConfigRegistry",
+          "description": "Container registry shared by every cluster below. Created on the first\n`up` and deleted once the last cluster is brought down."
         },
         "clusters": {
           "additionalProperties": {
             "$ref": "#/$defs/ConfigCluster"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Clusters that can be created, keyed by the name used as the argument."
         }
       },
       "additionalProperties": false,
@@ -24,10 +27,12 @@
     "ConfigCharts": {
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "Directory holding one subdirectory per chart, relative to the project\nroot. Its subdirectory names are what the chart argument completes to."
         },
         "prefix": {
-          "type": "string"
+          "type": "string",
+          "description": "Prefix prepended to the chart name to form the target namespace, so\nchart \"base\" with prefix \"shared-\" installs into \"shared-base\"."
         }
       },
       "additionalProperties": false,
@@ -65,10 +70,12 @@
     "ConfigRegistry": {
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Registry name passed to k3d, which prefixes it with \"k3d-\" for the\nactual container and hostname."
         },
         "port": {
-          "type": "string"
+          "type": "string",
+          "description": "Host port the registry binds to."
         }
       },
       "additionalProperties": false,

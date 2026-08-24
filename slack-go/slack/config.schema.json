@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/slack-go/slack",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/slack-go/slack/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
@@ -27,20 +27,25 @@
     "Secret": {
       "properties": {
         "account": {
-          "type": "string"
+          "type": "string",
+          "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID."
         },
         "vault": {
-          "type": "string"
+          "type": "string",
+          "description": "Vault is the name or UUID of the vault holding the item."
         },
         "item": {
-          "type": "string"
+          "type": "string",
+          "description": "Item is the name or UUID of the item within the vault."
         },
         "field": {
-          "type": "string"
+          "type": "string",
+          "description": "Field is the name of the field to read from the item, e.g. `password`."
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://\u003cvault\u003e/\u003citem\u003e/\u003cfield\u003e`, resolved against Account."
     }
   }
 }

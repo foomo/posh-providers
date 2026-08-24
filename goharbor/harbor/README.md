@@ -29,7 +29,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
   // ...
 
-  inst.commands.Add(harbor.New(l, inst.harbor))
+  inst.commands.Add(harbor.NewCommand(l, inst.harbor))
 
   // ...
 

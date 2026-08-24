@@ -25,15 +25,10 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
 	// ...
 
-  inst.commands.Add(lint.NewCommand(l, inst.cache,
-    lint.CommandWithGo(),
-    lint.CommandWithTSC(),
-    lint.CommandWithHelm(),
-    lint.CommandWithESLint(),
-    lint.CommandWithGherkin(),
-    lint.CommandWithTerraform(),
-    lint.CommandWithTerrascan(),
-	))
+  // Linters are discovered from the command registry by type assertion: any
+  // registered command implementing Lint(ctx, fix) is picked up automatically,
+  // so add this last, after the linting providers themselves.
+  inst.commands.Add(lint.NewCommand(l, inst.commands))
 
   // ...
 

@@ -1,18 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/foomo/beam",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/foomo/beam/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Cluster": {
       "properties": {
         "port": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Local port the tunnel binds on 127.0.0.1"
         },
         "hostname": {
-          "type": "string"
+          "type": "string",
+          "description": "Cloudflare Access hostname the tunnel connects to"
         },
         "kubeconfig": {
-          "$ref": "#/$defs/Secret"
+          "$ref": "#/$defs/Secret",
+          "description": "1Password document holding the kubeconfig; $PORT in it is replaced with the port above"
         }
       },
       "additionalProperties": false,
@@ -24,13 +27,15 @@
           "additionalProperties": {
             "$ref": "#/$defs/Cluster"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Clusters reachable through a cloudflared tunnel, keyed by the name the command accepts"
         },
         "databases": {
           "additionalProperties": {
             "$ref": "#/$defs/Database"
           },
-          "type": "object"
+          "type": "object",
+          "description": "Databases reachable through a cloudflared tunnel, keyed by the name the command accepts"
         }
       },
       "additionalProperties": false,
@@ -39,10 +44,12 @@
     "Database": {
       "properties": {
         "port": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Local port the tunnel binds on 127.0.0.1"
         },
         "hostname": {
-          "type": "string"
+          "type": "string",
+          "description": "Cloudflare Access hostname the tunnel connects to"
         }
       },
       "additionalProperties": false,
@@ -51,20 +58,25 @@
     "Secret": {
       "properties": {
         "account": {
-          "type": "string"
+          "type": "string",
+          "description": "Account is the 1Password account the vault belongs to, as a sign-in\naddress or account UUID."
         },
         "vault": {
-          "type": "string"
+          "type": "string",
+          "description": "Vault is the name or UUID of the vault holding the item."
         },
         "item": {
-          "type": "string"
+          "type": "string",
+          "description": "Item is the name or UUID of the item within the vault."
         },
         "field": {
-          "type": "string"
+          "type": "string",
+          "description": "Field is the name of the field to read from the item, e.g. `password`."
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Secret addresses a single field of a 1Password item, in the same terms as an `op://` reference: `op://\u003cvault\u003e/\u003citem\u003e/\u003cfield\u003e`, resolved against Account."
     }
   }
 }

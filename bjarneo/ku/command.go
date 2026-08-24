@@ -2,17 +2,30 @@ package ku
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"strings"
 
 	"github.com/foomo/posh-providers/foomo/squadron"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util/suggests"
+	"github.com/pkg/errors"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -72,20 +85,23 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 
 	args := tree.Args{
 		{
-			Name:    "cluster",
-			Suggest: inst.completeClusters,
+			Name:        "cluster",
+			Description: "Cluster to connect to; selects the kubeconfig",
+			Suggest:     inst.completeClusters,
 		},
 	}
 	if inst.squadron != nil {
 		args = append(args, &tree.Arg{
-			Name:     "fleet",
-			Optional: true,
-			Suggest:  inst.completeFleets,
+			Name:        "fleet",
+			Description: "Fleet to scope the namespace to; every namespace if omitted",
+			Optional:    true,
+			Suggest:     inst.completeFleets,
 		},
 			&tree.Arg{
-				Name:     "squadron",
-				Optional: true,
-				Suggest:  inst.completeSquadrons,
+				Name:        "squadron",
+				Description: "Squadron to narrow the namespace to within the fleet",
+				Optional:    true,
+				Suggest:     inst.completeSquadrons,
 			})
 	}
 
@@ -125,6 +141,17 @@ func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
+	switch {
+	case r.Args().LenIs(0):
+		return errors.New("missing [cluster] argument")
+	case !c.kubectl.Cluster(r.Args().At(0)).ConfigExistsForFlags(r.Flags()):
+		return errors.Errorf("invalid [cluster] argument: %s", r.Args().At(0))
+	}
+
+	return nil
+}
+
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
@@ -135,6 +162,36 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The catalog renders
+// `<cluster> [fleet] [squadron]` and cannot show that the last two exist only
+// when the project passed CommandWithSquadron, that they are folded into a
+// single `--namespace` by a function whose four branches drop the fleet name in
+// two of them, or that omitting `[fleet]` is cluster-wide rather than a default
+// namespace. It also cannot show that this is a blocking full-screen TUI, or
+// that `--edit` turns it read-write against whichever cluster was named.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// leads with the interactive-dashboard phrasings a human asks for, since the
+// first thing the file has to say is that an agent must not run this at all.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when a human wants an interactive Kubernetes dashboard or TUI for a " +
+			"cluster in this project - browsing or editing live resources from the terminal, " +
+			"or \"open the cluster UI\" - and when explaining why such a dashboard cannot be " +
+			"driven unattended. Also for scoping one to a squadron fleet's namespace.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

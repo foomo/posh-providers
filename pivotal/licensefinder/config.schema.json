@@ -1,21 +1,24 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/foomo/posh-providers/pivotal/licensefinder",
+  "$id": "https://raw.githubusercontent.com/foomo/posh-providers/main/pivotal/licensefinder/config.schema.json",
   "$ref": "#/$defs/Config",
   "$defs": {
     "Config": {
       "properties": {
         "logPath": {
-          "type": "string"
+          "type": "string",
+          "description": "Directory license_finder writes its log to, passed as `--log-directory`."
         },
         "decisionsPath": {
-          "type": "string"
+          "type": "string",
+          "description": "File recording the approval decisions, passed as `--decisions-file`. Every\n`add`/`remove` verb rewrites this file, so it is the provider's only\npersistent state and belongs in version control."
         },
         "sources": {
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "description": "Dependency-manifest filenames to search the project for, e.g. `go.mod` or\n`yarn.lock`. Each match's containing directory becomes a scanned project;\nthe manifests themselves are never read here."
         }
       },
       "additionalProperties": false,

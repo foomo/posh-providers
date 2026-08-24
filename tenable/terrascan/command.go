@@ -2,10 +2,13 @@ package terrascan
 
 import (
 	"context"
+	_ "embed"
 	"path"
+	"strings"
 
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh/pkg/cache"
+	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/exec"
 	"github.com/foomo/posh/pkg/log"
@@ -21,6 +24,15 @@ const (
 	modeTerraform = "terraform"
 	modeDocker    = "docker"
 )
+
+//go:embed SKILL.md
+var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l             log.Logger
@@ -64,9 +76,10 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...options.Option[*Command]) *
 
 	pathArg := func(filename string) *tree.Arg {
 		return &tree.Arg{
-			Name:     "path",
-			Optional: true,
-			Repeat:   true,
+			Name:        "path",
+			Description: "Directory to scan; every directory containing a " + filename + " if omitted",
+			Optional:    true,
+			Repeat:      true,
 			Suggest: func(ctx context.Context, t tree.Root, r *readline.Readline) []goprompt.Suggest {
 				return suggests.List(inst.paths(ctx, filename))
 			},
@@ -75,23 +88,23 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...options.Option[*Command]) *
 
 	inst.commandTree = tree.New(&tree.Node{
 		Name:        inst.name,
-		Description: "Run terrascan",
+		Description: "Scan infrastructure-as-code for policy violations",
 		Nodes: tree.Nodes{
 			{
 				Name:        "helm",
-				Description: "Scan helm charts",
+				Description: "Scan directories containing a Chart.yaml",
 				Args:        tree.Args{pathArg("Chart.yaml")},
 				Execute:     inst.executeHelm,
 			},
 			{
 				Name:        "terraform",
-				Description: "Scan terraform modules",
+				Description: "Scan directories containing a main.tf",
 				Args:        tree.Args{pathArg("main.tf")},
 				Execute:     inst.executeTerraform,
 			},
 			{
 				Name:        "docker",
-				Description: "Scan dockerfiles",
+				Description: "Scan directories containing a Dockerfile",
 				Args:        tree.Args{pathArg("Dockerfile")},
 				Execute:     inst.executeDocker,
 			},
@@ -123,6 +136,35 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
+}
+
+// Describe implements the optional command.Describer interface, letting
+// `posh agent catalog` describe this command's subtree.
+func (c *Command) Describe(ctx context.Context) command.CommandInfo {
+	return c.commandTree.Describe(ctx)
+}
+
+// Skill implements the optional command.Skiller interface. The rendered tree
+// cannot show that each mode scans directories found by a marker file rather
+// than the paths shown, that a non-zero exit means findings and aborts the
+// remaining directories, or that this command doubles as an `arbitrary/lint`
+// linter picked up by type assertion.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the three scannable artefact kinds, since a request usually names the
+// artefact - a chart, a module, a Dockerfile - rather than the scanner.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when scanning this project's infrastructure-as-code for security and " +
+			"compliance policy violations - Helm charts, terraform modules or Dockerfiles, " +
+			"either one directory or every matching directory in the repo. Also when a " +
+			"misconfiguration audit is wanted before deploying, or IaC scan findings need " +
+			"interpreting.",
+	}
 }
 
 func (c *Command) Lint(ctx context.Context, _ bool) error {

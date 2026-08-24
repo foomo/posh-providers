@@ -25,8 +25,12 @@ func TestConfig(t *testing.T) {
 	reflector := new(jsonschema.Reflector)
 	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/slack-go/slack", "./"))
+	// Config embeds onepassword.Secret, documented in another module.
+	// AddGoComments drops the base package's last segment before appending
+	// the walked dir, so the base needs one extra segment to resolve.
+	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/onepassword/x", "../../onepassword"))
 	schema := reflector.Reflect(&slack.Config{})
-	schema.ID = "https://github.com/foomo/posh-providers/slack-go/slack"
+	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/slack-go/slack/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
 

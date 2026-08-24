@@ -4,7 +4,7 @@
 			"type": "object",
 			"properties": {
 				"terragrunt": {
-					"$ref": "https://github.com/foomo/posh-providers/gruntwork-io/terragrunt"
+					"$ref": "https://raw.githubusercontent.com/foomo/posh-providers/main/gruntwork-io/terragrunt/config.schema.json"
 				}
 			}
 		}
