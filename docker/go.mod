@@ -9,7 +9,7 @@ replace (
 )
 
 require (
-	github.com/foomo/posh v0.21.1-0.20260824045038-c42488160875
+	github.com/foomo/posh v0.22.0
 	github.com/moby/moby/client v0.5.0
 )
 

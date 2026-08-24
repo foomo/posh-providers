@@ -15,12 +15,6 @@ governed entirely by the files under the configured template directory.
 
 #### Behaviour
 
-The `template` node in the rendered tree is a **placeholder, not a literal
-segment**: it is declared with `Values`, so it matches any of the template
-directory names that completion offers, and the real form is
-`<template-name> <path>`. The node's own name happens to match too, which is why
-the tree renders the word `template`.
-
 `Validate` stats `<templatePath>/<first argument>` and rejects anything that is
 not a directory, so a misspelled template name fails before the generator runs.
 It also requires exactly two arguments.

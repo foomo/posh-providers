@@ -16,7 +16,7 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/foomo/go v0.16.0
 	github.com/foomo/gokazi v0.2.0
-	github.com/foomo/posh v0.21.1-0.20260824045038-c42488160875
+	github.com/foomo/posh v0.22.0
 	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
 	github.com/foomo/posh-providers/cloudflare v0.56.0
 	github.com/foomo/posh-providers/kubernetes v0.56.0

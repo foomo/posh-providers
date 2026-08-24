@@ -7,7 +7,7 @@ replace github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v
 require (
 	github.com/allex/envsubst v1.0.8
 	github.com/foomo/go v0.16.0
-	github.com/foomo/posh v0.21.1-0.20260824045038-c42488160875
+	github.com/foomo/posh v0.22.0
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.83
 	github.com/stretchr/testify v1.12.1

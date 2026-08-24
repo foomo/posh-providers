@@ -29,8 +29,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/foomo/go v0.16.0 h1:Hw2rl0ieMB+s9NK8+MuIHzD22h48whyoKV+CA+lFG1k=
 github.com/foomo/go v0.16.0/go.mod h1:jeSB/atkoqSoJ3+ak0+b/Xtj7IMyDj1odzJroudT7Dw=
-github.com/foomo/posh v0.21.1-0.20260824045038-c42488160875 h1:OIbxyTkT1IYbsqcPJz71NiJ3iLuf69xJW304u9y9ypY=
-github.com/foomo/posh v0.21.1-0.20260824045038-c42488160875/go.mod h1:8I6BFfOeBT7lAG1nS78iB3HeLX6PFX1y1MGQ24e5Vt4=
+github.com/foomo/posh v0.22.0 h1:TnzPf3/P0WraY/Mw/ecZezwmU+wsLxFEHG7nzES4rgw=
+github.com/foomo/posh v0.22.0/go.mod h1:8I6BFfOeBT7lAG1nS78iB3HeLX6PFX1y1MGQ24e5Vt4=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=

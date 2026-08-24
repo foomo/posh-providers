@@ -86,7 +86,7 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 	args := tree.Args{
 		{
 			Name:        "cluster",
-			Description: "Cluster to open the dashboard against; sets KUBECONFIG, not validated",
+			Description: "Cluster to open the dashboard against",
 			Suggest:     inst.completeClusters,
 		},
 	}

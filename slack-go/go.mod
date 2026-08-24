@@ -11,7 +11,7 @@ replace (
 
 require (
 	github.com/foomo/go v0.16.0
-	github.com/foomo/posh v0.21.1-0.20260824045038-c42488160875
+	github.com/foomo/posh v0.22.0
 	github.com/foomo/posh-providers/onepassword v0.56.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
