@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"strings"
 
 	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
@@ -18,6 +19,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -157,8 +164,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // that `generate` and `create` overwrite unencrypted keys without prompting; or
 // that the two verbs derive output filenames differently for the same
 // certificate.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the browser-level TLS symptoms, since that is what sends someone looking
+// for a local certificate rather than the name of the tool that mints one.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when setting up HTTPS for local development - issuing a trusted " +
+			"certificate for a local hostname or wildcard domain, regenerating this " +
+			"project's certificates, or installing and removing the local CA from the " +
+			"system trust store. Also when a local site shows a certificate warning, " +
+			"ERR_CERT_AUTHORITY_INVALID, or an x509 unknown-authority error.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

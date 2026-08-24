@@ -23,6 +23,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l           log.Logger
@@ -133,8 +139,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // nothing about what it runs: the prose names the arbitrary-shell and sudo
 // escalation, the recursive deps with no cycle guard, and that a precondition
 // which succeeds skips the task rather than enabling it.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// leads with the arbitrary-shell nature of a task, because the reason to load
+// this file is to learn what a named task will run before running it.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when running one of this project's named tasks - a setup, bootstrap, " +
+			"init, seed, migrate or teardown shortcut defined in the posh config - or when " +
+			"asking which tasks exist. Load this before running an unfamiliar task: a task is " +
+			"arbitrary shell, may escalate with sudo, and pulls in its dependencies.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

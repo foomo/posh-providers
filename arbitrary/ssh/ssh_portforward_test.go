@@ -79,6 +79,6 @@ func TestPortForwardAutoAssignsPort(t *testing.T) {
 	require.GreaterOrEqual(t, idx, 0, "the -L flag must be present")
 
 	spec := strings.Fields(got[idx+len("-L "):])[0]
-	local := strings.SplitN(spec, ":", 2)[0]
+	local, _, _ := strings.Cut(spec, ":")
 	assert.NotEqual(t, "0", local, "the computed free port must be used, not the configured 0")
 }

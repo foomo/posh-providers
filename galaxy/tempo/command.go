@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"strings"
 
 	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
@@ -16,6 +17,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -123,8 +130,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that this is a blocking full-screen TUI unusable unattended, or
 // that the profile silently selects which Temporal server's workflows become
 // terminable from inside the UI.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names Temporal workflow symptoms rather than the tool, since a caller asks
+// about a stuck workflow without knowing which client is wired up.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when inspecting or administering Temporal workflows - finding a failed, " +
+			"stuck or long-running workflow execution, reading its event history, terminating or " +
+			"cancelling it, or checking which Temporal namespace and server a configured profile " +
+			"points at. Note the tool is an interactive terminal UI, so it cannot be driven " +
+			"unattended.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -22,6 +22,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l           log.Logger
@@ -116,8 +122,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // that `docker` logs the whole machine in behind an interactive secret prompt
 // and derives its username from GITHUB_TOKEN, or that the prompt's auth
 // indicator is inferred from a deliberately failing docker pull.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the pull/push authorization failures that send someone looking for a
+// registry login, since neither verb is something an agent seeks out by name.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when authenticating to this project's Harbor container registry - " +
+			"opening its login page or logging the local docker daemon in. Also when a docker " +
+			"pull or push to the registry fails with unauthorized, denied or " +
+			"\"no basic auth credentials\", or an image build cannot fetch a private base image.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

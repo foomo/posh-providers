@@ -1,95 +1,61 @@
 #### Hazards
 
-Every verb here manages **long-lived background `ssh` processes** through
-[gokazi](https://github.com/foomo/gokazi), not the current shell. `start`
-returns as soon as the process is up and the tunnel keeps running after the
-command finishes - and, because the process is started with
-`context.WithoutCancel`, after the posh shell that started it exits. Nothing
-here reports status; use the `gokazi` command to see what is actually running.
+Every verb manages **long-lived background `ssh` processes** through
+[gokazi](https://github.com/foomo/gokazi), not the current shell. `start` returns
+as soon as the process is up, and since it is started with
+`context.WithoutCancel` the tunnel outlives the posh shell. Nothing reports
+status; use the `gokazi` command to see what is running.
 
-**`start` and `stop` with no name act on every configured entry.** The name
-argument is optional and repeatable, and when it is omitted the provider
-substitutes the full list from the config. So `ssh pfw stop` tears down every
-port forward, and `ssh socks5 stop` every tunnel - the plural case is the
-default, not an error. Both verbs also iterate and return on the first failure,
-so a name that is not in the config aborts the loop and leaves the entries
-before it already started or stopped.
+**`start` and `stop` with no name act on every configured entry** - the name is
+optional, and when omitted the full config list is substituted, so a bare `stop`
+tears down every forward or tunnel. Both verbs return on the first failure,
+leaving earlier entries already started or stopped.
 
-`start` is idempotent per name: an entry already running is silently a no-op
-(`gokazi.ErrAlreadyRunning` is swallowed), and so is stopping one that is not
-running. Neither prints a distinct message, so a second `start` looks the same
-as the first.
+**`pfw start` can block on an interactive prompt.** It runs the `ssh` binary with
+`-M -n -N -T` and no `BatchMode`, so a passphrase, unknown host key or password
+prompt hangs the process - and with stdin at `/dev/null` (`-n`) it blocks rather than failing
+fast. Configure `identityFile`/`identityAgent` and a known host before running it
+unattended. `socks5 start` sets `BatchMode=yes` and `ExitOnForwardFailure`, so it
+fails instead.
 
-**Authentication is interactive unless the config avoids it.** `pfw start`
-shells out to `ssh -M -n -N -T` with no `BatchMode`, so a key with a passphrase,
-an unknown host key or a password prompt blocks the process where an agent
-cannot answer it - and stdin is `/dev/null` (`-n`), so it blocks rather than
-failing fast. Configure `identityFile`/`identityAgent` and a known host before
-running it unattended. `socks5 start` does set `-o BatchMode=yes` along with
-`ExitOnForwardFailure` and keepalives, so it fails instead of prompting.
-
-**`port: 0` auto-assigns a free local port**, for both port forwards and socks5
-tunnels. The chosen port is only reported in the "ready at" log line, so an
-agent that needs to connect has to read that line rather than the config.
+**`port: 0` auto-assigns a free local port**, in both subtrees, reported only in
+the "ready at" log line - read it to learn where to connect.
 
 #### Behaviour
 
-Two further defects in `ssh.go`, neither dangerous but both apt to mislead:
+`start` is idempotent per name: an already-running entry is a silent no-op, as is
+stopping one not running, with no distinct message either way.
 
-**The socks5 task registration passes a host where a port belongs.** The task
-gokazi records for a tunnel is built with `-D <host>` (`ssh.go:85`) instead of
-`-D <port>`. What actually runs comes from `StartSocks5Tunnel`, which builds its
-own correct command, so this only corrupts the recorded task metadata - but it
-is what a `gokazi`-side listing shows, so do not read that listing as the
-command that is running.
+`hostPort` means two different things per subtree. For `socks5` it is the SSH
+server port (`-p`); for `pfw` it is the right-hand side of `-L`, and `host` is
+both the SSH destination and the forward target - so `pfw` only forwards to a
+port on the bastion itself and cannot reach a non-22 SSH port.
 
-**A port forward's `hostPort` is the forwarding target, not the SSH port.** Both
-structs carry the same three fields, and `socks5` treats `hostPort` as the SSH
-server port (`-p`), while `pfw` puts it on the right-hand side of `-L` and has
-no way to reach a non-22 SSH port at all. The same config key means two
-different things depending on which subtree you are in.
+An empty `username` or `identityFile` is omitted entirely, falling back to the
+user's own `~/.ssh/config` - so one posh config behaves differently per machine.
+`host` and `username` also expand `$VAR`.
 
 #### Configuration
 
-Config key `ssh` by default, overridable via `WithConfigKey` (and the command
-renameable via `CommandWithName`), so confirm both against the project's own
-posh config. This provider ships **no `config.schema.json`**, so the key is not
-described in the project's `posh.schema.json` - read `config.go`,
-`portforward.go` and `socks5tunnel.go`, or the sample in
-[`arbitrary/ssh/README.md`](https://github.com/foomo/posh-providers/blob/main/arbitrary/ssh/README.md),
-for the field shapes.
+The `ssh` key holds `portForwards` and `socks5Tunnels`, each a map of name to
+entry; those keys are what the `name` argument accepts. This provider ships **no
+`config.schema.json`**, so the key is absent from the project's
+`posh.schema.json` - read `config.go`, `portforward.go` and `socks5tunnel.go` for
+field shapes.
 
-Two keys, `portForwards` and `socks5Tunnels`, each a map of name to entry. Those
-map keys are the names the `name` argument accepts and completes from; the
-entries beneath them are what reach `ssh`. There is no way to define a tunnel
-from the command line - the config is the only surface.
-
-Things the config shape cannot tell you: `host` and `username` are passed
-through `os.ExpandEnv`, so `$VAR` references in them resolve from the posh
-process's environment, and `identityFile` additionally goes through tilde
-expansion. An empty `username` or `identityFile` is simply omitted from the
-command, falling back to whatever the user's own `~/.ssh/config` says - so the
-same posh config behaves differently per machine.
-
-Each configured entry is registered with gokazi under `ssh.pfw.<name>` /
-`ssh.socks5.<name>`, which is the id it appears under in the shared process
-registry that `gokazi`, `kubeforward`, `dockprox` and `gost` also write to.
+Entries register with gokazi as `ssh.pfw.<name>` / `ssh.socks5.<name>` in the
+shared registry `kubeforward`, `dockprox` and `gost` also use.
 
 #### Examples
 
 ```bash
-# Start one named port forward; needs an explicit port in the config
-posh execute ssh pfw start my-forward
-
-# Start every configured socks5 tunnel
-posh execute ssh socks5 start
-
-# Stop one; with no name this stops ALL port forwards
-posh execute ssh pfw stop my-forward
+posh execute {{cmd}} pfw start my-forward
+posh execute {{cmd}} socks5 start
+posh execute {{cmd}} pfw stop my-forward
 ```
 
 #### References
 
-- [ssh(1)](https://man.openbsd.org/ssh) - `-L`, `-D`, `-N`, `-M` and `BatchMode`
-- [gokazi](https://github.com/foomo/gokazi) - the background process registry these commands write to
+- [`ssh(1)`](https://man.openbsd.org/ssh) - `-L`, `-D`, `BatchMode`
+- [gokazi](https://github.com/foomo/gokazi)
 - [Provider README](https://github.com/foomo/posh-providers/blob/main/arbitrary/ssh/README.md)

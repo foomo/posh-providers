@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"path"
+	"strings"
 
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh/pkg/cache"
@@ -26,6 +27,12 @@ const (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l             log.Logger
@@ -142,8 +149,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // than the paths shown, that a non-zero exit means findings and aborts the
 // remaining directories, or that this command doubles as an `arbitrary/lint`
 // linter picked up by type assertion.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the three scannable artefact kinds, since a request usually names the
+// artefact - a chart, a module, a Dockerfile - rather than the scanner.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when scanning this project's infrastructure-as-code for security and " +
+			"compliance policy violations - Helm charts, terraform modules or Dockerfiles, " +
+			"either one directory or every matching directory in the repo. Also when a " +
+			"misconfiguration audit is wanted before deploying, or IaC scan findings need " +
+			"interpreting.",
+	}
 }
 
 func (c *Command) Lint(ctx context.Context, _ bool) error {

@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"os/exec"
+	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command"
@@ -19,6 +20,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -346,8 +353,24 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // is discovered from the filesystem rather than from config, that target
 // completion comes from regex-scanning .tf files, or that --service-principal
 // swaps both the credential and the subscription.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the infrastructure-change requests and the state-repair symptoms that
+// should pull this command in, since those are the phrasings a user reaches for
+// rather than the tool's name.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when changing this project's cloud infrastructure with Terraform - " +
+			"planning or applying a change to a workspace, tearing an environment down, " +
+			"reading an output value, importing an existing resource, or inspecting and " +
+			"repairing state. Also when a run failed on a held state lock, when a resource " +
+			"must stop being managed, or when a workspace needs a specific Azure service " +
+			"principal or subscription.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

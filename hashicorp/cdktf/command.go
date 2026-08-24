@@ -24,6 +24,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l                 log.Logger
@@ -232,8 +238,23 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // stack names come from a *.stack.yaml naming convention rather than from
 // cdktf, that `unlock` shells out to terraform in the synth output directory,
 // or that --skip-synth reaches the binary on some verbs and is inert on deploy.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names stacks and the CDK-for-Terraform vocabulary, since that is what
+// distinguishes a request for this command from one for the plain terraform
+// provider in the same repo.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with this project's CDK for Terraform app - listing the " +
+			"stacks it defines, diffing pending changes for a stack, deploying or destroying " +
+			"one, or releasing a stack's stuck Terraform state lock. Also when infrastructure " +
+			"is defined in TypeScript/Go rather than .tf files, or when a synth needs to be " +
+			"reused instead of re-run.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

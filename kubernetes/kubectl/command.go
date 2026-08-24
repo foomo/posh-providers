@@ -3,6 +3,7 @@ package kubectl
 import (
 	"context"
 	_ "embed"
+	"strings"
 
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh/pkg/command"
@@ -16,6 +17,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l           log.Logger
@@ -111,8 +118,23 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // provider only selects among kubeconfigs other providers wrote, that
 // `--profile` redirects which file is read rather than reaching kubectl, or
 // that listing clusters chmods them to 0600.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the raw kubectl verbs and the kubeconfig symptoms an agent would phrase
+// a request with, since this is the command every other cluster verb falls back
+// to and the runtime matches on that phrasing alone.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when inspecting or changing Kubernetes resources in this project - " +
+			"getting pods, describing or logging a workload, applying or deleting a manifest, " +
+			"exec into a container - and when a cluster must be named rather than taken from " +
+			"the current context. Also for \"which clusters are configured\", KUBECONFIG " +
+			"questions, kubeconfig profiles, and \"no configuration has been provided\" errors.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

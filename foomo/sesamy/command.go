@@ -5,6 +5,7 @@ import (
 	"context"
 	_ "embed"
 	"sort"
+	"strings"
 
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/command"
@@ -25,6 +26,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -308,8 +315,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that an omitted config argument runs the verb against every
 // configured set, that `provision` writes to live GTM containers, or that every
 // verb renders 1Password secrets into the config it pipes to sesamy.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// leads with Google Tag Manager and analytics tracking rather than the tool
+// name, because that is the vocabulary a request for this work arrives in.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with this project's Google Tag Manager or Google " +
+			"Analytics setup - provisioning tags, triggers or variables into a web or " +
+			"server container, diffing configured against live GTM state, listing " +
+			"container resources, generating the TypeScript tracking definitions, or " +
+			"opening the GA/GTM console. Also for sesamy config sets.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

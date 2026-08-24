@@ -22,6 +22,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type Command struct {
 	l           log.Logger
 	cache       cache.Namespace
@@ -107,8 +113,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that an omitted path regenerates from every gotsrpc.yml in the
 // project, that doing so overwrites generated sources named only in those
 // files, or that a forwarded flag has its leading "--" rewritten to "-".
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The triggers name
+// the client/server stubs and the drift between them, since that mismatch is
+// what sends someone looking rather than the generator's name.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when this project's generated RPC stubs need regenerating - after " +
+			"changing a Go service interface or its types, or when the TypeScript client " +
+			"and the Go server have drifted, a generated stub is missing a new method, or " +
+			"generated code fails to compile. Also for gotsrpc.yml files.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -42,8 +43,45 @@ var SkillHeadings = []string{"Hazards", "Behaviour", "Configuration", "Examples"
 // silently asserts the command has no side effects worth naming.
 const RequiredSkillHeading = "Hazards"
 
-// AssertSkilled asserts that v implements command.Skiller and that the markdown
-// it contributes is valid in the position it is rendered into.
+// MaxSkillWords is the per-fragment word ceiling.
+//
+// Every fragment is one file an agent loads in full, and the tokens are spent
+// before it knows whether the command is relevant. The ceiling is what keeps a
+// fragment to the part that is not recoverable from upstream docs: posh renders
+// no arguments or flags anywhere, pointing at `posh agent catalog` and
+// `posh help` instead, so a fragment enumerating them is duplication paid for on
+// every load.
+//
+// It is a ceiling rather than a target. A genuinely dangerous provider is
+// allowed to use it; compressing real warnings to hit a number is the failure
+// this is meant to prevent, and the answer for a fragment that cannot fit is
+// usually that it is restating structure rather than that it needs more room.
+const MaxSkillWords = 400
+
+// SkillProbeName is the registered name AssertSkilled renders a fragment under.
+//
+// It stands in for the real case the substitution exists for: a provider
+// registered under something other than its default, like the squadron provider
+// registered as `admiral`. Rendering under a name no provider defaults to is
+// what lets the assertion distinguish a fragment that substituted from one that
+// hardcoded, and it is deliberately not a plausible command name so it cannot
+// collide with prose.
+const SkillProbeName = "posh-probe-name"
+
+// AssertSkilled asserts that the markdown v contributes under name is valid in
+// the position it is rendered into.
+//
+// name is the provider's default command name. The fragment is deliberately
+// rendered under a different one - SkillProbeName - because that is the case
+// that catches a hardcoded default: a fragment substituting correctly comes back
+// naming the probe, while one that hardcoded its own name comes back naming
+// that, and the check can tell them apart. Rendering under the default would
+// make the two indistinguishable.
+//
+// A provider that contributes nothing passes. posh generates a skill file only
+// for a command that either has prose or has subcommands, so a fragment is
+// optional - and a thin pass-through with no project-specific hazard is better
+// with none, since the root index already carries its name and description.
 //
 // It pairs with AssertDescribed in a provider's test:
 //
@@ -56,14 +94,15 @@ const RequiredSkillHeading = "Hazards"
 func AssertSkilled(t *testing.T, name string, v any) {
 	t.Helper()
 
+	// Not implementing Skiller is a valid outcome, not a gap: the command still
+	// appears in the root skill's index and still describes itself fully to
+	// `posh agent catalog`. There is nothing to check.
 	skiller, ok := v.(command.Skiller)
 	if !ok {
-		t.Errorf("%s does not implement command.Skiller, so it contributes nothing to SKILL.md", name)
-
 		return
 	}
 
-	if values := InvalidSkill(skiller.Skill(t.Context())); len(values) > 0 {
+	if values := InvalidSkill(skiller.Skill(t.Context(), SkillProbeName), name); len(values) > 0 {
 		t.Errorf("%s has an invalid SKILL.md:\n  %s", name, strings.Join(values, "\n  "))
 	}
 }
@@ -72,17 +111,37 @@ func AssertSkilled(t *testing.T, name string, v any) {
 // SKILL.md markdown, in the order encountered. It returns nil when the markdown
 // is valid.
 //
+// def is the provider's *default* command name, which the fragment must not
+// hardcode - see the bare-name check below. It is deliberately not the
+// registered name: after substitution the registered name is exactly what a
+// correct fragment contains, so checking for that would flag every fragment that
+// got it right.
+//
 // The checks are the ones that make the difference between a fragment that
-// renders correctly and one that corrupts the generated file. plugin.RenderSkill
-// writes the markdown verbatim under a level 3 command heading, so a heading of
-// level 3 or shallower escapes its own section and silently reparents every
-// command rendered after it.
-func InvalidSkill(skill string) []string {
+// renders correctly and one that corrupts the generated file, plus the two that
+// keep it worth loading at all. plugin.RenderCommandSkill writes the markdown
+// verbatim under a level 3 command heading, so a heading of level 3 or shallower
+// escapes its own section and silently reparents every command rendered after
+// it.
+//
+// An empty fragment is valid. posh renders a skill file only for a command that
+// has prose or subcommands, so contributing nothing means the command is covered
+// by the root index alone - the right outcome for a thin pass-through with no
+// project-specific hazard.
+func InvalidSkill(skill, def string) []string {
 	var ret []string
 
 	if strings.TrimSpace(skill) == "" {
-		return []string{"contributes no markdown, so the command may be omitted from SKILL.md entirely"}
+		return nil
 	}
+
+	if words := len(strings.Fields(skill)); words > MaxSkillWords {
+		ret = append(ret, fmt.Sprintf(
+			"is %d words, over the %d word ceiling; cut anything derivable from the command tree or --help, and keep the hazards",
+			words, MaxSkillWords))
+	}
+
+	ret = append(ret, bareNames(skill, def)...)
 
 	var (
 		fenced   bool
@@ -148,3 +207,102 @@ func InvalidSkill(skill string) []string {
 
 	return ret
 }
+
+// bareNames reports occurrences of the provider's default command name that
+// should have been the registered name instead.
+//
+// The fragments are embedded static markdown, so a Skiller substitutes the
+// registered name into a placeholder. posh deliberately does not substitute for
+// you: a provider that forgets still compiles, and ships prose telling an agent
+// to run a command this project does not have - foomo/squadron registered as
+// `admiral` documented `posh execute squadron ...` and a Behaviour section
+// saying to run `squadron <cluster> <fleet> <squadron> list`. Both are wrong and
+// neither breaks the build. This check is what makes the substitution
+// enforceable rather than aspirational.
+//
+// Four things are exempt, because the name genuinely belongs to something other
+// than the posh command:
+//
+//   - A code span holding the name *alone*, or as part of a longer token. The
+//     config key, the upstream binary and filenames named after the tool are
+//     real literals that must not move with the registration - `squadron.yaml`
+//     is `squadron.yaml` whatever the command is called, and the `squadron` key
+//     stays the `squadron` key. Wrapping them in backticks is already this
+//     repo's convention for config keys and paths.
+//   - URLs, including inside link targets, where the name is part of an upstream
+//     address.
+//   - Markdown link text, which names the upstream project or its docs. Forcing
+//     it to the registered name would produce "[admiral documentation]" pointing
+//     at squadron's docs; forcing it to a placeholder degrades it to a generic
+//     "[upstream documentation]". Both are worse than the literal.
+//   - A path segment - anything preceded by "/". A directory or file named after
+//     the tool (`./svc/squadron`, `foomo/squadron/README.md`) is on disk under
+//     that name whatever the command is called.
+//
+// A code span holding the name *followed by arguments* is deliberately not
+// exempt: `squadron prod default all status` is an invocation, and the whole
+// point of the substitution is that such a line names the registered command.
+// Exempting every code span would let the most common form of the bug through.
+//
+// Fenced blocks are deliberately *not* exempt: the `posh execute <name>`
+// examples live in fences, and they are the most direct way a fragment tells an
+// agent to run the wrong thing.
+func bareNames(skill, def string) []string {
+	if def == "" {
+		return nil
+	}
+
+	var (
+		ret []string
+		re  = wordRe(def)
+	)
+
+	for i, line := range strings.Split(skill, "\n") {
+		if stripped := stripLiterals(line); re.MatchString(stripped) {
+			ret = append(ret, fmt.Sprintf(
+				"names %q on line %d outside a code span (%q); the fragment must use the registered name, so substitute it in Skill rather than hardcoding the default",
+				def, i+1, strings.TrimSpace(line)))
+		}
+	}
+
+	return ret
+}
+
+// stripLiterals blanks out the parts of a line where the tool's own name is a
+// literal rather than the posh command: URLs, markdown link text, path segments,
+// and code spans that do not look like an invocation.
+//
+// A span is treated as a literal only when it holds a single token - `squadron`,
+// `squadron.yaml`, `--squadron`. A span with whitespace in it is a command line,
+// so it is left in place for the check to see.
+func stripLiterals(line string) string {
+	line = urlRe.ReplaceAllString(line, " ")
+	line = linkTextRe.ReplaceAllString(line, " ")
+	line = pathSegmentRe.ReplaceAllString(line, " ")
+
+	return codeSpanRe.ReplaceAllStringFunc(line, func(span string) string {
+		if strings.ContainsAny(strings.Trim(span, "`"), " \t") {
+			return span
+		}
+
+		return " "
+	})
+}
+
+// wordRe matches name only as a whole word, so a fragment naming `gcloud` is not
+// flagged by a provider called `cloud`, and vice versa. Hyphens count as word
+// characters, so `gherkin-lint` does not match a fragment's `lint`.
+func wordRe(name string) *regexp.Regexp {
+	return regexp.MustCompile(`(^|[^\w-])` + regexp.QuoteMeta(name) + `($|[^\w-])`)
+}
+
+var (
+	codeSpanRe = regexp.MustCompile("`[^`]*`")
+	urlRe      = regexp.MustCompile(`https?://\S+`)
+	// Markdown link text, so "[nova documentation](...)" keeps naming the
+	// upstream project rather than being forced to the registered name.
+	linkTextRe = regexp.MustCompile(`\[[^\]]*\]`)
+	// A path segment: the name preceded by a "/" is a real directory or file on
+	// disk, which does not move with the registration.
+	pathSegmentRe = regexp.MustCompile(`/[\w.@/-]+`)
+)

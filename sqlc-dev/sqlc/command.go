@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"path"
+	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command"
@@ -21,6 +22,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -150,8 +157,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that `generate` overwrites sources for every sqlc.yaml when no
 // path is given, that the root forwards unlisted subcommands, or that
 // `--no-remote` is passed on every invocation.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the artefacts - sqlc.yaml, .sql query files, generated db packages -
+// because that is what a caller sees before knowing the generator's name.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with SQL-generated database code - regenerating Go or " +
+			"TypeScript from .sql query files after editing a query or schema, checking whether " +
+			"the committed generated code is stale, or type-checking and linting queries. Also " +
+			"for sqlc.yaml files and sqlc compile, generate, diff and vet errors.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -21,6 +21,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l             log.Logger
@@ -397,8 +403,23 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // that `login` needs a browser unless given a service principal, or that
 // `kubeconfig` overwrites credentials and then shells out to a `kubelogin` the
 // provider never checks for.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the Azure tasks a request arrives as - signing in, getting AKS
+// credentials, registry login, reading a key vault - rather than the tree's own
+// verbs, since it is the only text an agent runtime matches on.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with Azure from this project - signing in with " +
+			"`az login` or a service principal, fetching AKS cluster credentials or a " +
+			"kubeconfig, logging Docker into an Azure container registry, or reading and " +
+			"writing Key Vault secrets, keys and certificates. Also for any other Azure " +
+			"CLI command, which is reachable as a passthrough.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

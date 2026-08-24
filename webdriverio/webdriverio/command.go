@@ -27,6 +27,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l           log.Logger
@@ -204,8 +210,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // mode name "browserstack" is a magic string requiring a matching secret; or
 // that most flags reach the runner as environment
 // variables the project's own wdio.conf.ts has to read.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the environment selection and BrowserStack, since those are the two ways
+// a run reaches further than "run the tests" suggests.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when running this project's end-to-end or browser tests - running a " +
+			"suite or a single feature file against a named site and environment, running " +
+			"headless or in debug mode, filtering by Cucumber tag or scenario, or running on " +
+			"BrowserStack. Note runs hit a real configured environment, not a local sandbox.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

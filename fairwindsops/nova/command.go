@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"sort"
+	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command"
@@ -17,6 +18,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -124,8 +131,20 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // they select what is scanned rather than the output format, that the scan needs
 // egress to public registries, and that the cluster placeholder is resolved from
 // kubeconfig files on disk.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the upgrade question rather than the tool, since a caller asks what is
+// out of date without knowing which scanner answers it.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when asking what is out of date in a Kubernetes cluster - which Helm " +
+			"releases or container images are behind their latest upstream version, whether a " +
+			"chart has a newer release available, or planning an upgrade. Read-only.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

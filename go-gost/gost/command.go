@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"os/exec"
+	"strings"
 
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
 	"github.com/foomo/gokazi/pkg/gokazi"
@@ -19,6 +20,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -158,8 +165,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that these verbs manage background processes, that omitting the
 // name acts on every configured process rather than fewer, or that what a name
 // actually binds and proxies lives in the config file it points at.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// leads with the symptom - an unreachable service or a port that is not
+// listening - because that is what a caller notices before naming gost.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when a local port or proxied route into a remote network needs to be " +
+			"up - starting or stopping the project's configured gost tunnels, or diagnosing a " +
+			"service that is unreachable because its tunnel is not running. Also for gost relay " +
+			"and SOCKS/HTTP proxy processes managed as background tasks.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

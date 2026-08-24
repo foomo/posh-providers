@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"os/exec"
+	"strings"
 
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
 	"github.com/foomo/gokazi/pkg/gokazi"
@@ -18,6 +19,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 // Task ids registered with gokazi. They are distinct because the two verbs run
 // different command lines and gokazi identifies a process by its args.
@@ -152,8 +159,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that this manages a background process outliving the command, that
 // `menubar` needs a graphical session, or that what the proxy binds lives in the
 // config file rather than anywhere in the tree.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The triggers name
+// the symptom - a container hostname or proxied port not resolving - because the
+// proxy is infrastructure nobody thinks about until it is down.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when this project's local Docker reverse proxy needs starting or " +
+			"stopping, or when a container hostname or proxied local port is not " +
+			"resolving, refusing connections, or reporting an address already in use. " +
+			"Also for the dockprox menubar app.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

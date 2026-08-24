@@ -1,81 +1,61 @@
 #### Hazards
 
-**This generates files into your working tree.** hygen writes whatever the
-selected template directory produces, at paths the template itself decides, and
-it can overwrite existing files. The command line names a template and a target
-path but not the files that result - read the template before running it, and
-prefer a clean working tree so `git diff` shows what appeared.
+**This generates files into your working tree.** The selected template decides
+what is written and where, and it can overwrite existing files. The command line
+names a template and a target path but not the files that result - read the
+template before running it, and prefer a clean working tree so `git diff` shows
+what appeared.
 
-**`--dry` is the safe way to look first.** It makes hygen render without saving,
-which is the only preview available here. It is declared on the `template` leaf
-only.
+**`--dry` is the only preview available.** It renders without saving. Use it
+before the real run on any template you have not read.
 
-**The template argument is never validated as a template.** `Validate` checks
-`<templatePath>/<first argument>`, but at this leaf the first argument is the
-literal word `template` - the node's own name - not the template you named. So
-validation asks whether a directory called `template` exists, and the real
-template name is checked by nothing on the posh side. A misspelled template
-reaches hygen unverified.
+Nothing validates the target path, and the template is free to write outside it.
+The upstream generator is invoked as `scaffold`, so what a template emits is
+governed entirely by the files under the configured template directory.
 
 #### Behaviour
 
-**The only runnable form is `hygen template <path>`.** The root node declares a
-`path` argument but has no `Execute`, so that argument is unreachable - the sole
-executable leaf is `template`, whose completion offers the directories found
-under the configured `templatePath`.
+The `template` node in the rendered tree is a **placeholder, not a literal
+segment**: it is declared with `Values`, so it matches any of the template
+directory names that completion offers, and the real form is
+`<template-name> <path>`. The node's own name happens to match too, which is why
+the tree renders the word `template`.
 
-**The literal word `template` is forwarded to hygen.** `execute` passes
-`r.Args()` verbatim after `hygen scaffold`, and at this leaf those args begin
-with the node name, so the real invocation is
-`hygen scaffold template <path> ...`. Whether that is intended depends on the
-template layout: hygen's own convention is `hygen <generator> <action>`, so this
-provider is effectively pinned to a generator named `scaffold` with an action
-named `template`.
+`Validate` stats `<templatePath>/<first argument>` and rejects anything that is
+not a directory, so a misspelled template name fails before the generator runs.
+It also requires exactly two arguments.
 
-**`HYGEN_TMPLS` is set to the *parent* of `templatePath`.** With
-`templatePath: .posh/scaffold` the environment variable becomes `.posh` - while
-completion lists directories *inside* `.posh/scaffold` and validation stats
-paths inside it too. The three disagree about what the template root is, which
-is worth checking against your own layout before trusting completion.
+**`HYGEN_TMPLS` is set to the *parent* of `templatePath`**, which is deliberate:
+the upstream generator expects the directory containing the generator folder,
+while completion and validation work on the directories *inside* `templatePath`.
+With `templatePath: .posh/scaffold` the variable becomes `.posh` and `scaffold`
+is the generator name.
 
-The second `path` argument is passed straight through and is deliberately not
-completed - its `Suggest` returns nothing.
-
-The template directory listing is cached for the session, so a template added
-after the shell started is not offered until the cache is cleared.
-
-Anything after a `--` separator is forwarded to hygen, as are the leaf's own
-flags.
+The target path is passed straight through and is not completed. The template
+listing is cached for the session, so a template added after the shell started is
+not offered until the cache is cleared. Anything after a `--` separator is
+forwarded, as are the leaf's own flags.
 
 #### Configuration
 
-Config key `hygen` by default, overridable via `WithConfigKey` (and the command
-renameable via `CommandWithName`) - note the config-key option here is
-`WithConfigKey`, not the `CommandWithConfigKey` some siblings use.
+The `hygen` key's single field `templatePath` does double duty: its immediate
+subdirectories are the templates completion offers, and its parent is exported as
+`HYGEN_TMPLS`. What each template writes is decided inside that directory. Note
+the config-key option here is `WithConfigKey`, not `CommandWithConfigKey`.
 
 Field shapes: [`jondot/hygen/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/jondot/hygen/config.schema.json).
-That URL is also the schema's `$id`, so it is the `$defs` key the same schema is
-bundled under in the project's `posh.schema.json`.
 
-The single field `templatePath` does double duty: its immediate subdirectories
-are the templates offered by completion, and its **parent** is exported to hygen
-as `HYGEN_TMPLS`. What each template actually writes is decided inside that
-directory, not by anything here.
-
-**The README is not this provider's.** It is titled "POSH doctl provider"; only
-its config sample and plugin snippet apply to hygen.
+**The README is not this provider's** - it is titled "POSH doctl provider"; only
+its config sample and plugin snippet apply here.
 
 #### Examples
 
 ```bash
-# Render without saving - the only preview available
-posh execute hygen template ./target --dry
-
-# Writes files into the working tree
-posh execute hygen template ./target
+posh execute {{cmd}} my-template ./target --dry
+posh execute {{cmd}} my-template ./target
 ```
 
 #### References
 
-- [hygen](https://www.hygen.io/) - the generator this wraps, and the `HYGEN_TMPLS` convention
+- [hygen](https://www.hygen.io/) - templates and the `HYGEN_TMPLS` convention
 - [Provider README](https://github.com/foomo/posh-providers/blob/main/jondot/hygen/README.md) - note its title says doctl

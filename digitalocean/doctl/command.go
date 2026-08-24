@@ -3,6 +3,7 @@ package doctl
 import (
 	"context"
 	_ "embed"
+	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
@@ -18,6 +19,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -174,8 +181,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // from the API; that the written kubeconfig carries no credential and needs
 // doctl on PATH to work at all; or that DIGITALOCEAN_ACCESS_TOKEN is never
 // exported because the guard that would set it cannot be satisfied.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the three things this narrow tree can actually do, so a request about
+// droplets or any other DigitalOcean resource does not load it.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with DigitalOcean from this project - authenticating " +
+			"with an API token, saving a DOKS cluster kubeconfig for kubectl, or logging " +
+			"the host's Docker into the DigitalOcean container registry. Does not reach " +
+			"droplets or other DigitalOcean resources.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

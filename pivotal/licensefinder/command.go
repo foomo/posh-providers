@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path"
 	"sort"
+	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command"
@@ -22,6 +23,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -206,8 +213,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // are policy changes rather than build steps, that a non-zero exit is the
 // intended signal while a zero exit can mean nothing was scanned, or that
 // every discovered source path is aggregated into one combined report.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names licence-compliance requests and the approval workflow, since the decisions
+// file is a policy artefact an agent should not edit on its own initiative.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when auditing this project's dependency licences - listing " +
+			"unapproved or unlicensed dependencies, producing a licence report for a " +
+			"compliance review, or recording an approval by permitting a licence or " +
+			"ignoring a dependency in the decisions file. Also when a licence check fails " +
+			"in CI or a new dependency needs sign-off.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

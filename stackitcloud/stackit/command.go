@@ -3,6 +3,7 @@ package stackit
 import (
 	"context"
 	_ "embed"
+	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
@@ -18,6 +19,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -160,8 +167,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // `kubeconfig` writes an expiring credential into the checkout; or that upstream
 // prompts for confirmation and the flag that would skip it cannot be delivered
 // through this command.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names STACKIT and SKE explicitly and ends on the interactivity, since both
+// verbs need a human and that is what an agent needs to learn before trying.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with STACKIT cloud from this project - logging in to " +
+			"STACKIT, or creating a kubeconfig for one of its SKE Kubernetes clusters so " +
+			"kubectl can reach it. Both verbs are interactive and need a human at the " +
+			"terminal, so read this before attempting either unattended.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

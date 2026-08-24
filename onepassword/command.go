@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
@@ -16,6 +17,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -145,8 +152,23 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // echoes the session token, that a bare `op` signs in rather than printing help,
 // or that several other providers resolve their credentials through this one and
 // fail here when the session lapses.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the failure symptoms other providers produce when this session lapses,
+// because that is how an agent usually arrives here - not by asking for 1Password.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when signing in to 1Password for this shell, reading an item or " +
+			"downloading a document from a vault, or adding the account to the local op CLI. " +
+			"Also when another command fails to resolve a secret - reports a missing " +
+			"credential, an expired session, \"not signed in\", or an empty config value that " +
+			"should have come from a vault - since most providers here resolve secrets " +
+			"through this one.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

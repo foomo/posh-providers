@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"strings"
 
 	"github.com/foomo/posh-providers/foomo/squadron"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
@@ -20,6 +21,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -275,8 +282,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // recursive query tree whose levels concatenate, that an unmatched name after a
 // valid one is silently dropped, that stern streams until interrupted, or that
 // `squadron` computes its own namespace.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names log-reading phrasings rather than the tool, since "why is this service
+// erroring" is how a request for a multi-pod tail actually arrives.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when reading Kubernetes pod logs in this project - tailing or " +
+			"following the logs of a deployment, a squadron unit or every pod matching a " +
+			"pattern, across containers and namespaces at once, or grepping logs for an error " +
+			"while debugging a failing or crash-looping workload. Also for this project's " +
+			"named, predefined log queries.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

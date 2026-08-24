@@ -3,6 +3,7 @@ package helm
 import (
 	"context"
 	_ "embed"
+	"strings"
 
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
@@ -18,6 +19,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l           log.Logger
@@ -313,8 +320,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // lists every subcommand without saying which mutate the cluster, that the
 // cluster argument is the only thing scoping them, or that this tree is a
 // hand-maintained mirror rather than a passthrough.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the release-level verbs, because the destructive ones are the reason
+// this file needs to be loaded before the command is run.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with Helm releases on a Kubernetes cluster in this " +
+			"project - installing, upgrading, rolling back or uninstalling a release, listing " +
+			"releases, checking release status or history, rendering or diffing chart " +
+			"templates, or linting and packaging a chart. Also for chart repositories and " +
+			"\"which chart version is deployed\".",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

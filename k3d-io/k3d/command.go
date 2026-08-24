@@ -23,6 +23,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l           log.Logger
@@ -173,10 +179,26 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // shared by every cluster and torn down with the last of them; that `up` silently
 // no-ops on an existing cluster rather than reconciling its config; that the
 // k3d cluster is named after the config's `alias` while its kubeconfig is
-// named after the argument; or that `install` runs `helm upgrade --force`,
-// which replaces rather than patches.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+// named after the argument; that `install` runs `helm upgrade --force`, which
+// replaces rather than patches; or that `install` and `uninstall`, unlike the
+// other verbs, never check their name against `clusters:`.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the local-cluster lifecycle a request would ask for, plus the registry,
+// since "my local cluster is gone" and "the image will not pull" are the
+// symptoms that should pull this file in.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with this project's local k3d/k3s clusters - creating or " +
+			"deleting one, stopping and restarting it, fetching its kubeconfig, or installing " +
+			"and removing one of the project's predefined helm charts into it. Also for the " +
+			"shared local container registry these clusters pull from, and for \"which local " +
+			"clusters exist\".",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

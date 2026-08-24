@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	gokaziconfig "github.com/foomo/gokazi/pkg/config"
@@ -26,6 +27,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -182,8 +189,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show is that omitting the name on `disconnect` stops every configured
 // forward, that both leave background processes in the shared gokazi registry, and
 // that --debug runs in the foreground and blocks.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the symptom - a local port to reach an in-cluster service - rather than
+// the tool, because that is how a request for a port forward is phrased.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when reaching a service inside a Kubernetes cluster from localhost - " +
+			"opening a tunnel to a cluster database, cache or admin UI, connecting a local " +
+			"tool or client to a remote port, listing which forwards this project defines, or " +
+			"stopping one that is holding a port. Also for \"port already in use\" and " +
+			"leftover kubectl port-forward processes.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

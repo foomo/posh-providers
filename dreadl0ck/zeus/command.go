@@ -21,6 +21,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type Command struct {
 	l     log.Logger
 	name  string
@@ -78,8 +84,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that the forwarded arguments are the real surface, that a
 // non-existent path bootstraps rather than errors, or that the path is the zeus
 // directory whose parent zeus is actually run in.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names zeus directories and build targets, since the tool is obscure enough
+// that an agent will only recognise it from the artefacts in the checkout.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when the checkout has zeus directories - running a zeus build target " +
+			"for a service or subproject, listing what targets exist, or bootstrapping a new " +
+			"zeus installation. Also when a build step is defined by zeus scripts rather than " +
+			"a Makefile or package.json.",
+	}
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {

@@ -27,6 +27,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type Command struct {
 	l                log.Logger
 	cache            cache.Namespace
@@ -367,8 +373,23 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // checkout. It also cannot show that anything after `--` replaces the build
 // tags instead of adding to them, or that implementing Lint(ctx, fix) enrols
 // this provider in `arbitrary/lint`'s project-wide sweep.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the everyday Go tasks rather than the toolchain, since this is the verb an
+// agent reaches for constantly and the build-tag and multi-module traps apply to
+// every one of them.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when building, testing or maintaining this project's Go modules - " +
+			"running tests, benchmarks or fuzzing, tidying or upgrading dependencies, running " +
+			"golangci-lint, running go generate, managing the go.work workspace, or clearing " +
+			"build and module caches. Also when a test compiles the wrong files because of build " +
+			"tags, or a command ran against every module instead of one.",
+	}
 }
 
 func (c *Command) Lint(ctx context.Context, fix bool) error {

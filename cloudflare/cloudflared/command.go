@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/foomo/posh/pkg/agent"
 	"github.com/foomo/posh/pkg/command"
@@ -21,6 +22,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -217,8 +224,23 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // the subcommands; what it cannot show is that the access processes are owned
 // by this shell, so the list is empty until something in this session starts
 // one.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the symptoms that should reach for it - an unreachable internal service,
+// a port that should be listening and is not - because that is how the need
+// presents, rather than as "I want to run cloudflared".
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when reaching a private service through a Cloudflare Zero Trust " +
+			"tunnel - opening or closing an Access connection so a local port forwards to an " +
+			"internal host, checking which tunnels are currently up, or diagnosing a " +
+			"connection refused on a port a tunnel should be binding. Also for creating, " +
+			"listing or deleting account-level Cloudflare tunnels and their DNS routes.",
+	}
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {

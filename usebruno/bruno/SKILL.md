@@ -20,26 +20,22 @@ under an agent.
 The environment and request names are not fixed. They are globbed off disk from
 the collection directory in this checkout - environments from
 `environments/*.bru`, requests from the `*.bru` files outside it - so they change
-with the branch and cannot be listed in this document. Run `bruno list` first;
+with the branch and cannot be listed in this document. Run `{{cmd}} list` first;
 what it prints is exactly what `run` accepts.
 
 #### Configuration
 
 The collection path comes from the `bruno` key of this project's posh config -
-read it to find where the `.bru` files live. `bruno` is only the default key,
-overridable via `CommandWithConfigKey`, so confirm the actual one against the
-project's own file.
+read it to find where the `.bru` files live.
 
 Field shapes: [`usebruno/bruno/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/usebruno/bruno/config.schema.json).
-That URL is also the schema's `$id`, so it is the `$defs` key the same
-schema is bundled under in the project's `posh.schema.json`.
 
 #### Examples
 
 ```bash
-posh execute bruno list
-posh execute bruno run local
-posh execute bruno run local auth/login.bru --bail
+posh execute {{cmd}} list
+posh execute {{cmd}} run local
+posh execute {{cmd}} run local auth/login.bru --bail
 ```
 
 #### References

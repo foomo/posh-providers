@@ -1,21 +1,21 @@
 #### Hazards
 
-**Omitting the path runs gotsrpc against every `gotsrpc.yml` in the project.**
-The argument is optional, and when absent the provider walks the working
-directory for every `gotsrpc.yml` and processes each in turn. So a bare
-`gotsrpc` is the "regenerate everything" case, not a help screen.
+**Omitting the path runs the generator against every `gotsrpc.yml` in the
+project.** The argument is optional, and when absent the provider walks the
+working directory and processes each config in turn. A bare invocation is the
+"regenerate everything" case, not a help screen.
 
 **This command writes generated source files.** Each `gotsrpc.yml` decides which
-Go and TypeScript files are produced and where, so running it overwrites
-whatever is at those paths - including hand-edits made to generated files. The
-command line says nothing about which files: read the `gotsrpc.yml` you are
-about to run. The loop stops at the first failure, so a multi-file run can leave
-some targets regenerated and others stale.
+Go and TypeScript files are produced and where, so a run overwrites whatever is
+at those paths - including hand-edits made to generated files. The command line
+says nothing about which files: read the `gotsrpc.yml` first. The loop stops at
+the first failure, so a multi-config run can leave some targets regenerated and
+others stale.
 
-**Failures are only visible when the command fails.** Output is captured rather
-than streamed, and surfaced only by wrapping it into the returned error. A run
-that succeeds prints nothing but the per-path `gotsrpc: <path>` line, so
-`--debug` output is invisible unless the run also errors.
+**Output is only visible when the command fails.** It is captured rather than
+streamed and surfaced solely by wrapping it into the returned error. A
+successful run prints nothing but one line per path, so `--debug` output is
+invisible unless the run also errors.
 
 #### Behaviour
 
@@ -24,41 +24,35 @@ after being rewritten: a leading `--` becomes a single `-`, because the upstream
 binary uses single-dash long flags. Only the prefix is rewritten, so a value
 containing `--` survives intact.
 
-Validation is stricter than the argument name suggests: the path must be an
-existing **file**, not a directory, and only one may be given. Both a missing
-file and a directory produce `invalid [path] parameter`; two paths produce
-`too many arguments`. Passing no path at all is valid and means "all".
+The path argument must be an existing **file**, not a directory, and only one
+may be given. Passing none is valid and means "all".
 
-The list of `gotsrpc.yml` files is discovered once and cached for the session,
-so a file added after the shell started is not offered in completion and is not
-included in a bare run until the cache is cleared.
+The config list is discovered once and cached for the session, so a file added
+after the shell started is neither offered in completion nor included in a bare
+run.
 
 #### Configuration
 
-**This provider has no config key of its own** - there is no `Config` type, no
-`config.schema.json` and no `config.base.json`, so there is nothing to set in
-the project's posh config and no entry for it in `posh.schema.json`. That is
-deliberate, not an oversight: everything it needs comes from the `gotsrpc.yml`
-files it discovers on disk.
+**This provider has no config key of its own** - no `Config` type, no
+`config.schema.json`, nothing to set in the project's posh config. Everything it
+needs comes from the `gotsrpc.yml` files it discovers on disk.
 
-Those files are the real configuration surface. Each one determines the packages
-scanned and the Go/TypeScript output paths, so reading the target
-`gotsrpc.yml` is the only way to know what a run will write.
+Those files are the real configuration surface: each determines the packages
+scanned and the Go/TypeScript output paths, so reading the target one is the
+only way to know what a run will write.
 
-The command takes no functional options - not even a rename - so it is always
-registered as `gotsrpc`.
+The command takes no functional options, not even a rename.
 
 #### Examples
 
-```bash
-# Regenerate from one config file
-posh execute gotsrpc path/to/gotsrpc.yml
+Pass the path of one `gotsrpc.yml` to scope the run to it, or omit the argument
+to regenerate from every one in the project.
 
-# No path: regenerates from EVERY gotsrpc.yml in the project
-posh execute gotsrpc
+```bash
+posh execute {{cmd}}
 ```
 
 #### References
 
-- [gotsrpc](https://github.com/foomo/gotsrpc) - the generator this wraps, and the `gotsrpc.yml` format
-- [Provider README](https://github.com/foomo/posh-providers/blob/main/foomo/gotsrpc/README.md) - plugin wiring; note its snippet omits the required cache argument
+- https://github.com/foomo/gotsrpc for the generator and the `gotsrpc.yml` format
+- `foomo/gotsrpc/README.md` for plugin wiring

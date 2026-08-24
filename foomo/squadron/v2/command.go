@@ -29,6 +29,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 const All = "all"
 
 type (
@@ -457,8 +463,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // Skill implements the optional command.Skiller interface. The catalog shows
 // three placeholders in a row and cannot show that each is resolved against
 // the one before it, nor that the mutating verbs are refused under an agent.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the deploy verbs and the helm-chart vocabulary rather than the tool,
+// because a request to deploy or roll back rarely names squadron at all.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when deploying to or inspecting a Kubernetes cluster in this " +
+			"project - installing, uninstalling or rolling back a release, diffing the " +
+			"installed chart against local, rendering chart templates, checking release " +
+			"status, or building and pushing the service images a deploy needs. Also for " +
+			"squadron.yaml files, squadrons, units and fleets.",
+	}
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {

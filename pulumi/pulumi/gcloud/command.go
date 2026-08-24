@@ -26,6 +26,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l           log.Logger
@@ -433,12 +439,29 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 	return c.commandTree.Describe(ctx)
 }
 
-// Skill implements the optional command.Skiller interface. the catalog shows four placeholders in a row and cannot show that each is
-// resolved against the one before it, that every stack verb resolves a
-// 1Password secret and injects it into live stack config before running, or
-// which verbs mutate infrastructure as opposed to only reading it.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+// Skill implements the optional command.Skiller interface. The catalog shows
+// four placeholders in a row and cannot show that each is resolved against the
+// one before it, that every stack verb resolves a 1Password secret and injects
+// it into live stack config before running, that `backend login` is a browser
+// flow writing credentials every other verb depends on, or which verbs mutate
+// infrastructure as opposed to only reading it.
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names Google Cloud explicitly because this provider shares both its command
+// name and its config key with the azure sibling, so the cloud is the only thing
+// that tells a request for one apart from a request for the other.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when changing this project's Google Cloud infrastructure with Pulumi - " +
+			"previewing or applying a stack update, destroying a stack, refreshing or editing " +
+			"its state, importing an existing resource, or reading stack outputs and history. " +
+			"Also when the pulumi state backend in a GCS bucket must be created or logged into, " +
+			"when application default credentials are missing, or a stuck update cancelled.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -1,101 +1,58 @@
 #### Hazards
 
-**Every verb here authenticates a human interactively.** `tsh login` opens a browser for GitHub SSO,
-and the other verbs inherit that session. An agent cannot complete any of them unattended: they either
-block waiting for a browser round-trip or fail with an expired session. Treat this provider as
-something a human runs before the agent starts working, not something the agent runs.
+**Every verb here authenticates a human interactively.** Login opens a browser for GitHub
+SSO and the other verbs inherit that session. An agent cannot complete any of them
+unattended: they block on a browser round-trip or fail with an expired session. Treat
+this as something a human runs before the agent starts.
 
-**Bare `teleport` is not a help screen — it logs in.** The root node carries `Execute` and runs the
-same `tsh login --proxy=<hostname> --auth=github` as `teleport auth`. Typing the command name alone to
-see what it offers starts an SSO flow instead.
+**A bare `{{cmd}}` is not a help screen — it logs in.** The root carries an `Execute`
+running the same login as `auth`, so typing the command name alone to see what it offers
+starts an SSO flow.
 
-**`kubeconfig` replaces the profile's kubeconfig.** `tsh kube login` merges into whatever is already at
-`KUBECONFIG`, so the provider moves the old file aside first to stop stale contexts accumulating, and
-puts it back if the login fails — an expired session or a network error leaves the previous working
-config intact rather than destroying it. The file is still rewritten on success, so anything hand-added
-to it is lost.
+**`kubeconfig` rewrites the profile's kubeconfig.** The upstream login merges into
+whatever is at `KUBECONFIG`, so the provider moves the old file aside first, restoring it
+if the login fails. It is still replaced on success, so anything hand-added is lost.
 
-**`--auth=github` is hardcoded.** The provider always requests the GitHub connector, so a project
-whose teleport cluster uses a different one cannot log in through this command regardless of config.
+**The GitHub connector is hardcoded**, so a cluster using a different one cannot log in
+here regardless of config.
 
-**An ambiguous cluster alias is rejected, not resolved.** Completion offers the alias and `kubeconfig`
-maps it back to the real cluster name. Two configurations cannot resolve unambiguously and now error
-instead of picking a cluster: two clusters sharing one alias, and an alias equal to some *other*
-cluster's real name (`kubernetes-dev: prod` alongside a real `prod`). The error names the conflicting
-clusters, so fixing it is a config edit.
+An ambiguous cluster alias is rejected rather than resolved: two clusters sharing an
+alias, or an alias equal to another cluster's real name, error and name the conflict.
+Fixing it is a config edit.
 
 #### Behaviour
 
-**Nothing is listed until you are authenticated.** `Clusters`, `Apps` and `Databases` all return `nil`
-when `tsh status` fails, so before login the arguments to `kubeconfig`, `app` and `database` complete
-to nothing at all — which looks identical to "this project has none configured". Run `teleport auth`
-first.
+**Nothing is listed until you are authenticated.** The cluster, app and database listings
+all return nil when the status check fails, so before login those arguments complete to
+nothing — indistinguishable from "this project has none".
 
-**Discovery is filtered by the configured labels, and the filter is silent.** All three listings pass
-`--query` built from `labels:` as a single `&&` expression, so anything not carrying every configured
-label is invisible to completion. An empty `labels:` produces an empty query and lists everything. If a
-cluster you know exists is not offered, check the labels before concluding it is gone.
+**Discovery is filtered by the configured labels, silently.** All three listings build a
+query from `labels` as one `&&` expression, so anything missing a configured label is
+invisible to completion; empty `labels` lists everything. If a cluster you know exists is
+not offered, check the labels before concluding it is gone.
 
-**The listings are cached for the session.** Clusters, apps and databases are memoised under fixed keys
-after the first successful call, so a resource added in teleport afterwards needs a `cache clear`. The
-authentication check has its own 12-hour memo: once `tsh status` succeeds, `IsAuthenticated` returns
-true from memory for 12 hours without re-checking, so a session revoked in the meantime still reads as
-authenticated in the prompt.
+Listings are memoised for the session, so a resource added upstream afterwards needs a
+`cache clear`. The auth check has its own **12-hour** memo, so a session revoked inside
+that window still reads as authenticated.
 
-**`database` takes its user from the environment first.** `--db-user` is `TELEPORT_DATABASE_USER` when
-that variable is set, falling back to `database.user` from config. Neither is shown in the usage block.
-
-**`app` prepends per-app arguments from config.** `apps:` maps an app name to extra arguments inserted
-before the name in `tsh apps login`, so what a given app does depends on config the tree cannot show.
-Apps absent from the map still work; they just get no extra arguments. Note the README omits this key
-entirely.
-
-**All four verbs forward flags to `tsh` verbatim.** `r.Flags()`, `AdditionalArgs()` and
-`AdditionalFlags()` are all passed on, so any `tsh` flag can be given directly — the tree declares only
-`--profile`, on `kubeconfig`, and that one is consumed by posh to pick which kubeconfig to write.
-
-**`TELEPORT_HOME` is set process-wide at construction.** `NewTeleport` exports it from `path:` when the
-provider is built, so every `tsh` invocation in the shell — including ones from other providers — uses
-that session directory rather than the user's own `~/.tsh`.
+`TELEPORT_HOME` is exported process-wide at construction from `path`, so every upstream
+invocation in the shell — including from other providers — uses that session directory
+rather than the user's own.
 
 #### Configuration
 
-Read from the `teleport` key by default. The override is `CommandWithConfigKey`, which despite the name
-is an option on **`NewTeleport`**, not on `NewCommand`; `NewCommand` takes `CommandWithName` to rename
-the command itself. The provider is built in two pieces — `NewTeleport(l, cache)` for the client and
-`NewCommand(l, cache, teleport, kubectl)` for the command — and it also supplies `AuthChecker`, which
-surfaces the login state in the posh prompt.
+Read from the `teleport` key. The provider also supplies an auth checker surfacing login
+state in the prompt. The README's config sample omits `apps`, which is a real key.
 
-The README's config sample omits `apps:`, which is a real key.
-
-- [config.schema.json](https://raw.githubusercontent.com/foomo/posh-providers/main/gravitational/teleport/config.schema.json)
+Field shapes: [`gravitational/teleport/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/gravitational/teleport/config.schema.json).
 
 #### Examples
 
 ```bash
-# log in - opens a browser for GitHub SSO
-posh execute teleport auth
-
-# the bare command does the same thing
-posh execute teleport
-
-# write a kubeconfig for a cluster, by alias
-posh execute teleport kubeconfig dev
-
-# ... into a named profile
-posh execute teleport kubeconfig dev --profile teleport
-
-# log in to a database, using database.user or TELEPORT_DATABASE_USER
-posh execute teleport database orders
-
-# log in to an app, with any configured per-app arguments prepended
-posh execute teleport app grafana
-
-# drop the session
-posh execute teleport logout
+posh execute {{cmd}} auth
+posh execute {{cmd}} kubeconfig dev --profile ci
 ```
 
 #### References
 
-- [tsh CLI reference](https://goteleport.com/docs/reference/cli/tsh/) — the binary every verb wraps
-- [provider README](README.md) — note its config sample omits the `apps` key
+- [`tsh` CLI reference](https://goteleport.com/docs/reference/cli/tsh/) — the binary every verb wraps

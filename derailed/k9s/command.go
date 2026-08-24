@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"strings"
 
 	"github.com/foomo/posh-providers/foomo/squadron"
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
@@ -19,6 +20,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -166,8 +173,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // `[squadron]` exist only when the project wired CommandWithSquadron; or how
 // the two combine into a namespace - including the case where `all` yields a
 // literal `<fleet>-all` rather than every namespace.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the interactive-dashboard phrasings a human asks for, since the first
+// thing the file has to say is that an agent must not run this at all.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when a human wants an interactive Kubernetes dashboard or TUI for a " +
+			"cluster in this project - browsing, editing, scaling or deleting live resources " +
+			"from the terminal, or \"open the cluster UI\" - and when explaining why such a " +
+			"dashboard cannot be driven unattended. Also for scoping one to a squadron " +
+			"fleet's namespace.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

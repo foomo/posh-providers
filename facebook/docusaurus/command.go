@@ -22,6 +22,12 @@ var dockerfile string
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l           log.Logger
@@ -113,8 +119,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // args, flags or subcommands, so the renderer would skip it entirely without this
 // prose - and what needs saying is that the bare verb blocks on a foreground
 // docker run needing a TTY, and overwrites the image tag named in the config.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the documentation-site symptoms that should pull this in, and the fact
+// that it serves rather than builds, because the blocking foreground run is the
+// thing an agent most needs warning about before it starts one.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when previewing or serving this project's documentation site locally - " +
+			"starting the docs dev server, viewing docs in a browser, or working on a Docusaurus " +
+			"site. Note it blocks in the foreground on a docker run needing a TTY and overwrites " +
+			"the image tag named in config, so it is not usable unattended.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

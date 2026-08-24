@@ -26,6 +26,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type Command struct {
 	l           log.Logger
 	etcd        *ETCD
@@ -145,8 +151,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // interactive editor, that the value is interpolated into a shell command inside
 // the pod and so corrupts anything containing quotes or backticks, or that both
 // verbs depend on an exact pod name that changes when the pod is rescheduled.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names reading and changing cluster configuration held in etcd, which is how the
+// need is phrased - the etcd pod behind it is an implementation detail.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when reading or changing a value stored in a cluster's etcd - " +
+			"inspecting a configuration key, or editing one in place through etcdctl inside " +
+			"the etcd pod. Also when configuration held in etcd rather than in a manifest " +
+			"needs to be checked or corrected for a specific cluster.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

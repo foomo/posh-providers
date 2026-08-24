@@ -27,6 +27,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l           log.Logger
@@ -259,8 +265,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // discovered from the filesystem, that each stack is a separate sequential
 // terragrunt run that aborts on the first failure, that omitting the verb
 // panics, or that `secrets` writes plaintext into the checkout.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the env/site/stack vocabulary this provider imposes, since that layout
+// is what tells a request for this command apart from one for plain terraform.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when changing this project's infrastructure with Terragrunt - planning, " +
+			"applying or destroying one or more stacks within a named environment and site, or " +
+			"reading a stack's outputs. Also when a stack's configuration needs its " +
+			"secrets.tpl.yaml templates rendered from 1Password first, or when infrastructure " +
+			"is laid out as envs/<env>/<site>/<stack>/terragrunt.hcl.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

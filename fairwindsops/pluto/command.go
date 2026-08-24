@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"sort"
+	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command"
@@ -17,6 +18,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -115,8 +122,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // show the three --ignore-* flags this provider appends unconditionally, which
 // are exactly what makes `detect` exit 0 on a finding, nor that the cluster
 // placeholder is resolved from kubeconfig files on disk.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the Kubernetes-upgrade question and the apiVersion symptom, which is how
+// this need is usually reported rather than by the tool's name.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when checking a Kubernetes cluster for deprecated or removed " +
+			"apiVersions before or after a version upgrade - finding manifests that will break, " +
+			"auditing which resources still use a removed API group, or diagnosing a " +
+			"\"no matches for kind\" error. Read-only.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

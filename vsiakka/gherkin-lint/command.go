@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"path"
+	"strings"
 
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh/pkg/cache"
@@ -19,6 +20,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l               log.Logger
@@ -114,8 +121,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that discovery keys on `wdio.conf.ts` rather than feature files,
 // that a non-zero exit means findings and aborts the remaining directories, or
 // that this command is also an `arbitrary/lint` linter run by that sweep.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names Gherkin and feature files rather than the binary, since an agent asked to
+// clean up test wording will not know this wraps gherkin-lint.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when checking Gherkin or Cucumber style in this project - linting " +
+			"`.feature` files, fixing reported step or scenario wording violations, or finding " +
+			"which WebdriverIO project directories get linted. Also when a project-wide lint " +
+			"sweep reports Gherkin findings and you need to know why it stopped early.",
+	}
 }
 
 func (c *Command) Lint(ctx context.Context, _ bool) error {

@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"path"
+	"strings"
 
 	"github.com/foomo/go/options"
 	"github.com/foomo/posh/pkg/cache"
@@ -19,6 +20,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type Command struct {
 	l           log.Logger
@@ -118,8 +125,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that `--fix` rewrites terraform files in place, that an omitted
 // path applies that to every module in the project, or that this command is
 // also an `arbitrary/lint` linter which `lint --fix` drives the same way.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the auto-fix request explicitly, since that is the one path here that
+// edits files and the one an agent most needs to recognise before running it.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when linting this project's terraform for errors, deprecated syntax or " +
+			"provider-specific issues - checking one module or sweeping every module in the " +
+			"repo, or auto-fixing findings by rewriting the .tf files in place. Also when " +
+			"terraform lint findings need interpreting, or a .tflint.hcl rule set is involved.",
+	}
 }
 
 func (c *Command) Lint(ctx context.Context, fix bool) error {

@@ -22,6 +22,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type Command struct {
 	l           log.Logger
 	cache       cache.Namespace
@@ -351,8 +357,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // whatever package.json defines, that `workspace` retargets a verb at another
 // package.json, or that several value-taking flags are declared here as bools
 // and only affect completion, since forwarding is verbatim.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the tasks and the runtime, since bun serves as package manager, test
+// runner and script runner and an agent may arrive from any of the three.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with this project's JavaScript or TypeScript code through " +
+			"bun - installing, adding, updating or removing dependencies, running a package.json " +
+			"script, running bun tests, executing a package binary with `bun x`, checking outdated " +
+			"dependencies, or doing any of those inside one workspace package.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

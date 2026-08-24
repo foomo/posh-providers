@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh-providers/onepassword"
@@ -22,6 +23,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -151,8 +158,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // three subcommands and cannot show that the root is a passthrough to the real
 // gcloud, nor that `login` reaches an interactive browser prompt unless a
 // service account key backs the account.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the tasks a request arrives as - authenticating, getting GKE
+// credentials, docker auth - plus the passthrough, since that is what makes any
+// other gcloud command relevant here.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with Google Cloud from this project - authenticating " +
+			"an account or service account, fetching GKE cluster credentials or a kubeconfig, " +
+			"configuring Docker to push to Artifact Registry or GCR, or running any other " +
+			"Google Cloud SDK command, which is reachable as a passthrough.",
+	}
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {

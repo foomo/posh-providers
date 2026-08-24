@@ -23,6 +23,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l           log.Logger
@@ -151,8 +157,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // omitting it takes the script as the directory; that `run-all` skips the root
 // package; that discovery ignores any directory whose name merely contains
 // "dist"; or that the subcommands drop flags typed before `--`.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names running a script across packages, because that is the form with both the
+// positional-argument trap and the concurrent fan-out worth loading the file for.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when managing this project's JavaScript or TypeScript dependencies with " +
+			"yarn - installing dependencies in the root or one package, running a package.json " +
+			"script in a chosen directory, running the same script across every nested package, " +
+			"or reaching an upstream verb like add, upgrade or publish through the passthrough.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

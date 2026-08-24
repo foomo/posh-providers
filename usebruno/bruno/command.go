@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh-providers/pkg/ptermx"
@@ -24,6 +25,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -168,8 +175,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // Skill implements the optional command.Skiller interface. The catalog carries
 // the structure; what it cannot show is that the environments and requests are
 // read off disk, which is what makes `list` the necessary first step.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names what a request would look like rather than what Bruno is: it is the only
+// thing an agent runtime matches against when deciding whether to load the file.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when calling this project's HTTP API collections - running a saved " +
+			"request or a whole collection against a named environment, listing which requests " +
+			"and environments exist, or rendering the collection's .env from 1Password before " +
+			"a run. Also for Bruno .bru files and the Bruno desktop app.",
+	}
 }
 
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/cache"
@@ -20,6 +21,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -166,8 +173,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // if the login fails; that nothing completes until authenticated, and then only
 // what the configured labels match; or that an ambiguous cluster alias is
 // rejected rather than resolved.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the access symptoms - no kubeconfig, expired certificate - because an
+// agent reaches for this when something else it wanted to use is unreachable.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when getting access to a cluster, database or app that sits behind " +
+			"Teleport - logging in via SSO, writing a kubeconfig for a remote cluster, " +
+			"obtaining database or app credentials, or logging out. Also when kubectl reports " +
+			"no context or an expired certificate, or a tsh session needs renewing.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

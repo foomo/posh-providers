@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/foomo/posh-providers/arbitrary/zip"
@@ -19,6 +20,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 // ErrZipRequired is returned instead of dereferencing a nil *zip.Zip: the
 // provider accepts CommandWithZip as an option, so a project can reach the
@@ -216,8 +223,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that the connection target falls back to the environment, that
 // `restore --clean` drops objects first, that the dump filename is generated
 // rather than chosen, or that compression needs CommandWithZip to have been wired.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the database tasks and the psql/pg_dump/pg_restore binaries, since a
+// request arrives as "back up the database" or as the name of the tool.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when working with a Postgres database from this shell - taking a " +
+			"backup or dump, restoring one, running a SQL query or a .sql script, or opening " +
+			"an interactive psql session. Also for pg_dump, pg_restore and psql themselves, " +
+			"or when a dump needs compressing or password-protecting.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -24,6 +24,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l           log.Logger
@@ -182,8 +188,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // cannot show that unlisted pnpm subcommands still work, that `run` executes
 // whatever package.json defines, that `workspace` retargets a verb at another
 // package.json, or that nothing after a `--` separator is forwarded.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the package-management tasks rather than the tool, since the passthrough
+// means any pnpm verb is reachable and the workspace retargeting is the trap.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when managing this project's JavaScript or TypeScript dependencies with " +
+			"pnpm - installing or adding packages, running a package.json script, auditing for " +
+			"vulnerabilities, listing installed versions, or running any of those inside one " +
+			"workspace package rather than the project root.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

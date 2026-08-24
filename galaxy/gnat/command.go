@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"strings"
 
 	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
@@ -16,6 +17,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -124,8 +131,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // the profile silently selects which NATS server is mutable from inside it, or
 // that `configDir` scopes gnat's own config files to the project rather than the
 // user's home directory.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names NATS and JetStream concepts rather than the tool, since a caller asks
+// about streams and consumers without knowing which client is wired up.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when inspecting or administering a NATS JetStream server - browsing " +
+			"streams, consumers, subjects or messages, purging a stream, or checking what a " +
+			"configured NATS profile points at. Note the tool is an interactive terminal UI, so " +
+			"it cannot be driven unattended.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

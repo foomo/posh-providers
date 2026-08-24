@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/foomo/posh/pkg/cache"
 	"github.com/foomo/posh/pkg/command"
@@ -22,6 +23,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -169,8 +176,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // name is forwarded to hygen as an argument, that validation stats that literal
 // word rather than the named template, or that HYGEN_TMPLS is the parent of the
 // configured template path.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// leads with scaffolding a new component from a template, since that is the
+// request an agent will actually receive - the word "hygen" rarely appears in it.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when scaffolding new files from one of this project's own code " +
+			"templates - generating a component, service, package or module skeleton, asking " +
+			"which scaffolds exist, or previewing what a template would write before it " +
+			"writes it. Also for hygen templates and the HYGEN_TMPLS directory.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

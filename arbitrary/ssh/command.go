@@ -3,6 +3,7 @@ package ssh
 import (
 	"context"
 	_ "embed"
+	"strings"
 
 	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
@@ -15,6 +16,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -174,8 +181,22 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // that an omitted name makes start/stop act on every configured entry, that
 // `pfw start` blocks on an interactive auth prompt where `socks5 start` does
 // not, or that `port: 0` auto-assigns a free port reported only in the log.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the symptom - a local port that should reach a remote service - because
+// that is how the need presents, rather than as a request for an ssh tunnel.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when reaching a remote service through an SSH bastion - starting or " +
+			"stopping a configured local port forward (ssh -L) or SOCKS5 proxy (ssh -D), or " +
+			"listing which are configured. Also when a local port that should tunnel to a " +
+			"remote database or host refuses connections, or a tunnel is still running and " +
+			"needs tearing down.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

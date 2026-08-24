@@ -22,6 +22,12 @@ import (
 //go:embed SKILL.md
 var skill string
 
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
+
 type (
 	Command struct {
 		l           log.Logger
@@ -135,8 +141,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // that the env silently scopes which Grafana server destructive verbs hit, that
 // every call resolves a live credential via 1Password or an executed tokenCmd,
 // or that flags after a `--` separator are dropped.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names Grafana resources rather than the gcx binary, since a request arrives as
+// "export the dashboards", not as the name of the CLI that does it.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when managing a Grafana server's contents from the CLI - listing, " +
+			"exporting, importing, migrating or deleting dashboards, datasources, folders or " +
+			"alert rules - against one of this project's configured Grafana environments. " +
+			"Also for gcx itself, or when a Grafana call fails on a missing token.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

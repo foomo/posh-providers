@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"strconv"
+	"strings"
 
 	"github.com/foomo/posh-providers/onepassword"
 	"github.com/foomo/posh/pkg/command"
@@ -19,6 +20,12 @@ import (
 
 //go:embed SKILL.md
 var skill string
+
+// skillName is the placeholder the embedded SKILL.md uses wherever the command's
+// own name appears. Skill substitutes the name the command is registered under,
+// which is not necessarily the default: a fragment hardcoding the default tells
+// an agent to run a command the project may not have.
+const skillName = "{{cmd}}"
 
 type (
 	Command struct {
@@ -190,8 +197,21 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 // and unconfirmed, that the database they hit is picked by the first argument,
 // or that the two placeholders resolve against config keys rather than the
 // database itself.
-func (c *Command) Skill(ctx context.Context) string {
-	return skill
+func (c *Command) Skill(ctx context.Context, name string) string {
+	return strings.ReplaceAll(skill, skillName, name)
+}
+
+// SkillMetadata implements the optional command.SkillMetadataer interface,
+// supplying the frontmatter of this command's generated skill. The description
+// names the symptoms - a dirty version, a schema behind the migration files -
+// because that is how a migration problem is usually reported.
+func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillMetadata {
+	return command.SkillMetadata{
+		Description: "Use when changing or inspecting a database schema through migrations - " +
+			"applying pending migrations, checking the current migration version, rolling back, " +
+			"jumping to a specific version, recovering a database stuck in a dirty state, or " +
+			"dropping a database. Also when a golang-migrate migration errors.",
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
