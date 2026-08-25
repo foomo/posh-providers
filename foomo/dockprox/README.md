@@ -1,6 +1,6 @@
 # POSH dockprox provider
 
-Adds a `dockprox` command to manage dockprox processes (start, stop, menubar).
+Adds a `dockprox` command to manage dockprox processes (start, stop).
 
 ## Plugin
 

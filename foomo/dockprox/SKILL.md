@@ -1,14 +1,10 @@
 #### Hazards
 
-All three verbs manage a **long-lived background `dockprox` process** through
+Both verbs manage a **long-lived background `dockprox` process** through
 gokazi, not the current shell. `start` returns as soon as the process is up and
 the proxy keeps running afterwards, holding whatever ports its config binds. Use
 the `gokazi` command, or this provider's prompt checker, to see whether it is
 running.
-
-`menubar` starts a **desktop menubar application**, not a headless proxy. It
-needs a graphical session, so it is not usable under an agent. `stop` does stop
-it.
 
 What the proxy does is invisible from here. `start` passes the configured file
 to the `dockprox` binary's `serve` verb, and that file decides which ports are
@@ -28,13 +24,11 @@ There are no arguments, flags or names in this tree - the whole invocation comes
 from one config key, and unmatched arguments are not forwarded. Whatever you
 type after the verb is ignored, so no upstream flag is reachable from here.
 
-`start` and `menubar` register separate gokazi ids, because gokazi identifies a
-process by its arguments and the two run different command lines. `stop` tries
-both, so it stops whichever is running; each verb refuses to start when its own
-process is already up. This command manages one proxy.
+`start` refuses to start when the proxy is already up; `stop` on a proxy that is
+not running is a no-op, not an error. This command manages one proxy.
 
-`Checker()` builds its **own** registry instance with a looser match that
-reports either process as running.
+`Checker()` builds its **own** registry instance with a looser match on the
+`dockprox` process name.
 
 #### Configuration
 

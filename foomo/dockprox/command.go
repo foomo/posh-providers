@@ -26,12 +26,8 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
-// Task ids registered with gokazi. They are distinct because the two verbs run
-// different command lines and gokazi identifies a process by its args.
-const (
-	taskServe   = "dockprox.serve"
-	taskMenubar = "dockprox.menubar"
-)
+// taskServe is the gokazi task id for the proxy process.
+const taskServe = "dockprox.serve"
 
 type (
 	Command struct {
@@ -83,21 +79,10 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 		return nil, err
 	}
 
-	// One task per verb: gokazi matches a running process by requiring every
-	// registered arg to appear in its command line, and `menubar` runs a bare
-	// `dockprox menubar` with no config path. Registering a single task with the
-	// config arg meant a menubar process was never found - so `stop` reported
-	// nothing running and the already-running guard let `start` launch a second
-	// dockprox on the same ports.
 	inst.gk.Add(taskServe, gokaziconfig.Task{
 		Name:        "dockprox",
 		Description: inst.cfg.Config,
 		Args:        []string{inst.cfg.Config},
-	})
-	inst.gk.Add(taskMenubar, gokaziconfig.Task{
-		Name:        "dockprox",
-		Description: "menubar",
-		Args:        []string{"menubar"},
 	})
 
 	inst.commandTree = tree.New(&tree.Node{
@@ -111,13 +96,8 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 			},
 			{
 				Name:        "stop",
-				Description: "Stop the running dockprox process, whether started by start or menubar",
+				Description: "Stop the running dockprox process",
 				Execute:     inst.stop,
-			},
-			{
-				Name:        "menubar",
-				Description: "Start the dockprox menubar app; needs a desktop session",
-				Execute:     inst.menubar,
 			},
 		},
 	})
@@ -156,9 +136,9 @@ func (c *Command) Describe(ctx context.Context) command.CommandInfo {
 }
 
 // Skill implements the optional command.Skiller interface. The rendered tree
-// cannot show that this manages a background process outliving the command, that
-// `menubar` needs a graphical session, or that what the proxy binds lives in the
-// config file rather than anywhere in the tree.
+// cannot show that this manages a background process outliving the command, or
+// that what the proxy binds lives in the config file rather than anywhere in the
+// tree.
 func (c *Command) Skill(ctx context.Context, name string) string {
 	return strings.ReplaceAll(skill, skillName, name)
 }
@@ -171,8 +151,7 @@ func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillM
 	return command.SkillMetadata{
 		Description: "Use when this project's local Docker reverse proxy needs starting or " +
 			"stopping, or when a container hostname or proxied local port is not " +
-			"resolving, refusing connections, or reporting an address already in use. " +
-			"Also for the dockprox menubar app.",
+			"resolving, refusing connections, or reporting an address already in use.",
 	}
 }
 
@@ -186,33 +165,18 @@ func (c *Command) start(ctx context.Context, r *readline.Readline) error {
 	return c.gk.Start(ctx, taskServe, exec.CommandContext(ctx, "dockprox", "serve", "--config", c.cfg.Config))
 }
 
-func (c *Command) menubar(ctx context.Context, r *readline.Readline) error {
-	c.l.Info("starting dockprox menubar")
-
-	return c.gk.Start(ctx, taskMenubar, exec.CommandContext(ctx, "dockprox", "menubar"))
-}
-
-// stop stops whichever dockprox is running: `start` and `menubar` register
-// different tasks, so both have to be tried. Both ids are always registered, so
-// the one that is not running reports ErrNotRunning - expected here, not a
-// failure. Only a genuine error aborts.
+// stop stops the proxy. The task is always registered, so a proxy that is not
+// running reports ErrNotRunning - expected here, not a failure. Only a genuine
+// error aborts.
 func (c *Command) stop(ctx context.Context, r *readline.Readline) error {
-	var stopped bool
+	if err := c.gk.Stop(ctx, taskServe); err != nil {
+		if errors.Is(err, gokazi.ErrNotRunning) {
+			c.l.Info("no dockprox process running")
 
-	for _, id := range []string{taskServe, taskMenubar} {
-		if err := c.gk.Stop(ctx, id); err != nil {
-			if errors.Is(err, gokazi.ErrNotRunning) {
-				continue
-			}
-
-			return err
+			return nil
 		}
 
-		stopped = true
-	}
-
-	if !stopped {
-		c.l.Info("no dockprox process running")
+		return err
 	}
 
 	return nil
