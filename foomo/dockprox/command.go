@@ -27,7 +27,10 @@ var skill string
 const skillName = "{{cmd}}"
 
 // taskServe is the gokazi task id for the proxy process.
-const taskServe = "dockprox.serve"
+const (
+	taskServe   = "dockprox.serve"
+	taskMenubar = "dockprox.menubar"
+)
 
 type (
 	Command struct {
@@ -83,6 +86,11 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 		Name:        "dockprox",
 		Description: inst.cfg.Config,
 		Args:        []string{inst.cfg.Config},
+	})
+	inst.gk.Add(taskMenubar, gokaziconfig.Task{
+		Name:        "dockprox-menubar",
+		Description: "dockprox menubar",
+		Args:        []string{},
 	})
 
 	inst.commandTree = tree.New(&tree.Node{
