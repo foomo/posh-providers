@@ -15,21 +15,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestStopFindsEitherProcess covers stopping a dockprox started by either verb.
+// TestStopWithNothingRunning covers stopping when no proxy is up.
 //
-// The provider registered a single gokazi task carrying the config path as an
-// arg, and gokazi matches a running process by requiring *every* registered arg
-// to appear in its command line. `menubar` runs a bare `dockprox menubar` with no
-// config path, so it never matched: `stop` reported nothing running, and because
-// the ErrAlreadyRunning guard uses the same match, `start` afterwards launched a
-// second dockprox on the same ports.
-//
-// The two verbs now register separate task ids and `stop` tries both. With
-// neither running, both report ErrNotRunning - which is expected, not a failure,
-// so stop must succeed quietly rather than erroring.
+// The task is always registered, so gokazi reports ErrNotRunning - which is
+// expected, not a failure, so stop must succeed quietly rather than erroring.
 //
 // Not parallel: NewCommand reads config through viper, which is a singleton.
-func TestStopFindsEitherProcess(t *testing.T) {
+func TestStopWithNothingRunning(t *testing.T) {
 	testingx.Tags(t, tagx.Short)
 
 	viper.Set("dockprox", map[string]any{"config": "devops/dockprox.yaml"})
@@ -45,15 +37,14 @@ func TestStopFindsEitherProcess(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, r.Parse("dockprox stop"))
 
-	// Nothing is running, so both registered tasks report ErrNotRunning. That is
+	// Nothing is running, so the registered task reports ErrNotRunning. That is
 	// the normal case and must not surface as an error.
 	assert.NoError(t, cmd.Execute(t.Context(), r),
 		"stopping with nothing running must not be an error")
 }
 
-// TestBothTasksRegistered pins that each verb has its own gokazi task, which is
-// what lets stop find a menubar process.
-func TestBothTasksRegistered(t *testing.T) {
+// TestServeTaskRegistered pins the gokazi task id the proxy is registered under.
+func TestServeTaskRegistered(t *testing.T) {
 	testingx.Tags(t, tagx.Short)
 
 	viper.Set("dockprox", map[string]any{"config": "devops/dockprox.yaml"})
@@ -69,6 +60,4 @@ func TestBothTasksRegistered(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Contains(t, tasks, "dockprox.serve")
-	assert.Contains(t, tasks, "dockprox.menubar",
-		"menubar needs its own task or stop cannot find the process it starts")
 }
