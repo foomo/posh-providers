@@ -28,6 +28,9 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh `az` command, wrapping the Azure CLI for login,
+	// kubeconfig retrieval, artifactory login, key vault management and raw
+	// passthrough.
 	Command struct {
 		l             log.Logger
 		name          string
@@ -37,7 +40,10 @@ type (
 		middlewares   []pkgexec.Middleware
 		clusterNameFn ClusterNameFn
 	}
+	// ClusterNameFn maps a configured Cluster name to the name used to look it
+	// up in kubectl.
 	ClusterNameFn func(name string, cluster Cluster) string
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -45,18 +51,23 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "az".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithMiddlewares appends middlewares applied to every az invocation.
 func CommandWithMiddlewares(v ...pkgexec.Middleware) CommandOption {
 	return func(o *Command) {
 		o.middlewares = append(o.middlewares, v...)
 	}
 }
 
+// CommandWithClusterNameFn sets the function mapping a configured cluster
+// name to its kubectl cluster name, overriding the default identity mapping.
 func CommandWithClusterNameFn(v ClusterNameFn) CommandOption {
 	return func(o *Command) {
 		o.clusterNameFn = v
@@ -67,6 +78,7 @@ func CommandWithClusterNameFn(v ClusterNameFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the az command around the given AZ and kubectl.Kubectl.
 func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:       l.Named("az"),
@@ -371,22 +383,27 @@ func NewCommand(l log.Logger, az *AZ, kubectl *kubectl.Kubectl, opts ...CommandO
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description shown for the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the az subcommand selected by the current readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the command tree.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

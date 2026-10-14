@@ -1,5 +1,7 @@
 package beam
 
+// Database describes a remote database reachable through a cloudflared
+// tunnel.
 type Database struct {
 	// Local port the tunnel binds on 127.0.0.1
 	Port int `json:"port" yaml:"port"`

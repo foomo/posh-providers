@@ -1,5 +1,6 @@
 package squadron
 
+// Cluster describes one Kubernetes cluster squadron can deploy to.
 type Cluster struct {
 	// Cluser name
 	Name string `json:"name" yaml:"name"`

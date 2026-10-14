@@ -28,6 +28,9 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command implements command.Command, opening the k9s dashboard against a
+	// configured cluster and, when wired with a squadron, scoping it to a fleet's
+	// namespace.
 	Command struct {
 		l                   log.Logger
 		kubectl             *kubectl.Kubectl
@@ -35,7 +38,10 @@ type (
 		commandTree         tree.Root
 		squadronNamespaceFn NamespaceFn
 	}
-	NamespaceFn   func(cluster, fleet, squadron string) string
+	// NamespaceFn resolves the cluster, fleet and squadron arguments into the
+	// namespace k9s is scoped to; an empty result covers every namespace.
+	NamespaceFn func(cluster, fleet, squadron string) string
+	// CommandOption configures a Command built by NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -43,12 +49,16 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithSquadron wires a squadron.Squadron into the Command, enabling the
+// optional `[fleet]` and `[squadron]` arguments.
 func CommandWithSquadron(v squadron.Squadron) CommandOption {
 	return func(o *Command) {
 		o.squadron = v
 	}
 }
 
+// CommandWithSquadronNamespaceFn overrides how the cluster, fleet and squadron
+// arguments are combined into the namespace passed to k9s.
 func CommandWithSquadronNamespaceFn(v NamespaceFn) CommandOption {
 	return func(o *Command) {
 		o.squadronNamespaceFn = v
@@ -59,6 +69,8 @@ func CommandWithSquadronNamespaceFn(v NamespaceFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the k9s Command tree for the given kubectl provider,
+// applying any CommandOption in order.
 func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:       l.Named("k9s"),
@@ -130,14 +142,18 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the command's registered name.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Validate reports an error if the [cluster] argument is missing or does not
+// match a configured kubectl cluster for the given flags.
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
@@ -149,14 +165,17 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the command tree against the parsed arguments and flags.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's usage text.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

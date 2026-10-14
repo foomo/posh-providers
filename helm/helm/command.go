@@ -26,6 +26,7 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command is the posh command that runs helm against a cluster.
 type Command struct {
 	l           log.Logger
 	name        string
@@ -38,12 +39,16 @@ type Command struct {
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the name the command is registered and invoked
+// under; the default is "helm".
 func CommandWithName(v string) options.Option[*Command] {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithExecHelm overrides how the helm executable is invoked; the
+// default runs the "helm" binary on PATH.
 func CommandWithExecHelm(v exec.CommandProvider) options.Option[*Command] {
 	return func(o *Command) {
 		o.execHelm = v
@@ -54,6 +59,8 @@ func CommandWithExecHelm(v exec.CommandProvider) options.Option[*Command] {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the helm command, mirroring the helm CLI's subcommands
+// scoped to a cluster resolved via kubectl.
 func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:       l.Named("helm"),
@@ -277,18 +284,23 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...options.Option[*
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Validate reports an error if the cluster argument is missing or invalid, or
+// if the helm subcommand argument is missing.
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
@@ -302,10 +314,13 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Execute runs the helm subcommand selected by the readline input against the
+// chosen cluster.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

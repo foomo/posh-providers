@@ -32,6 +32,8 @@ type Package struct {
 	Workspaces       Workspaces        `json:"workspaces"`
 }
 
+// LoadPackageJSON reads filename and unmarshals it into a Package. It returns
+// an error if the file cannot be read or does not contain valid JSON.
 func LoadPackageJSON(filename string) (*Package, error) {
 	w := &Package{}
 

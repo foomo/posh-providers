@@ -5,6 +5,7 @@ import (
 )
 
 type (
+	// Config holds the modes, sites and secrets the wdio command runs against.
 	Config struct {
 		// Unused. Test directories are discovered by walking for wdio.conf.ts,
 		// never read from here.
@@ -22,16 +23,23 @@ type (
 		// mode is used without --ci; the command panics if it is unset.
 		BrowserStack *onepassword.Secret `json:"browserStack" yaml:"browserStack"`
 	}
+	// ConfigModes maps a run mode name to its settings.
 	ConfigModes map[string]ConfigMode
-	ConfigMode  struct {
+	// ConfigMode holds the host prefix and port a run mode applies to a site's
+	// domain.
+	ConfigMode struct {
 		// Port appended to the site domain, e.g. "8443". Omit for the default port.
 		Port string `json:"port" yaml:"port"`
 		// Subdomain prepended to the site domain, e.g. "local". Omit for none.
 		HostPrefix string `json:"hostPrefix" yaml:"hostPrefix"`
 	}
+	// ConfigSites maps a site name to its configured environments.
 	ConfigSites map[string]ConfigEnvs
-	ConfigEnvs  map[string]ConfigEnv
-	ConfigEnv   struct {
+	// ConfigEnvs maps an environment name to its settings.
+	ConfigEnvs map[string]ConfigEnv
+	// ConfigEnv holds the domain and optional basic auth secret for one site
+	// environment.
+	ConfigEnv struct {
 		// 1Password item holding basic auth credentials for this environment,
 		// read from its "username" and "password" fields. Omit for no basic auth.
 		Auth *onepassword.Secret `json:"auth" yaml:"auth"`
@@ -41,6 +49,7 @@ type (
 	}
 )
 
+// Keys returns the configured site names.
 func (c ConfigSites) Keys() []string {
 	ret := make([]string, 0, len(c))
 	for s := range c {
@@ -50,6 +59,7 @@ func (c ConfigSites) Keys() []string {
 	return ret
 }
 
+// Keys returns the configured environment names.
 func (c ConfigEnvs) Keys() []string {
 	ret := make([]string, 0, len(c))
 	for s := range c {
@@ -59,6 +69,7 @@ func (c ConfigEnvs) Keys() []string {
 	return ret
 }
 
+// Keys returns the configured mode names.
 func (c ConfigModes) Keys() []string {
 	ret := make([]string, 0, len(c))
 	for s := range c {

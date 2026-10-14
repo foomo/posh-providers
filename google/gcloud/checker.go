@@ -7,6 +7,8 @@ import (
 	"github.com/foomo/posh/pkg/prompt/check"
 )
 
+// AuthChecker returns a check.Checker that reports the active gcloud
+// account, for display in the posh prompt.
 func AuthChecker(p *GCloud) check.Checker {
 	return func(ctx context.Context, l log.Logger) []check.Info {
 		name := "GCloud"

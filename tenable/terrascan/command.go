@@ -34,6 +34,9 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command runs terrascan scans against Helm charts, terraform modules and
+// Dockerfiles, both as a standalone posh command and as an arbitrary/lint
+// linter.
 type Command struct {
 	l             log.Logger
 	name          string
@@ -46,12 +49,16 @@ type Command struct {
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "terrascan".
 func CommandWithName(v string) options.Option[*Command] {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithExecTerrascan overrides how the terrascan binary is invoked,
+// replacing the default which runs "terrascan" on the PATH.
 func CommandWithExecTerrascan(v exec.CommandProvider) options.Option[*Command] {
 	return func(o *Command) {
 		o.execTerrascan = v
@@ -62,6 +69,8 @@ func CommandWithExecTerrascan(v exec.CommandProvider) options.Option[*Command] {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the terrascan command with its helm, terraform and docker
+// subcommands, applying opts after the defaults.
 func NewCommand(l log.Logger, c cache.Cache, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:     l.Named("terrascan"),
@@ -118,22 +127,27 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...options.Option[*Command]) *
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand matching the parsed readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
@@ -167,6 +181,9 @@ func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillM
 	}
 }
 
+// Lint runs terrascan across every helm, terraform and docker directory it
+// discovers, satisfying the arbitrary/lint Linter interface. It stops at the
+// first scan that reports findings.
 func (c *Command) Lint(ctx context.Context, _ bool) error {
 	for _, mode := range []string{modeHelm, modeTerraform, modeDocker} {
 		if err := c.scan(ctx, mode, nil); err != nil {

@@ -6,6 +6,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Config is the chrome provider configuration: the profile data directory,
+// an optional browser binary override, a default incognito setting, and the
+// named profiles.
 type Config struct {
 	// Directory for browser profile dirs (e.g. .posh/browser); created on startup
 	Path string `json:"path" yaml:"path"`
@@ -17,6 +20,7 @@ type Config struct {
 	Profiles map[string]Profile `json:"profiles" yaml:"profiles"`
 }
 
+// ProfileNames returns the configured profile names, sorted alphabetically.
 func (c Config) ProfileNames() []string {
 	names := make([]string, 0, len(c.Profiles))
 	for name := range c.Profiles {
@@ -28,6 +32,8 @@ func (c Config) ProfileNames() []string {
 	return names
 }
 
+// Profile returns the profile registered under name, or an error if none is
+// configured for that name.
 func (c Config) Profile(name string) (Profile, error) {
 	env, ok := c.Profiles[name]
 	if !ok {

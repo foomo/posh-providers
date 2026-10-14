@@ -33,6 +33,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command lists, runs and opens Bruno HTTP collections, and renders a
+	// collection's secrets env file from 1Password.
 	Command struct {
 		l           log.Logger
 		op          *onepassword.OnePassword
@@ -42,6 +44,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -49,24 +52,32 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "bruno".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithAppName sets the name of the Bruno desktop app to open,
+// overriding the default "Bruno".
 func CommandWithAppName(v string) CommandOption {
 	return func(o *Command) {
 		o.appName = v
 	}
 }
 
+// CommandWithConfigKey sets the viper key the command reads its Config from,
+// overriding the default "bruno".
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
 	}
 }
 
+// CommandWithOnePassword sets the 1Password client used to resolve secrets
+// for the env subcommand. It must be set for env to work.
 func CommandWithOnePassword(v *onepassword.OnePassword) CommandOption {
 	return func(o *Command) {
 		o.op = v
@@ -77,6 +88,9 @@ func CommandWithOnePassword(v *onepassword.OnePassword) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the bruno command with its list, env, run and open
+// subcommands, applying opts after the defaults. It returns an error if the
+// configured viper key cannot be unmarshalled into Config.
 func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("bruno"),
@@ -158,10 +172,12 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
@@ -192,14 +208,17 @@ func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillM
 	}
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand matching the parsed readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

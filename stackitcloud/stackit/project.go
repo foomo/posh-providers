@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 )
 
+// Project identifies a STACKIT project and its configured SKE clusters.
 type Project struct {
 	// STACKIT project UUID, passed to the CLI as `--project-id`.
 	ID string `json:"id" yaml:"id"`
@@ -19,6 +20,8 @@ type Project struct {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Cluster looks up the configured cluster keyed as name. It returns an error
+// if name is not configured.
 func (c Project) Cluster(name string) (Cluster, error) {
 	value, ok := c.Clusters[name]
 	if !ok {
@@ -28,6 +31,7 @@ func (c Project) Cluster(name string) (Cluster, error) {
 	return value, nil
 }
 
+// ClusterNames returns the project's cluster keys, sorted alphabetically.
 func (c Project) ClusterNames() []string {
 	ret := lo.Keys(c.Clusters)
 	sort.Strings(ret)

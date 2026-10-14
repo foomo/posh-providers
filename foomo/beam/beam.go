@@ -11,6 +11,8 @@ import (
 )
 
 type (
+	// Beam holds the clusters and databases configured for Cloudflare Access
+	// tunnels and the gokazi tasks registered to open them.
 	Beam struct {
 		l         log.Logger
 		cfg       Config
@@ -18,6 +20,7 @@ type (
 		op        *onepassword.OnePassword
 		configKey string
 	}
+	// Option configures a Beam during construction with New.
 	Option func(*Beam) error
 )
 
@@ -25,6 +28,7 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// WithConfigKey overrides the viper key the Beam reads its Config from.
 func WithConfigKey(v string) Option {
 	return func(o *Beam) error {
 		o.configKey = v
@@ -88,6 +92,7 @@ func New(l log.Logger, op *onepassword.OnePassword, gk *gokazi.Gokazi, opts ...O
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Config returns the loaded Config.
 func (t *Beam) Config() Config {
 	return t.cfg
 }

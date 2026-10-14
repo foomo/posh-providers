@@ -1,5 +1,7 @@
 package chrome
 
+// Profile is a named Chrome browser environment: its default URL, launch
+// mode, proxy and incognito setting.
 type Profile struct {
 	// App indicates whether the application mode is enabled for the profile.
 	App bool `json:"app" yaml:"app"`

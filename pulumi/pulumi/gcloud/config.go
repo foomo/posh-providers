@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Config holds the pulumi provider's configuration.
 type Config struct {
 	// Path to the directory holding one sub directory per environment, each
 	// containing one sub directory per pulumi project. Environment and project
@@ -20,6 +21,8 @@ type Config struct {
 	Backends map[string]Backend `json:"backends" yaml:"backends"`
 }
 
+// Backend returns the Backend configured under name, or an error if no such
+// backend exists.
 func (p Config) Backend(name string) (Backend, error) {
 	value, ok := p.Backends[name]
 	if !ok {

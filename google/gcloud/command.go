@@ -31,6 +31,9 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command that wraps the gcloud CLI: account login,
+	// Docker auth configuration, GKE credential retrieval, and a passthrough
+	// to arbitrary gcloud subcommands.
 	Command struct {
 		l             log.Logger
 		name          string
@@ -40,7 +43,10 @@ type (
 		commandTree   tree.Root
 		clusterNameFn ClusterNameFn
 	}
+	// ClusterNameFn derives the kubectl cluster name to use for a configured
+	// gcloud cluster name and its Cluster config.
 	ClusterNameFn func(name string, cluster Cluster) string
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(command *Command)
 )
 
@@ -48,18 +54,24 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "gcloud".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithOnePassword sets the 1Password client used to retrieve service
+// account keys referenced by a configured Account.
 func CommandWithOnePassword(v *onepassword.OnePassword) CommandOption {
 	return func(o *Command) {
 		o.op = v
 	}
 }
 
+// CommandWithClusterNameFn overrides how a configured gcloud cluster name
+// maps to a kubectl cluster name; the default uses the name unchanged.
 func CommandWithClusterNameFn(v ClusterNameFn) CommandOption {
 	return func(o *Command) {
 		o.clusterNameFn = v
@@ -70,6 +82,8 @@ func CommandWithClusterNameFn(v ClusterNameFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand creates a Command backed by gcloud and kubectl, registered as
+// "gcloud" unless overridden by CommandWithName.
 func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:       l.Named("gcloud"),
@@ -140,10 +154,12 @@ func NewCommand(l log.Logger, gcloud *GCloud, kubectl *kubectl.Kubectl, opts ...
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
@@ -176,14 +192,18 @@ func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillM
 	}
 }
 
+// Complete returns shell autocompletion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand named in r's arguments, or passes the
+// arguments through to the gcloud CLI verbatim if none matches.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

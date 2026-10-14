@@ -8,6 +8,8 @@ import (
 	"github.com/foomo/posh/pkg/prompt/check"
 )
 
+// TasksChecker returns a check.Checker reporting the running state of every
+// task registered on gk, for use with the posh prompt.
 func TasksChecker(gk *gokazi.Gokazi) check.Checker {
 	return func(ctx context.Context, l log.Logger) []check.Info {
 		ls, err := gk.List(ctx)

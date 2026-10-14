@@ -1,5 +1,6 @@
 package kubeforward
 
+// PortForward configures one named `kubectl port-forward` target.
 type PortForward struct {
 	// Target cluster
 	Cluster string `json:"cluster" yaml:"cluster"`

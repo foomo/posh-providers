@@ -35,9 +35,12 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// All selects every squadron or unit, rather than a specific one.
 const All = "all"
 
 type (
+	// Command implements the posh squadron command, deploying and inspecting
+	// squadron units across clusters and fleets.
 	Command struct {
 		l              log.Logger
 		name           string
@@ -51,7 +54,11 @@ type (
 		commandTree    tree.Root
 		namespaceFn    NamespaceFn
 	}
-	NamespaceFn   func(cluster, fleet string) string
+	// NamespaceFn returns the Kubernetes namespace to target for a given
+	// cluster and fleet.
+	NamespaceFn func(cluster, fleet string) string
+	// CommandOption configures a Command via functional options passed to
+	// NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -59,36 +66,47 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithNamespaceFn sets the function used to derive the Kubernetes
+// namespace from a cluster and fleet, overriding the default naming scheme.
 func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
 	return func(o *Command) {
 		o.namespaceFn = v
 	}
 }
 
+// CommandWithSlack enables Slack deployment notifications, sent through v.
 func CommandWithSlack(v *slack.Slack) CommandOption {
 	return func(o *Command) {
 		o.slack = v
 	}
 }
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "squadron".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithBake uses `docker buildx bake` instead of `build` for the
+// build/push subcommands when v is true.
 func CommandWithBake(v bool) CommandOption {
 	return func(o *Command) {
 		o.bake = v
 	}
 }
 
+// CommandWithSlackChannelID sets the Slack channel ID to notify, overriding
+// the default "squadron".
 func CommandWithSlackChannelID(v string) CommandOption {
 	return func(o *Command) {
 		o.slackChannelID = v
 	}
 }
 
+// CommandWithSlackWebhookID sets the Slack webhook ID to notify instead of a
+// channel.
 func CommandWithSlackWebhookID(v string) CommandOption {
 	return func(o *Command) {
 		o.slackWebhookID = v
@@ -99,6 +117,8 @@ func CommandWithSlackWebhookID(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the squadron Command, wiring in squadron, kubectl and the
+// given options.
 func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, cache cache.Cache, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:              l,
@@ -446,10 +466,12 @@ func NewCommand(l log.Logger, squadron *Squadron, kubectl *kubectl.Kubectl, cach
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's top-level description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
@@ -481,14 +503,17 @@ func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillM
 	}
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand selected by the current readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

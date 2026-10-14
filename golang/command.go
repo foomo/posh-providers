@@ -33,6 +33,8 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command is the posh "go" command, covering go build/test/fuzz/bench, go
+// mod, go work, go generate, golangci-lint and cache maintenance.
 type Command struct {
 	l                log.Logger
 	cache            cache.Namespace
@@ -44,6 +46,8 @@ type Command struct {
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithExecGolangciLint overrides how the golangci-lint binary is
+// invoked, e.g. to point at a wrapped or ownbrew-managed copy.
 func CommandWithExecGolangciLint(v exec.CommandProvider) options.Option[*Command] {
 	return func(c *Command) {
 		c.execGolangciLint = v
@@ -54,6 +58,8 @@ func CommandWithExecGolangciLint(v exec.CommandProvider) options.Option[*Command
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand creates a Command registered as "go". Build tags default to the
+// GO_BUILD_TAGS environment variable, falling back to "safe".
 func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:     l.Named("go"),
@@ -340,22 +346,27 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell autocompletion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand named in r's arguments.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
@@ -392,6 +403,9 @@ func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillM
 	}
 }
 
+// Lint runs golangci-lint across every module (each directory containing a
+// go.mod), passing --fix when fix is true. It implements arbitrary/lint's
+// Linter interface, enrolling this command in the project-wide lint sweep.
 func (c *Command) Lint(ctx context.Context, fix bool) error {
 	c.l.Info("Running golangci-lint run...")
 

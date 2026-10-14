@@ -28,6 +28,8 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command runs the bun CLI as a posh command, including a workspace subtree
+// that targets a single package directory.
 type Command struct {
 	l           log.Logger
 	cache       cache.Namespace
@@ -39,6 +41,8 @@ type Command struct {
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithExecBun overrides how the bun binary is invoked, replacing the
+// default exec.NewCommand(ctx, "bun", args...).
 func CommandWithExecBun(v exec.CommandProvider) options.Option[*Command] {
 	return func(c *Command) {
 		c.execBun = v
@@ -49,6 +53,7 @@ func CommandWithExecBun(v exec.CommandProvider) options.Option[*Command] {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the bun Command after applying opts.
 func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:     l.Named("bun"),
@@ -326,22 +331,28 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...options.Option[*Command
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command tree's root description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the matched node of the command tree for the given readline
+// input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the rendered help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

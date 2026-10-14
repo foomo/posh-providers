@@ -34,6 +34,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command.Command implementation that runs sesamy
+	// against a named config set.
 	Command struct {
 		l           log.Logger
 		name        string
@@ -42,6 +44,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command during construction with NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -49,12 +52,15 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the name the command is registered under.
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithConfigKey overrides the viper key the command reads its Config
+// from.
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -65,6 +71,9 @@ func CommandWithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds a Command, applying opts and loading its Config from
+// viper under the configured key. It uses op to render 1Password secrets
+// into the merged config before every sesamy invocation.
 func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("sesamy"),
@@ -285,22 +294,27 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description of the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand selected by the given input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

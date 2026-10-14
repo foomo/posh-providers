@@ -1,5 +1,7 @@
 package task
 
+// Task is a named shell task: an optional confirmation prompt, preconditions
+// that can skip it, dependencies run before it, and the commands it executes.
 type Task struct {
 	// Prompt string to confirm execution
 	Prompt string `json:"prompt" yaml:"prompt"`

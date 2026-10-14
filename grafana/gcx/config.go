@@ -17,6 +17,8 @@ func (c Config) EnvNames() []string {
 	return slices.Sorted(maps.Keys(c))
 }
 
+// Env returns the environment configuration registered under name, or an
+// error if none is configured for that name.
 func (c Config) Env(name string) (ConfigEnv, error) {
 	v, ok := c[name]
 	if !ok {

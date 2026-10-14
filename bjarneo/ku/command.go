@@ -28,6 +28,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh `ku` command, launching the ku TUI against a
+	// configured cluster and optional squadron-scoped namespace.
 	Command struct {
 		l                   log.Logger
 		kubectl             *kubectl.Kubectl
@@ -35,7 +37,10 @@ type (
 		commandTree         tree.Root
 		squadronNamespaceFn NamespaceFn
 	}
-	NamespaceFn   func(cluster, fleet, squadron string) string
+	// NamespaceFn resolves the cluster, fleet and squadron arguments to the
+	// namespace passed to ku, or "" for every namespace.
+	NamespaceFn func(cluster, fleet, squadron string) string
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -43,12 +48,17 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithSquadron enables the fleet/squadron arguments by wiring a
+// squadron.Squadron used to complete and resolve them.
 func CommandWithSquadron(v squadron.Squadron) CommandOption {
 	return func(o *Command) {
 		o.squadron = v
 	}
 }
 
+// CommandWithSquadronNamespaceFn sets the function resolving cluster, fleet
+// and squadron to a namespace, overriding the default fleet/squadron
+// concatenation.
 func CommandWithSquadronNamespaceFn(v NamespaceFn) CommandOption {
 	return func(o *Command) {
 		o.squadronNamespaceFn = v
@@ -59,6 +69,9 @@ func CommandWithSquadronNamespaceFn(v NamespaceFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the ku command around the given kubectl.Kubectl. The
+// fleet and squadron arguments are only added when CommandWithSquadron is
+// passed.
 func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:       l.Named("ku"),
@@ -133,14 +146,18 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description shown for the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Validate reports an error if the cluster argument is missing or has no
+// kubeconfig for the selected flags.
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
@@ -152,14 +169,18 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute launches ku against the cluster and namespace selected by the
+// current readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the command tree.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

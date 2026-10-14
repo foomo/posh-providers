@@ -25,6 +25,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command that drives the tempo terminal UI against a
+	// configured Temporal server profile.
 	Command struct {
 		l           log.Logger
 		cfg         Config
@@ -32,6 +34,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -39,12 +42,16 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// WithName sets the name the command is registered under, overriding the
+// default "tempo".
 func WithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// WithConfigKey sets the viper key the command reads its Config from,
+// overriding the default "tempo".
 func WithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -55,6 +62,9 @@ func WithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand creates a Command, unmarshalling its Config from viper under
+// configKey ("tempo" unless overridden by WithConfigKey). It returns an error
+// if the config cannot be unmarshalled.
 func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("tempo"),
@@ -100,22 +110,27 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell autocompletion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the tempo terminal UI for the profile named in r's arguments.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

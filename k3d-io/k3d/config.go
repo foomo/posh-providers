@@ -9,6 +9,7 @@ import (
 )
 
 type (
+	// Config holds the k3d provider's settings.
 	Config struct {
 		// Helm charts installable with the install/uninstall verbs.
 		Charts ConfigCharts `json:"charts" yaml:"charts"`
@@ -18,6 +19,8 @@ type (
 		// Clusters that can be created, keyed by the name used as the argument.
 		Clusters map[string]ConfigCluster `json:"clusters" yaml:"clusters"`
 	}
+	// ConfigCharts configures where predefined helm charts live and how their
+	// target namespace is named.
 	ConfigCharts struct {
 		// Directory holding one subdirectory per chart, relative to the project
 		// root. Its subdirectory names are what the chart argument completes to.
@@ -26,6 +29,8 @@ type (
 		// chart "base" with prefix "shared-" installs into "shared-base".
 		Prefix string `json:"prefix" yaml:"prefix"`
 	}
+	// ConfigRegistry configures the shared container registry used by every
+	// cluster.
 	ConfigRegistry struct {
 		// Registry name passed to k3d, which prefixes it with "k3d-" for the
 		// actual container and hostname.
@@ -33,6 +38,7 @@ type (
 		// Host port the registry binds to.
 		Port string `json:"port" yaml:"port"`
 	}
+	// ConfigCluster configures a single creatable cluster.
 	ConfigCluster struct {
 		// Cluster name
 		Name string `json:"-" yaml:"-"`
@@ -49,6 +55,8 @@ type (
 	}
 )
 
+// Names returns the subdirectory names under the charts path, i.e. the
+// installable chart names.
 func (c ConfigCharts) Names() ([]string, error) {
 	files, err := os.ReadDir(env.Path(c.Path))
 	if err != nil {
@@ -68,6 +76,8 @@ func (c ConfigCharts) Names() ([]string, error) {
 	return ret, nil
 }
 
+// Cluster returns the ConfigCluster registered under name, with its Name
+// field set, or an error if no such cluster is configured.
 func (c Config) Cluster(name string) (ConfigCluster, error) {
 	if value, ok := c.Clusters[name]; ok {
 		value.Name = name
@@ -77,10 +87,13 @@ func (c Config) Cluster(name string) (ConfigCluster, error) {
 	}
 }
 
+// ClusterNames returns the configured cluster names.
 func (c Config) ClusterNames() []string {
 	return lo.Keys(c.Clusters)
 }
 
+// AliasName returns the cluster's Alias if set, otherwise its Name. This is
+// the name k3d itself knows the cluster by.
 func (c ConfigCluster) AliasName() string {
 	if c.Alias == "" {
 		return c.Name

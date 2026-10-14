@@ -30,12 +30,16 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command runs yarn install and package.json scripts, either in a single
+	// package or across every discovered package, and forwards unrecognised
+	// invocations to the yarn binary.
 	Command struct {
 		l           log.Logger
 		name        string
 		cache       cache.Namespace
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -43,6 +47,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "yarn".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
@@ -53,6 +59,9 @@ func CommandWithName(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the yarn command with its install, run and run-all
+// subcommands, applying opts after the defaults. Any input not matching a
+// subcommand is passed straight through to the yarn binary.
 func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:     l.Named("yarn"),
@@ -124,22 +133,28 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...CommandOption) *Command {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand matching the parsed readline input, or forwards
+// it to the yarn binary if none matches.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

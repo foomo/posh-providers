@@ -1,5 +1,8 @@
 package gcx
 
+// ConfigEnv is a single gcx environment: the Grafana server, org, credential
+// source, optional kubeforward target, and extra environment variables
+// passed to the gcx CLI.
 type ConfigEnv struct {
 	// URL of the grafana server
 	URL string `json:"url" yaml:"url"`

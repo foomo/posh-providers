@@ -14,12 +14,15 @@ import (
 )
 
 type (
+	// ETCD reads the provider's configuration and executes etcdctl inside a
+	// configured cluster's etcd pod via kubectl.
 	ETCD struct {
 		l         log.Logger
 		cfg       Config
 		configKey string
 		kubectl   *kubectl.Kubectl
 	}
+	// Option configures an ETCD built by New.
 	Option func(*ETCD) error
 )
 
@@ -27,6 +30,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithConfigKey overrides the viper key the Config is unmarshalled
+// from, which defaults to "etcd".
 func CommandWithConfigKey(v string) Option {
 	return func(o *ETCD) error {
 		o.configKey = v
@@ -38,6 +43,9 @@ func CommandWithConfigKey(v string) Option {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// New reads the etcd Config from viper and creates its config directory. It
+// returns an error if the config cannot be unmarshalled or the directory
+// cannot be created.
 func New(l log.Logger, kubectl *kubectl.Kubectl, opts ...Option) (*ETCD, error) {
 	inst := &ETCD{
 		l:         l,
@@ -68,6 +76,8 @@ func New(l log.Logger, kubectl *kubectl.Kubectl, opts ...Option) (*ETCD, error) 
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// GetPath execs into the cluster's etcd pod and returns the value stored at
+// path, via `etcdctl get --print-value-only`.
 func (c *ETCD) GetPath(ctx context.Context, cluster Cluster, profile, path string) (string, error) {
 	if out, err := shell.New(ctx, c.l, "kubectl", "exec",
 		"-it", cluster.PodName,
@@ -82,6 +92,9 @@ func (c *ETCD) GetPath(ctx context.Context, cluster Cluster, profile, path strin
 	}
 }
 
+// SetPath execs into the cluster's etcd pod and writes value to path via
+// `etcdctl put`. value is interpolated into the shell command unescaped, so
+// values containing quotes or backticks will corrupt the command.
 func (c *ETCD) SetPath(ctx context.Context, cluster Cluster, profile, path, value string) (string, error) {
 	if out, err := shell.New(ctx, c.l, "kubectl", "exec",
 		"-it", cluster.PodName,

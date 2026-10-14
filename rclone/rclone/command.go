@@ -31,6 +31,7 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command wrapping rclone.
 	Command struct {
 		l           log.Logger
 		cfg         Config
@@ -39,20 +40,26 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// StackNameProvider derives a name from a path.
 	StackNameProvider func(path string) string
-	CommandOption     func(*Command)
+	// CommandOption configures a Command built by NewCommand.
+	CommandOption func(*Command)
 )
 
 // ------------------------------------------------------------------------------------------------
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the command's registered name, which defaults to
+// "rclone".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// WithConfigKey overrides the viper key the command's config is read from,
+// which defaults to "rclone".
 func WithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -63,6 +70,10 @@ func WithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the rclone Command, unmarshalling its config from viper
+// under configKey and exporting RCLONE_CONFIG so rclone reads the generated
+// config file. It returns an error if the unmarshalling or the environment
+// variable assignment fails.
 func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("rclone"),
@@ -284,22 +295,27 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the command's registered name.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand matching the current input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Validate reports an error if the rclone executable is not on PATH.
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	if _, err := exec.LookPath("rclone"); err != nil {
 		c.l.Print()
@@ -309,6 +325,7 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

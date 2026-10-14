@@ -1,5 +1,7 @@
 package mkcert
 
+// Certificate describes one certificate/key pair that `generate` produces
+// with a single mkcert invocation.
 type Certificate struct {
 	// Basename of the generated pair, written as `<name>.pem` and
 	// `<name>-key.pem`. Does not need to be one of `names`.

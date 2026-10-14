@@ -1,5 +1,6 @@
 package az
 
+// Vault identifies an Azure Key Vault by name and resource group.
 type Vault struct {
 	// Name of the key vault
 	Name string `json:"name" yaml:"name"`

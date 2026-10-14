@@ -31,6 +31,7 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command runs the hygen scaffolding tree as a posh command.
 	Command struct {
 		l           log.Logger
 		cfg         Config
@@ -39,6 +40,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// Option configures a Command during construction.
 	Option func(*Command) error
 )
 
@@ -46,6 +48,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "hygen".
 func CommandWithName(v string) Option {
 	return func(o *Command) error {
 		o.name = v
@@ -53,6 +57,8 @@ func CommandWithName(v string) Option {
 	}
 }
 
+// WithConfigKey sets the viper key the command reads its Config from,
+// overriding the default "hygen".
 func WithConfigKey(v string) Option {
 	return func(o *Command) error {
 		o.configKey = v
@@ -64,6 +70,9 @@ func WithConfigKey(v string) Option {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the hygen Command, reading its Config from the configKey
+// (default "hygen") after applying opts. It returns an error if any Option or
+// the config unmarshal fails.
 func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("hygen"),
@@ -129,18 +138,24 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...Option) (*Command, erro
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command tree's root description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Validate checks that exactly a template and a path argument were given and
+// that the template names an existing directory under the configured
+// template path.
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
@@ -158,10 +173,13 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Execute runs the matched node of the command tree for the given readline
+// input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the rendered help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

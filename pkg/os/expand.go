@@ -9,7 +9,7 @@ import (
 	"github.com/allex/envsubst"
 )
 
-// ExpandEnv expands environment variables and injects supported secret refs
+// ExpandEnv expands environment variables and injects supported secret refs.
 func ExpandEnv(ctx context.Context, v string) (string, error) {
 	v, err := envsubst.String(v)
 	if err != nil {

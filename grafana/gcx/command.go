@@ -30,6 +30,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command that runs gcx against a configured
+	// environment's Grafana server.
 	Command struct {
 		l           log.Logger
 		name        string
@@ -39,6 +41,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -46,18 +49,25 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "gcx".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithConfigKey sets the viper key the command reads its Config from,
+// overriding the default "gcx".
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
 	}
 }
 
+// CommandWithKubectl sets the kubectl client used to open a port-forward for
+// environments that configure kubeforward. Required only for those
+// environments.
 func CommandWithKubectl(kubectl *kubectl.Kubectl) CommandOption {
 	return func(o *Command) {
 		o.kubectl = kubectl
@@ -68,6 +78,9 @@ func CommandWithKubectl(kubectl *kubectl.Kubectl) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand creates a Command, unmarshalling its Config from viper under
+// configKey ("gcx" unless overridden by WithConfigKey). It returns an error
+// if the config cannot be unmarshalled.
 func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("gcx"),
@@ -118,22 +131,28 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell autocompletion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs gcx for the environment named in r's arguments, passing the
+// remaining arguments and flags through to the gcx CLI.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

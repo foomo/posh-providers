@@ -1,5 +1,8 @@
 package gcx
 
+// ConfigKubeForward identifies the pod or service a kubectl port-forward is
+// opened against to reach a Grafana server only reachable from inside the
+// cluster.
 type ConfigKubeForward struct {
 	// Port on the target
 	Port int `json:"port" yaml:"port"`

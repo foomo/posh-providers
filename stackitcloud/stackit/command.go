@@ -27,6 +27,7 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command for working with STACKIT cloud resources.
 	Command struct {
 		l             log.Logger
 		name          string
@@ -36,7 +37,10 @@ type (
 		commandTree   tree.Root
 		clusterNameFn ClusterNameFn
 	}
+	// ClusterNameFn derives the kubectl cluster name for a configured name and
+	// Cluster.
 	ClusterNameFn func(name string, cluster Cluster) string
+	// CommandOption configures a Command built by NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -44,12 +48,17 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the command's registered name, which defaults to
+// "stackit".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithClusterNameFn overrides how a configured cluster name and
+// Cluster map to the kubectl cluster name, which defaults to returning name
+// unchanged.
 func CommandWithClusterNameFn(v ClusterNameFn) CommandOption {
 	return func(o *Command) {
 		o.clusterNameFn = v
@@ -60,6 +69,7 @@ func CommandWithClusterNameFn(v ClusterNameFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the stackit Command.
 func NewCommand(l log.Logger, cache cache.Cache, stackit *Stackit, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:       l.Named("stackit"),
@@ -135,22 +145,27 @@ func NewCommand(l log.Logger, cache cache.Cache, stackit *Stackit, kubectl *kube
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the command's registered name.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand matching the current input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

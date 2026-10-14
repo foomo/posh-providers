@@ -35,6 +35,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command manages named `kubectl port-forward` processes as background
+	// gokazi tasks, exposed as a posh command.
 	Command struct {
 		l           log.Logger
 		gk          *gokazi.Gokazi
@@ -44,6 +46,7 @@ type (
 		kubectl     *kubectl.Kubectl
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command during construction.
 	CommandOption func(*Command)
 )
 
@@ -51,12 +54,16 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "kubeforward".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithConfigKey sets the viper key the command reads its Config from,
+// overriding the default "kubeforward".
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -67,6 +74,10 @@ func CommandWithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the kubeforward Command, reading its Config from the
+// configKey (default "kubeforward") after applying opts and registering a
+// gokazi task for each configured port forward. It returns an error if the
+// config unmarshal fails.
 func NewCommand(l log.Logger, gk *gokazi.Gokazi, kubectl *kubectl.Kubectl, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("kubeforward"),
@@ -158,22 +169,28 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, kubectl *kubectl.Kubectl, opts 
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command tree's root description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the matched node (connect or disconnect) of the command tree
+// for the given readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the rendered help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

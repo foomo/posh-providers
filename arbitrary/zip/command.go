@@ -24,11 +24,14 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh `zip` command, extracting zip archives, optionally
+	// with a 1Password-held password.
 	Command struct {
 		l           log.Logger
 		zip         *Zip
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -36,6 +39,7 @@ type (
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the zip command around the given Zip.
 func NewCommand(l log.Logger, zip *Zip, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:   l.Named("zip"),
@@ -83,22 +87,27 @@ func NewCommand(l log.Logger, zip *Zip, opts ...CommandOption) *Command {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description shown for the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the zip subcommand selected by the current readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the command tree.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

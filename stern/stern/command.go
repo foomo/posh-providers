@@ -29,6 +29,7 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command wrapping stern.
 	Command struct {
 		l           log.Logger
 		name        string
@@ -39,7 +40,10 @@ type (
 		commandTree tree.Root
 		namespaceFn NamespaceFn
 	}
-	NamespaceFn   func(cluster, fleet, squadron string) string
+	// NamespaceFn derives the Kubernetes namespace for a cluster, fleet and
+	// squadron name.
+	NamespaceFn func(cluster, fleet, squadron string) string
+	// CommandOption configures a Command built by NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -47,18 +51,26 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the command's registered name, which defaults to
+// "stern".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithConfigKey overrides the viper key the command's config is read
+// from, which defaults to "stern".
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
 	}
 }
 
+// CommandWithNamespaceFn overrides how a cluster, fleet and squadron name map
+// to a Kubernetes namespace for the squadron verb. It defaults to the
+// squadron name itself when fleet is "default", and "<fleet>-<squadron>"
+// otherwise.
 func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
 	return func(o *Command) {
 		o.namespaceFn = v
@@ -69,6 +81,8 @@ func CommandWithNamespaceFn(v NamespaceFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the stern Command, unmarshalling its config from viper
+// under configKey. It returns an error if that unmarshalling fails.
 func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadron, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("stern"),
@@ -251,22 +265,27 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, squadron squadron.Squadr
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the command's registered name.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand matching the current input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

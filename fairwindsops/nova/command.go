@@ -26,11 +26,14 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command implements command.Command, running nova against a configured
+	// cluster to find outdated Helm releases or container images.
 	Command struct {
 		l           log.Logger
 		kubectl     *kubectl.Kubectl
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command built by NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -38,6 +41,7 @@ type (
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the nova Command tree for the given kubectl provider.
 func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:       l.Named("nova"),
@@ -100,22 +104,27 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the command's registered name.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the command tree against the parsed arguments and flags.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's usage text.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

@@ -28,6 +28,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command that runs golang-migrate operations against
+	// a configured database and migration source.
 	Command struct {
 		l           log.Logger
 		op          *onepassword.OnePassword
@@ -36,6 +38,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -43,18 +46,24 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "migrate".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithConfigKey sets the viper key the command reads its Config from,
+// overriding the default "migrate".
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
 	}
 }
 
+// CommandWithOnePassword sets the 1Password client used to resolve secret
+// references embedded in a configured database URL before connecting.
 func CommandWithOnePassword(v *onepassword.OnePassword) CommandOption {
 	return func(o *Command) {
 		o.op = v
@@ -65,6 +74,9 @@ func CommandWithOnePassword(v *onepassword.OnePassword) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand creates a Command, unmarshalling its Config from viper under
+// configKey ("migrate" unless overridden by WithConfigKey). It returns an
+// error if the config cannot be unmarshalled.
 func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("migrate"),
@@ -166,22 +178,27 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell autocompletion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the database/source/verb path named in r's arguments.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

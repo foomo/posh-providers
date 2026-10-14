@@ -1,5 +1,6 @@
 package etcd
 
+// Config holds the etcd provider's configuration.
 type Config struct {
 	// Directory the `edit` verb writes its scratch copy of a value into, before and
 	// after editing. Created at shell startup; resolved against the project root, so
@@ -10,6 +11,8 @@ type Config struct {
 	Clusters []Cluster `json:"clusters" yaml:"clusters"`
 }
 
+// Cluster returns the configured Cluster with the given name, and whether one
+// was found.
 func (c Config) Cluster(name string) (Cluster, bool) {
 	for _, cluster := range c.Clusters {
 		if cluster.Name == name {
@@ -20,6 +23,7 @@ func (c Config) Cluster(name string) (Cluster, bool) {
 	return Cluster{}, false
 }
 
+// Cluster identifies an etcd pod this command can read from and write to.
 type Cluster struct {
 	// Cluster name, matched against both the `cluster` argument and the kubectl
 	// cluster whose kubeconfig is used to reach the pod.

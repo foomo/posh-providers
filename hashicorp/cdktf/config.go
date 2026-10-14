@@ -1,5 +1,6 @@
 package cdktf
 
+// Config holds the cdktf provider's configuration.
 type Config struct {
 	// Directory the cdktf app lives in; every verb runs with this as its working
 	// directory. Also the root walked for `*.stack.yaml` files to discover stack

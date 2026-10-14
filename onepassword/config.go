@@ -1,5 +1,6 @@
 package onepassword
 
+// Config holds the onepassword provider's settings.
 type Config struct {
 	// Account this provider signs in to and resolves every secret against, as a
 	// sign-in subdomain or account UUID. `register` appends `.1password.eu` to it,

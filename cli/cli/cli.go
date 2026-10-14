@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+// CLI wraps the GitHub CLI (gh), loading its Config and ensuring
+// GITHUB_TOKEN is set from `gh auth token` for other commands to use.
 type CLI struct {
 	l         log.Logger
 	cfg       Config
@@ -23,6 +25,8 @@ type CLI struct {
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// WithConfigKey sets the viper key the Config is unmarshalled from,
+// overriding the default "gh".
 func WithConfigKey(v string) options.Option[*CLI] {
 	return func(o *CLI) {
 		o.configKey = v
@@ -33,6 +37,8 @@ func WithConfigKey(v string) options.Option[*CLI] {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// New builds a CLI, unmarshalling its Config from the configured viper key.
+// It returns an error if that unmarshal fails.
 func New(l log.Logger, opts ...options.Option[*CLI]) (*CLI, error) {
 	inst := &CLI{
 		l:         l,
@@ -52,10 +58,14 @@ func New(l log.Logger, opts ...options.Option[*CLI]) (*CLI, error) {
 // ~ Getter
 // ------------------------------------------------------------------------------------------------
 
+// Config returns the loaded configuration.
 func (c *CLI) Config() Config {
 	return c.cfg
 }
 
+// LoadToken sets GITHUB_TOKEN from `gh auth token` unless it is already set.
+// It returns an error if that call fails or the environment variable cannot
+// be set.
 func (c *CLI) LoadToken(ctx context.Context) error {
 	if os.Getenv("GITHUB_TOKEN") != "" {
 		return nil

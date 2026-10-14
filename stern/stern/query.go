@@ -6,6 +6,7 @@ import (
 	"github.com/samber/lo"
 )
 
+// Query is one level of a nested, named stern argument tree.
 type Query struct {
 	// Arguments passed verbatim to stern when this level is selected, e.g. a pod
 	// regex plus flags. Concatenated with every ancestor level's arguments, so a
@@ -20,6 +21,9 @@ type Query struct {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// FindQueries walks names as a path into this Query's nested queries,
+// returning every ancestor Query from the first level down to the matched one
+// in order. It returns nil if names is empty or the path does not match.
 func (q Query) FindQueries(names ...string) []Query {
 	if len(names) == 0 {
 		return nil
@@ -38,6 +42,9 @@ func (q Query) FindQueries(names ...string) []Query {
 	return ret
 }
 
+// QueryNames returns the sorted nested query keys one level below the path
+// given by names, or this Query's own nested keys if names is empty or does
+// not match.
 func (q Query) QueryNames(names ...string) []string {
 	if len(names) == 0 {
 		ret := lo.Keys(q.Queries)

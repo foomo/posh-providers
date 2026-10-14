@@ -1,5 +1,6 @@
 package mkcert
 
+// Config holds the mkcert provider's configuration.
 type Config struct {
 	// Directory the generated certificates and keys are written to, relative to
 	// the project root. Required by `generate` and `create`, which both refuse to

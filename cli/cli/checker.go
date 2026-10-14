@@ -15,6 +15,9 @@ import (
 
 var scopesLineRE = regexp.MustCompile(`(?m)^\s*-\s*Token scopes:\s*(.+)$`)
 
+// ScopesChecker returns a check.Checker reporting, per configured gh
+// hostname, whether `gh auth status` grants every scope required by c's
+// Config.
 func ScopesChecker(c *CLI) check.Checker {
 	return func(ctx context.Context, l log.Logger) []check.Info {
 		const icon = "⛹"

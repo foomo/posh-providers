@@ -25,11 +25,13 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command that opens kube-prompt against a cluster.
 	Command struct {
 		l           log.Logger
 		kubectl     *kubectl.Kubectl
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command built by NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -37,6 +39,8 @@ type (
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the kubeprompt command, which opens the interactive
+// kube-prompt shell against a cluster selected by name.
 func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:       l.Named("kubeprompt"),
@@ -80,22 +84,28 @@ func NewCommand(l log.Logger, kubectl *kubectl.Kubectl, opts ...CommandOption) *
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute opens the kube-prompt shell against the cluster selected by the
+// readline input, blocking until the interactive session exits.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

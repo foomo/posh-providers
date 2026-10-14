@@ -30,12 +30,14 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command compiles *.mjml templates to HTML as a posh command.
 	Command struct {
 		l           log.Logger
 		name        string
 		cache       cache.Namespace
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command during construction.
 	CommandOption func(*Command)
 )
 
@@ -43,6 +45,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "mjml".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
@@ -53,6 +57,7 @@ func CommandWithName(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the mjml Command after applying opts.
 func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:     l.Named("mjml"),
@@ -93,18 +98,23 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) *Command
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command tree's root description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Validate checks that at most one path argument was given and, if given,
+// that it names an existing directory.
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
@@ -120,10 +130,12 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Execute compiles the matched *.mjml templates for the given readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the rendered help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

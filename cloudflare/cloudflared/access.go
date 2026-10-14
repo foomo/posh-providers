@@ -1,5 +1,7 @@
 package cloudflared
 
+// Access configures one `cloudflared access` tunnel to a Cloudflare Access
+// target.
 type Access struct {
 	// Access mode passed to `cloudflared access`, e.g. tcp or ssh
 	Type string `json:"type" yaml:"type"`

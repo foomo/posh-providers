@@ -27,6 +27,8 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command runs gherkin-lint against Gherkin feature files, both as a
+// standalone posh command and as an arbitrary/lint linter.
 type Command struct {
 	l               log.Logger
 	name            string
@@ -39,12 +41,16 @@ type Command struct {
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "gherkin-lint".
 func CommandWithName(v string) options.Option[*Command] {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithExecGherkinLint overrides how the gherkin-lint binary is invoked,
+// replacing the default which runs "gherkin-lint" on the PATH.
 func CommandWithExecGherkinLint(v exec.CommandProvider) options.Option[*Command] {
 	return func(o *Command) {
 		o.execGherkinLint = v
@@ -55,6 +61,8 @@ func CommandWithExecGherkinLint(v exec.CommandProvider) options.Option[*Command]
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the gherkin-lint command, accepting an optional repeatable
+// path argument, applying opts after the defaults.
 func NewCommand(l log.Logger, c cache.Cache, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:     l.Named("gherkin-lint"),
@@ -91,22 +99,27 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...options.Option[*Command]) *
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the command for the parsed readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
@@ -138,6 +151,8 @@ func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillM
 	}
 }
 
+// Lint runs gherkin-lint across every discovered WebdriverIO project
+// directory, satisfying the arbitrary/lint Linter interface.
 func (c *Command) Lint(ctx context.Context, _ bool) error {
 	return c.run(ctx, c.paths(ctx))
 }

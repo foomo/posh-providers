@@ -5,6 +5,7 @@ import (
 	"github.com/samber/lo"
 )
 
+// Config holds the doctl provider's configuration.
 type Config struct {
 	// Path to the doctl config file holding the API token, relative to the project
 	// root. Exported as `DIGITALOCEAN_CONFIG` at shell startup, so every doctl
@@ -17,6 +18,8 @@ type Config struct {
 	Clusters map[string]Cluster `json:"clusters" yaml:"clusters"`
 }
 
+// Cluster returns the configured Cluster for the given alias, or an error if
+// no cluster is registered under that name.
 func (c Config) Cluster(name string) (Cluster, error) {
 	value, ok := c.Clusters[name]
 	if !ok {
@@ -26,6 +29,7 @@ func (c Config) Cluster(name string) (Cluster, error) {
 	return value, nil
 }
 
+// ClusterNames returns the configured cluster aliases.
 func (c Config) ClusterNames() []string {
 	return lo.Keys(c.Clusters)
 }
