@@ -9,6 +9,7 @@ import (
 )
 
 type (
+	// Config holds the teleport provider's configuration.
 	Config struct {
 		// Directory holding the teleport session state, exported as TELEPORT_HOME
 		// when the provider is constructed. Relative to the project root.
@@ -26,6 +27,7 @@ type (
 		// Database-specific settings.
 		Database Database `json:"database" yaml:"database"`
 	}
+	// Kubernetes holds kubernetes-specific teleport settings.
 	Kubernetes struct {
 		// Display names for kube clusters, keyed by the real teleport cluster name.
 		// Completion offers the alias and it is mapped back before login, so the
@@ -34,6 +36,7 @@ type (
 		// is resolved.
 		Aliases map[string]string `json:"aliases" yaml:"aliases"`
 	}
+	// Database holds database-specific teleport settings.
 	Database struct {
 		// Database user to log in as. Overridden by the TELEPORT_DATABASE_USER
 		// environment variable when it is set.
@@ -41,6 +44,8 @@ type (
 	}
 )
 
+// Query builds a tsh --query expression requiring every configured label,
+// joined with &&. It returns "" when no labels are configured.
 func (c Config) Query() string {
 	if len(c.Labels) == 0 {
 		return ""
@@ -54,6 +59,8 @@ func (c Config) Query() string {
 	return strings.Join(ret, " && ")
 }
 
+// EnvUser returns the TELEPORT_DATABASE_USER environment variable if set,
+// otherwise the configured User.
 func (c Database) EnvUser() string {
 	if value := os.Getenv("TELEPORT_DATABASE_USER"); value != "" {
 		return value
@@ -62,6 +69,8 @@ func (c Database) EnvUser() string {
 	return c.User
 }
 
+// Alias returns the configured display alias for the real cluster name, or
+// name unchanged if no alias is configured for it.
 func (c Kubernetes) Alias(name string) string {
 	if c.Aliases == nil {
 		return name

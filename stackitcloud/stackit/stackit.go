@@ -9,13 +9,16 @@ import (
 )
 
 type (
+	// Stackit holds the project/cluster configuration shared by stackit commands.
 	Stackit struct {
 		l         log.Logger
 		cfg       Config
 		cache     cache.Namespace
 		configKey string
 	}
-	Option            func(*Stackit) error
+	// Option configures a Stackit built by New.
+	Option func(*Stackit) error
+	// AuthTokenProvider resolves an auth token for kubeContext.
 	AuthTokenProvider func(ctx context.Context, kubeContext string) (token string, err error)
 )
 
@@ -23,6 +26,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithConfigKey overrides the viper key the Stackit config is read
+// from, which defaults to "stackit".
 func CommandWithConfigKey(v string) Option {
 	return func(o *Stackit) error {
 		o.configKey = v
@@ -34,6 +39,8 @@ func CommandWithConfigKey(v string) Option {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// New builds a Stackit, unmarshalling its config from viper under configKey.
+// It returns an error if the unmarshalling or an option fails.
 func New(l log.Logger, cache cache.Cache, opts ...Option) (*Stackit, error) {
 	inst := &Stackit{
 		l:         l,
@@ -60,6 +67,7 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*Stackit, error) {
 // ~ Getter
 // ------------------------------------------------------------------------------------------------
 
+// Config returns the Stackit's configuration.
 func (s *Stackit) Config() Config {
 	return s.cfg
 }
@@ -68,6 +76,8 @@ func (s *Stackit) Config() Config {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// ClusterNames returns the configured cluster names for the project keyed as
+// projectName. It returns an error if projectName is not configured.
 func (s *Stackit) ClusterNames(projectName string) ([]string, error) {
 	project, err := s.cfg.Project(projectName)
 	if err != nil {

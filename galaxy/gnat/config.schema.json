@@ -22,7 +22,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config is the gnat provider configuration: the color theme, an optional XDG config directory, and the named NATS server profiles."
     },
     "Profile": {
       "properties": {
@@ -36,7 +37,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Profile identifies a NATS server by URL, with a description shown in shell autocompletion."
     }
   }
 }

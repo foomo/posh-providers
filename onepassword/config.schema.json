@@ -15,7 +15,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the onepassword provider's settings."
     }
   }
 }

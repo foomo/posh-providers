@@ -29,6 +29,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command.Command implementation that manages
+	// cloudflared tunnels to remote clusters and databases.
 	Command struct {
 		l           log.Logger
 		beam        *Beam
@@ -37,6 +39,7 @@ type (
 		cloudflared *cloudflared.Cloudflared
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command during construction with NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -44,6 +47,7 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the name the command is registered under.
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
@@ -54,6 +58,8 @@ func CommandWithName(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds a Command for managing tunnels to the clusters and
+// databases configured on beam, applying opts.
 func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared *cloudflared.Cloudflared, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:           l.Named("beam"),
@@ -172,10 +178,12 @@ func NewCommand(l log.Logger, beam *Beam, kubectl *kubectl.Kubectl, cloudflared 
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description of the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
@@ -210,14 +218,17 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand selected by the given input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

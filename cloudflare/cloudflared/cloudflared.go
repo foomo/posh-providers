@@ -10,16 +10,19 @@ import (
 
 	"github.com/foomo/posh/pkg/log"
 	"github.com/pkg/errors"
-	"github.com/shirou/gopsutil/v3/process"
+	"github.com/shirou/gopsutil/v4/process"
 	"github.com/spf13/viper"
 )
 
 type (
+	// Cloudflared runs and tracks `cloudflared access` processes for the
+	// configured Access targets.
 	Cloudflared struct {
 		l         log.Logger
 		cfg       Config
 		configKey string
 	}
+	// Option configures a Cloudflared in New.
 	Option func(*Cloudflared) error
 )
 
@@ -27,6 +30,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// WithConfigKey sets the viper key the Config is unmarshalled from,
+// overriding the default "cloudflared".
 func WithConfigKey(v string) Option {
 	return func(o *Cloudflared) error {
 		o.configKey = v
@@ -64,10 +69,13 @@ func New(l log.Logger, opts ...Option) (*Cloudflared, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Config returns the loaded configuration.
 func (t *Cloudflared) Config() Config {
 	return t.cfg
 }
 
+// Disconnect kills the running cloudflared process tunneling to access's
+// hostname, if any.
 func (t *Cloudflared) Disconnect(ctx context.Context, access Access) error {
 	ps, err := process.Processes()
 	if err != nil {
@@ -86,6 +94,9 @@ func (t *Cloudflared) Disconnect(ctx context.Context, access Access) error {
 	return nil
 }
 
+// Connect starts a detached `cloudflared access` process tunneling access's
+// hostname to its local port. It returns an error if a connection to that
+// hostname already exists or the process fails to start.
 func (t *Cloudflared) Connect(ctx context.Context, access Access) error {
 	if t.IsConnected(ctx, access) {
 		return errors.Errorf("connection already exists: %s", access.Hostname)
@@ -113,6 +124,8 @@ func (t *Cloudflared) Connect(ctx context.Context, access Access) error {
 	return nil
 }
 
+// IsConnected reports whether a running cloudflared process is tunneling to
+// access's hostname.
 func (t *Cloudflared) IsConnected(ctx context.Context, access Access) bool {
 	list, err := t.List()
 	if err != nil {
@@ -128,6 +141,8 @@ func (t *Cloudflared) IsConnected(ctx context.Context, access Access) bool {
 	return false
 }
 
+// List returns every running cloudflared process on the system. It returns
+// an error if the process list cannot be read.
 func (t *Cloudflared) List() ([]Process, error) {
 	ps, err := process.Processes()
 	if err != nil {

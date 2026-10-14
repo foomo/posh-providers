@@ -8,6 +8,8 @@ import (
 	"github.com/foomo/posh/pkg/prompt/check"
 )
 
+// AuthChecker returns a check.Checker reporting whether `op whoami` succeeds
+// for the configured account.
 func AuthChecker(op *OnePassword) check.Checker {
 	return func(ctx context.Context, l log.Logger) []check.Info {
 		name := "1Password"

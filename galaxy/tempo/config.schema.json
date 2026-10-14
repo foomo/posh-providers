@@ -22,7 +22,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config is the tempo provider configuration: the color theme, an optional XDG config directory, and the named Temporal connection profiles."
     },
     "Profile": {
       "properties": {
@@ -36,7 +37,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Profile identifies a Temporal server by address, with a description shown in shell autocompletion."
     }
   }
 }

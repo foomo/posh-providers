@@ -23,7 +23,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Backend holds the Google Cloud Storage location and credentials used as a Pulumi state backend for one environment."
     },
     "Config": {
       "properties": {
@@ -44,7 +45,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the pulumi provider's configuration."
     },
     "Secret": {
       "properties": {

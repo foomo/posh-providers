@@ -27,6 +27,8 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command runs tflint against terraform modules, both as a standalone posh
+// command and as an arbitrary/lint linter.
 type Command struct {
 	l           log.Logger
 	name        string
@@ -39,12 +41,16 @@ type Command struct {
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "tflint".
 func CommandWithName(v string) options.Option[*Command] {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithExecTflint overrides how the tflint binary is invoked, replacing
+// the default which runs "tflint" on the PATH.
 func CommandWithExecTflint(v exec.CommandProvider) options.Option[*Command] {
 	return func(o *Command) {
 		o.execTflint = v
@@ -55,6 +61,8 @@ func CommandWithExecTflint(v exec.CommandProvider) options.Option[*Command] {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the tflint command, accepting an optional repeatable path
+// argument and a --fix flag, applying opts after the defaults.
 func NewCommand(l log.Logger, c cache.Cache, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:     l.Named("tflint"),
@@ -95,22 +103,27 @@ func NewCommand(l log.Logger, c cache.Cache, opts ...options.Option[*Command]) *
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the command for the parsed readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
@@ -142,6 +155,9 @@ func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillM
 	}
 }
 
+// Lint runs tflint across every discovered terraform module, satisfying the
+// arbitrary/lint Linter interface. When fix is true it passes --fix to rewrite
+// files in place.
 func (c *Command) Lint(ctx context.Context, fix bool) error {
 	return c.run(ctx, fix, c.paths(ctx))
 }

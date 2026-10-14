@@ -25,6 +25,9 @@ import (
 )
 
 type (
+	// OnePassword resolves secrets and documents from a 1Password account,
+	// either through a local Connect client or through the op CLI session, and
+	// keeps that session alive once authenticated.
 	OnePassword struct {
 		l              log.Logger
 		cfg            Config
@@ -36,6 +39,7 @@ type (
 		isSignedInLock sync.Mutex
 		isSignedInTime time.Time
 	}
+	// Option configures an OnePassword during construction.
 	Option func(*OnePassword) error
 )
 
@@ -43,6 +47,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// WithConfigKey sets the viper key the instance reads its Config from,
+// overriding the default "onePassword".
 func WithConfigKey(v string) Option {
 	return func(o *OnePassword) error {
 		o.configKey = v
@@ -54,6 +60,11 @@ func WithConfigKey(v string) Option {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// New builds an OnePassword, reading its Config from the configKey (default
+// "onePassword") after applying opts. It also tries to create a Connect
+// client from the environment; if that fails, Get and GetDocument fall back
+// to the op CLI session instead. It returns an error if any Option or the
+// config unmarshal fails.
 func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) {
 	inst := &OnePassword{
 		l:         l.Named("onePasswordInstance"),
@@ -88,6 +99,11 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*OnePassword, error) 
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// IsAuthenticated reports whether the configured account has a usable
+// session, checking a service account or Connect token, an active `op`
+// CLI integration, and the session loaded from TokenFilename, in that order.
+// Once an account check succeeds it also starts the background session
+// keep-alive, if not already running.
 func (op *OnePassword) IsAuthenticated(ctx context.Context) (bool, error) {
 	var sessChanged bool
 
@@ -146,6 +162,10 @@ func (op *OnePassword) IsAuthenticated(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
+// SignIn interactively signs in to the configured account via `op signin`
+// unless a session is already authenticated, storing the resulting session
+// token in the process environment and, if configured, at TokenFilename. It
+// starts the background session keep-alive once signed in.
 func (op *OnePassword) SignIn(ctx context.Context) error {
 	if ok, _ := op.IsAuthenticated(ctx); ok {
 		return nil
@@ -202,6 +222,9 @@ $ export OP_SESSION_%s=%s
 	return nil
 }
 
+// Get resolves secret's field value, using the Connect client if configured
+// or the authenticated op CLI session otherwise. It returns ErrNotSignedIn
+// when no Connect client is configured and the session is not authenticated.
 func (op *OnePassword) Get(ctx context.Context, secret Secret) (string, error) {
 	if op.connect != nil {
 		if fields := op.connectGet(secret.Vault, secret.Item); len(fields) == 0 {
@@ -224,6 +247,10 @@ func (op *OnePassword) Get(ctx context.Context, secret Secret) (string, error) {
 	}
 }
 
+// GetDocument resolves the document content referenced by secret, using the
+// Connect client if configured or the authenticated op CLI session
+// otherwise. It returns ErrNotSignedIn when no Connect client is configured
+// and the session is not authenticated.
 func (op *OnePassword) GetDocument(ctx context.Context, secret Secret) (string, error) {
 	if op.connect != nil {
 		if value := op.connectGetFileContent(secret.Field, secret.Vault, secret.Item); len(value) == 0 {
@@ -242,6 +269,9 @@ func (op *OnePassword) GetDocument(ctx context.Context, secret Secret) (string, 
 	}
 }
 
+// GetOnetimePassword returns the current OTP code for the item identified by
+// uuid via the op CLI. It returns ErrNotSignedIn if the session is not
+// authenticated.
 func (op *OnePassword) GetOnetimePassword(ctx context.Context, account, uuid string) (string, error) {
 	if ok, _ := op.IsAuthenticated(ctx); !ok {
 		return "", ErrNotSignedIn
@@ -257,6 +287,10 @@ func (op *OnePassword) GetOnetimePassword(ctx context.Context, account, uuid str
 	return strings.ReplaceAll(strings.TrimSpace(string(out)), "\\n", "\n"), nil
 }
 
+// Render evaluates source as a Go template using "<% %>" delimiters, with
+// helper functions env (read an environment variable, erroring if empty),
+// op (resolve a secret via Get), indent, quote, replace and base64. It
+// errors on any missing key.
 func (op *OnePassword) Render(ctx context.Context, source string) ([]byte, error) {
 	tpl, err := template.New("1password").
 		Delims("<% ", " %>").
@@ -307,6 +341,7 @@ func (op *OnePassword) Render(ctx context.Context, source string) ([]byte, error
 	return out.Bytes(), nil
 }
 
+// RenderFile reads source from disk and renders it through Render.
 func (op *OnePassword) RenderFile(ctx context.Context, source string) ([]byte, error) {
 	in, err := os.ReadFile(source)
 	if err != nil {
@@ -321,6 +356,9 @@ func (op *OnePassword) RenderFile(ctx context.Context, source string) ([]byte, e
 	return out, nil
 }
 
+// RenderFileTo renders source through RenderFile and writes the result to
+// target (mode 0600), prefixed with a generated-file header carrying the
+// current timestamp.
 func (op *OnePassword) RenderFileTo(ctx context.Context, source, target string) error {
 	out, err := op.RenderFile(ctx, source)
 	if err != nil {

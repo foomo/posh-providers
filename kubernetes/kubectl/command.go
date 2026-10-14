@@ -24,6 +24,8 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command runs the kubectl CLI against a cluster selected by name, as a posh
+// command.
 type Command struct {
 	l           log.Logger
 	kubectl     *Kubectl
@@ -35,6 +37,8 @@ type Command struct {
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithExecKubectl overrides how the kubectl binary is invoked,
+// replacing the default exec.NewCommand(ctx, "kubectl", args...).
 func CommandWithExecKubectl(v exec.CommandProvider) options.Option[*Command] {
 	return func(c *Command) {
 		c.execKubectl = v
@@ -45,6 +49,7 @@ func CommandWithExecKubectl(v exec.CommandProvider) options.Option[*Command] {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the kubectl Command against kubectl after applying opts.
 func NewCommand(l log.Logger, kubectl *Kubectl, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:       l.Named("kubectl"),
@@ -87,22 +92,28 @@ func NewCommand(l log.Logger, kubectl *Kubectl, opts ...options.Option[*Command]
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command tree's root description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs kubectl against the selected cluster for the given readline
+// input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the rendered help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

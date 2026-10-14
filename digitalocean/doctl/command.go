@@ -27,6 +27,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command implements command.Command, exposing doctl auth, container
+	// registry, and Kubernetes kubeconfig subcommands.
 	Command struct {
 		l             log.Logger
 		name          string
@@ -36,7 +38,10 @@ type (
 		commandTree   tree.Root
 		clusterNameFn ClusterNameFn
 	}
+	// ClusterNameFn maps a configured cluster alias and its Cluster to the
+	// kubectl cluster name the generated kubeconfig should be stored under.
 	ClusterNameFn func(name string, cluster Cluster) string
+	// CommandOption configures a Command built by NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -44,12 +49,16 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the command's registered name, which defaults to
+// "doctl".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithClusterNameFn overrides how a configured cluster alias resolves
+// to the kubectl cluster name used when saving its kubeconfig.
 func CommandWithClusterNameFn(v ClusterNameFn) CommandOption {
 	return func(o *Command) {
 		o.clusterNameFn = v
@@ -60,6 +69,8 @@ func CommandWithClusterNameFn(v ClusterNameFn) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the doctl Command tree, wiring the given Doctl and
+// kubectl providers and applying any CommandOption in order.
 func NewCommand(l log.Logger, cache cache.Cache, doctl *Doctl, kubectl *kubectl.Kubectl, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:       l.Named("doctl"),
@@ -149,22 +160,27 @@ func NewCommand(l log.Logger, cache cache.Cache, doctl *Doctl, kubectl *kubectl.
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the command's registered name.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the command tree against the parsed arguments and flags.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's usage text.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

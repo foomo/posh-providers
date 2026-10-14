@@ -15,6 +15,8 @@ import (
 )
 
 type (
+	// Kubectl manages the kubeconfig files this project's clusters are stored
+	// under, keyed by cluster name.
 	Kubectl struct {
 		l                 log.Logger
 		cfg               Config
@@ -22,7 +24,10 @@ type (
 		configKey         string
 		authTokenProvider AuthTokenProvider
 	}
-	Option            func(*Kubectl) error
+	// Option configures a Kubectl during construction.
+	Option func(*Kubectl) error
+	// AuthTokenProvider resolves a bearer token for kubeContext, used to
+	// authenticate kubectl commands run against a Cluster.
 	AuthTokenProvider func(ctx context.Context, kubeContext string) (token string, err error)
 )
 
@@ -30,6 +35,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithConfigKey sets the viper key the instance reads its Config from,
+// overriding the default "kubectl".
 func CommandWithConfigKey(v string) Option {
 	return func(o *Kubectl) error {
 		o.configKey = v
@@ -37,6 +44,8 @@ func CommandWithConfigKey(v string) Option {
 	}
 }
 
+// CommandWithAuthTokenProvider sets the provider used to fetch a bearer token
+// for `kubectl` invocations against a Cluster.
 func CommandWithAuthTokenProvider(provider AuthTokenProvider) Option {
 	return func(o *Kubectl) error {
 		o.authTokenProvider = provider
@@ -48,6 +57,11 @@ func CommandWithAuthTokenProvider(provider AuthTokenProvider) Option {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// New builds a Kubectl, reading its Config from the configKey (default
+// "kubectl") after applying opts, creates the configured config path if
+// missing, and sets KUBECONFIG to "<configPath>/kubeconfig.yaml" in the
+// process environment. It returns an error if any Option, the config
+// unmarshal, or either filesystem/environment step fails.
 func New(l log.Logger, cache cache.Cache, opts ...Option) (*Kubectl, error) {
 	inst := &Kubectl{
 		l:         l,
@@ -82,14 +96,21 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*Kubectl, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Config returns the instance's configuration.
 func (k *Kubectl) Config() Config {
 	return k.cfg
 }
 
+// Cluster returns a Cluster handle for name. It does not check that a
+// kubeconfig for that name exists.
 func (k *Kubectl) Cluster(name string) *Cluster {
 	return NewCluster(k, name)
 }
 
+// Clusters returns a Cluster for every "<name>.yaml" kubeconfig file found
+// directly under the configured config path, chmod-ing each to 0600 along the
+// way.
+//
 //nolint:forcetypeassert
 func (k *Kubectl) Clusters() Clusters {
 	return k.cache.Get("clusters", func() any {

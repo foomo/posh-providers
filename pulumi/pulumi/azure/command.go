@@ -33,6 +33,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command implements the posh pulumi command, managing Pulumi stacks and
+	// their Azure Blob Storage state backends.
 	Command struct {
 		l           log.Logger
 		name        string
@@ -43,7 +45,11 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
-	NamespaceFn   func(cluster, fleet, squadron string) string
+	// NamespaceFn returns the Kubernetes namespace to target for a given
+	// cluster, fleet and squadron.
+	NamespaceFn func(cluster, fleet, squadron string) string
+	// CommandOption configures a Command via functional options passed to
+	// NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -51,12 +57,16 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "pulumi".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithConfigKey sets the viper key the provider reads its
+// configuration from, overriding the default "pulumi".
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -67,6 +77,10 @@ func CommandWithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the pulumi Command, reading its configuration from viper
+// and setting PULUMI_HOME from the configured ConfigPath. It returns an error
+// if the configuration cannot be unmarshalled or the environment variable
+// cannot be set.
 func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cache.Cache, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		name:      "pulumi",
@@ -463,22 +477,27 @@ func NewCommand(l log.Logger, az *az.AZ, op *onepassword.OnePassword, cache cach
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's top-level description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand selected by the current readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

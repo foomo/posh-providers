@@ -1,5 +1,6 @@
 package licensefinder
 
+// Config holds the licensefinder provider's configuration.
 type Config struct {
 	// Directory license_finder writes its log to, passed as `--log-directory`.
 	LogPath string `json:"logPath" yaml:"logPath"`

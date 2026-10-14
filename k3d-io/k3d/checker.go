@@ -12,6 +12,8 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 )
 
+// ClusterChecker returns a check.Checker reporting, for each configured
+// cluster, whether it is currently running in k3d.
 func ClusterChecker(inst *K3d) check.Checker {
 	return func(ctx context.Context, l log.Logger) []check.Info {
 		title := "K3d"
@@ -56,6 +58,8 @@ func ClusterChecker(inst *K3d) check.Checker {
 	}
 }
 
+// RegistryChecker returns a check.Checker reporting whether the configured
+// shared registry is running and resolvable to 127.0.0.1.
 func RegistryChecker(inst *K3d) check.Checker {
 	return func(ctx context.Context, l log.Logger) []check.Info {
 		title := "K3d registry"

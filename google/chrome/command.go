@@ -29,6 +29,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command that launches Chrome against a configured
+	// profile, each with its own isolated user-data directory.
 	Command struct {
 		l           log.Logger
 		cfg         Config
@@ -36,6 +38,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -43,12 +46,16 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "chrome".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithConfigKey sets the viper key the command reads its Config from,
+// overriding the default "chrome".
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -59,6 +66,10 @@ func CommandWithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand creates a Command, unmarshalling its Config from viper under
+// configKey ("chrome" unless overridden by WithConfigKey) and creating the
+// configured profile directory if needed. It returns an error if the config
+// cannot be unmarshalled or the directory cannot be created.
 func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("chrome"),
@@ -109,22 +120,28 @@ func NewCommand(l log.Logger, opts ...CommandOption) (*Command, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell autocompletion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute launches Chrome for the profile and optional URL named in r's
+// arguments.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

@@ -1,12 +1,12 @@
 module github.com/foomo/posh-providers
 
-go 1.26.3
+go 1.27
 
 replace github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
 
 require (
 	github.com/allex/envsubst v1.0.8
-	github.com/foomo/go v0.16.0
+	github.com/foomo/go v0.17.1
 	github.com/foomo/posh v0.22.0
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.83
@@ -33,8 +33,8 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/term v0.46.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
 )

@@ -4,6 +4,8 @@ import (
 	"strings"
 )
 
+// Config is the Harbor provider configuration: the registry URL, its OIDC
+// login page, and the project used for the authentication probe.
 type Config struct {
 	// Harbor base URL including scheme, e.g. `https://harbor.example.org`. Passed
 	// to `docker login` as-is; the registry host is derived from it by stripping a
@@ -18,6 +20,8 @@ type Config struct {
 	Project string `json:"project" yaml:"project"`
 }
 
+// DockerRegistry returns the registry host used for `docker login`, derived
+// from URL by stripping a leading "https://".
 func (c Config) DockerRegistry() string {
 	return strings.TrimPrefix(c.URL, "https://")
 }

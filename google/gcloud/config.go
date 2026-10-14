@@ -5,6 +5,8 @@ import (
 	"github.com/samber/lo"
 )
 
+// Config is the gcloud provider configuration: the CLOUDSDK_CONFIG path and
+// the named accounts and clusters.
 type Config struct {
 	// Path used as CLOUDSDK_CONFIG, keeping gcloud state per project; created on startup
 	ConfigPath string `json:"configPath" yaml:"configPath"`
@@ -14,6 +16,8 @@ type Config struct {
 	Clusters map[string]Cluster `json:"clusters" yaml:"clusters"`
 }
 
+// Cluster returns the cluster registered under name, or an error if none is
+// configured for that name.
 func (c Config) Cluster(name string) (Cluster, error) {
 	value, ok := c.Clusters[name]
 	if !ok {
@@ -23,10 +27,13 @@ func (c Config) Cluster(name string) (Cluster, error) {
 	return value, nil
 }
 
+// ClusterNames returns the configured cluster names, in no particular order.
 func (c Config) ClusterNames() []string {
 	return lo.Keys(c.Clusters)
 }
 
+// Account returns the account registered under name, or an error if none is
+// configured for that name.
 func (c Config) Account(name string) (Account, error) {
 	value, ok := c.Accounts[name]
 	if !ok {
@@ -36,6 +43,7 @@ func (c Config) Account(name string) (Account, error) {
 	return value, nil
 }
 
+// AccountNames returns the configured account names, in no particular order.
 func (c Config) AccountNames() []string {
 	return lo.Keys(c.Accounts)
 }

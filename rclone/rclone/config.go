@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Config holds the rclone provider's configuration.
 type Config struct {
 	// Path of the generated rclone configuration file, relative to the project
 	// root. Exported as RCLONE_CONFIG for every command in the shell session, so
@@ -24,6 +25,9 @@ type Config struct {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// RenderConfig resolves any 1Password secret references in Config by piping
+// it through `op inject`, returning the rendered rclone INI config. It
+// returns an error if `op inject` fails.
 func (c Config) RenderConfig(ctx context.Context) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, "op", "inject")
 	cmd.Stdin = strings.NewReader(c.Config)

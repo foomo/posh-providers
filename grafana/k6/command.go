@@ -32,6 +32,7 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command that runs k6 scenarios.
 	Command struct {
 		l           log.Logger
 		op          *onepassword.OnePassword
@@ -40,6 +41,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command built by NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -47,12 +49,16 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the name the command is registered and invoked
+// under; the default is "k6".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithConfigKey overrides the viper key the command's configuration is
+// read from; the default is "k6".
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -63,6 +69,9 @@ func CommandWithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the k6 command, creating the configured scenario
+// directory if it does not exist. It returns an error if the configuration
+// cannot be unmarshalled or the directory cannot be created.
 func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("k6"),
@@ -129,22 +138,27 @@ func NewCommand(l log.Logger, op *onepassword.OnePassword, opts ...CommandOption
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the k6 scenario selected by the readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

@@ -26,7 +26,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config is the chrome provider configuration: the profile data directory, an optional browser binary override, a default incognito setting, and the named profiles."
     },
     "Profile": {
       "properties": {
@@ -48,7 +49,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Profile is a named Chrome browser environment: its default URL, launch mode, proxy and incognito setting."
     }
   }
 }

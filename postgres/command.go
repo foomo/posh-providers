@@ -33,11 +33,13 @@ const skillName = "{{cmd}}"
 var ErrZipRequired = errors.New("compressing a dump requires the zip provider; pass postgres.CommandWithZip(...) when constructing the command")
 
 type (
+	// Command is the posh command wrapping psql, pg_dump and pg_restore.
 	Command struct {
 		l           log.Logger
 		zip         *zip.Zip
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command built by NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -45,6 +47,9 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithZip wires a zip provider into the command, enabling the dump
+// verb's --zip and --zip-cred flags. Without it, those flags fail with
+// ErrZipRequired.
 func CommandWithZip(v *zip.Zip) CommandOption {
 	return func(o *Command) {
 		o.zip = v
@@ -55,6 +60,7 @@ func CommandWithZip(v *zip.Zip) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the postgres Command.
 func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 	inst := &Command{
 		l: l.Named("postgres"),
@@ -193,22 +199,27 @@ func NewCommand(l log.Logger, opts ...CommandOption) *Command {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the command's registered name.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand matching the current input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

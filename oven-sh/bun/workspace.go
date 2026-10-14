@@ -7,10 +7,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Workspace represents the workspaces section of a package.json.
 type Workspace struct {
 	Packages []string `json:"packages" yaml:"packages"`
 }
 
+// LoadWorkspace reads and parses filename as a Workspace.
 func LoadWorkspace(filename string) (*Workspace, error) {
 	w := &Workspace{}
 

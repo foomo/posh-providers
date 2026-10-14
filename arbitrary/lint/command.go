@@ -26,6 +26,8 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command is the posh `lint` command, running every registered Linter or a
+// named subset of them.
 type Command struct {
 	l           log.Logger
 	name        string
@@ -37,6 +39,8 @@ type Command struct {
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "lint".
 func CommandWithName(v string) options.Option[*Command] {
 	return func(o *Command) {
 		o.name = v
@@ -47,6 +51,9 @@ func CommandWithName(v string) options.Option[*Command] {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the lint command. Linters are discovered lazily from
+// commands by type-asserting each registered command to Linter, so it must
+// contain every linting command before NewCommand's command runs.
 func NewCommand(l log.Logger, commands command.Commands, opts ...options.Option[*Command]) *Command {
 	inst := &Command{
 		l:        l.Named("lint"),
@@ -83,22 +90,27 @@ func NewCommand(l log.Logger, commands command.Commands, opts ...options.Option[
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description shown for the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the linters selected by the current readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the command tree.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

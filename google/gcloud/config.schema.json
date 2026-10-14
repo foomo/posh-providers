@@ -19,7 +19,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Account is a gcloud account configuration: the identity to authenticate as and, optionally, a 1Password-backed service account key."
     },
     "Cluster": {
       "properties": {
@@ -41,7 +42,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Cluster is a GKE cluster configuration: its name, project, region, and the optional account to authenticate as when fetching credentials."
     },
     "Config": {
       "properties": {
@@ -65,7 +67,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config is the gcloud provider configuration: the CLOUDSDK_CONFIG path and the named accounts and clusters."
     },
     "Secret": {
       "properties": {

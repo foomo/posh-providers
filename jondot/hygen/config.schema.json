@@ -11,7 +11,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the hygen provider's settings."
     }
   }
 }

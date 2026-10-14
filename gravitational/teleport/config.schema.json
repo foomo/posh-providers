@@ -40,7 +40,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the teleport provider's configuration."
     },
     "Database": {
       "properties": {
@@ -50,7 +51,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Database holds database-specific teleport settings."
     },
     "Kubernetes": {
       "properties": {
@@ -63,7 +65,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Kubernetes holds kubernetes-specific teleport settings."
     }
   }
 }

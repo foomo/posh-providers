@@ -4,6 +4,7 @@ import (
 	"context"
 )
 
+// Squadron deploys and inspects squadron units for a cluster and fleet.
 type Squadron interface {
 	Cluster(name string) (Cluster, bool)
 	Exists(name string) bool

@@ -27,6 +27,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command.Command implementation wrapping the mkcert
+	// CLI.
 	Command struct {
 		l           log.Logger
 		cfg         Config
@@ -34,6 +36,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// Option configures a Command during construction with NewCommand.
 	Option func(*Command) error
 )
 
@@ -41,6 +44,7 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the name the command is registered under.
 func CommandWithName(v string) Option {
 	return func(o *Command) error {
 		o.name = v
@@ -48,6 +52,7 @@ func CommandWithName(v string) Option {
 	}
 }
 
+// WithConfigKey overrides the viper key the command reads its Config from.
 func WithConfigKey(v string) Option {
 	return func(o *Command) error {
 		o.configKey = v
@@ -59,6 +64,8 @@ func WithConfigKey(v string) Option {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds a Command, applying opts and loading its Config from
+// viper under the configured key.
 func NewCommand(l log.Logger, opts ...Option) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("mkcert"),
@@ -124,18 +131,23 @@ func NewCommand(l log.Logger, opts ...Option) (*Command, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description of the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Validate reports an error if the given input is missing the subcommand
+// argument.
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
@@ -145,10 +157,12 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Execute runs the subcommand selected by the given input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

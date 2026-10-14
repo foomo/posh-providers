@@ -7,6 +7,8 @@ import (
 	"github.com/samber/lo"
 )
 
+// Config holds the Azure CLI's local config directory, tenant and the
+// subscriptions and service principals available to the az command.
 type Config struct {
 	// Config path
 	ConfigPath string `json:"configPath" yaml:"configPath"`
@@ -20,6 +22,7 @@ type Config struct {
 	ServicePrincipals map[string]ServicePrincipal `json:"servicePrincipals" yaml:"servicePrincipals"`
 }
 
+// ServicePrincipal holds the credentials for a non-interactive `az login`.
 type ServicePrincipal struct {
 	// Tenant id
 	TenantID string `json:"tenantId" yaml:"tenantId"`
@@ -29,6 +32,8 @@ type ServicePrincipal struct {
 	ClientSecret string `json:"clientSecret" yaml:"clientSecret"`
 }
 
+// Subscription returns the named subscription configuration. It returns an
+// error if the name is not configured.
 func (c Config) Subscription(name string) (Subscription, error) {
 	value, ok := c.Subscriptions[name]
 	if !ok {
@@ -38,6 +43,7 @@ func (c Config) Subscription(name string) (Subscription, error) {
 	return value, nil
 }
 
+// SubscriptionNames returns the configured subscription names, sorted.
 func (c Config) SubscriptionNames() []string {
 	keys := lo.Keys(c.Subscriptions)
 	sort.Strings(keys)
@@ -45,6 +51,8 @@ func (c Config) SubscriptionNames() []string {
 	return keys
 }
 
+// ServicePrincipal returns the named service principal configuration. It
+// returns an error if the name is not configured.
 func (c Config) ServicePrincipal(name string) (ServicePrincipal, error) {
 	value, ok := c.ServicePrincipals[name]
 	if !ok {
@@ -54,6 +62,7 @@ func (c Config) ServicePrincipal(name string) (ServicePrincipal, error) {
 	return value, nil
 }
 
+// ServicePrincipalNames returns the configured service principal names, sorted.
 func (c Config) ServicePrincipalNames() []string {
 	keys := lo.Keys(c.ServicePrincipals)
 	sort.Strings(keys)

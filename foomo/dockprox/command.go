@@ -33,6 +33,8 @@ const (
 )
 
 type (
+	// Command is the posh command.Command implementation that starts and
+	// stops the dockprox background process.
 	Command struct {
 		l           log.Logger
 		gk          *gokazi.Gokazi
@@ -41,6 +43,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command during construction with NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -48,12 +51,14 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the name the command is registered under.
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// WithConfigKey overrides the viper key the command reads its Config from.
 func WithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -64,6 +69,9 @@ func WithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds a Command, applying opts, loading its Config from viper
+// under the configured key, and registering the dockprox serve and menubar
+// tasks on gk.
 func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("dockprox"),
@@ -117,22 +125,27 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description of the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand selected by the given input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

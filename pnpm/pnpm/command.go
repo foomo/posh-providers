@@ -31,11 +31,13 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command wrapping pnpm.
 	Command struct {
 		l           log.Logger
 		cache       cache.Namespace
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command built by NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -43,6 +45,7 @@ type (
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the pnpm Command.
 func NewCommand(l log.Logger, cache cache.Cache) *Command {
 	inst := &Command{
 		l:     l.Named("pnpm"),
@@ -158,22 +161,27 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the command's registered name.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand matching the current input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

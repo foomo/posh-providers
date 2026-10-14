@@ -13,16 +13,21 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 )
 
+// None is the sentinel cluster name meaning "no cluster selected".
 const None string = "_"
 
+// Cluster is a handle to one named cluster's kubeconfig, scoped to a Kubectl
+// instance.
 type Cluster struct {
 	l       log.Logger
 	name    string
 	kubectl *Kubectl
 }
 
+// Clusters is a list of Cluster handles.
 type Clusters []*Cluster
 
+// NewCluster returns a Cluster handle for name, scoped to kubectl.
 func NewCluster(kubectl *Kubectl, name string) *Cluster {
 	return &Cluster{
 		l:       kubectl.l.Named("kubectl:" + name),
@@ -31,22 +36,29 @@ func NewCluster(kubectl *Kubectl, name string) *Cluster {
 	}
 }
 
+// IsNone reports whether the cluster is the None sentinel.
 func (c *Cluster) IsNone() bool {
 	return c.name == None
 }
 
+// Name returns the cluster's name.
 func (c *Cluster) Name() string {
 	return c.name
 }
 
+// String returns the cluster's name.
 func (c *Cluster) String() string {
 	return c.name
 }
 
+// Env returns a "KUBECONFIG=<path>" environment entry for the cluster's
+// kubeconfig under profile.
 func (c *Cluster) Env(profile string) string {
 	return fmt.Sprintf("KUBECONFIG=%s", c.Config(profile))
 }
 
+// Config returns the path to the cluster's kubeconfig file, nested under
+// profile when profile is non-empty.
 func (c *Cluster) Config(profile string) string {
 	if profile != "" {
 		return env.Path(c.kubectl.cfg.ConfigPath, profile, c.Name()+".yaml")
@@ -55,6 +67,7 @@ func (c *Cluster) Config(profile string) string {
 	return env.Path(c.kubectl.cfg.ConfigPath, c.Name()+".yaml")
 }
 
+// ConfigExists reports whether the cluster's kubeconfig exists under profile.
 func (c *Cluster) ConfigExists(profile string) bool {
 	if _, err := os.Stat(c.Config(profile)); err == nil {
 		return true
@@ -94,6 +107,7 @@ func Profile(flags readline.Args) string {
 	return ""
 }
 
+// DeleteConfig removes the cluster's kubeconfig under profile, if it exists.
 func (c *Cluster) DeleteConfig(profile string) error {
 	if !c.ConfigExists(profile) {
 		return nil
@@ -102,6 +116,9 @@ func (c *Cluster) DeleteConfig(profile string) error {
 	return os.Remove(c.Config(profile))
 }
 
+// Profiles returns the subdirectory names under the configured config path,
+// i.e. the profiles this cluster's kubeconfig can be stored under.
+//
 //nolint:forcetypeassert
 func (c *Cluster) Profiles(ctx context.Context) []string {
 	return c.kubectl.cache.Get("profiles", func() any {
@@ -123,6 +140,9 @@ func (c *Cluster) Profiles(ctx context.Context) []string {
 	}).([]string)
 }
 
+// Namespaces returns the names of the namespaces in the cluster, read via
+// `kubectl get namespaces` under profile.
+//
 //nolint:forcetypeassert
 func (c *Cluster) Namespaces(ctx context.Context, profile string) []string {
 	return c.kubectl.cache.Get(profile+"-"+c.name+"-namespaces", func() any {
@@ -144,6 +164,9 @@ func (c *Cluster) Namespaces(ctx context.Context, profile string) []string {
 	}).([]string)
 }
 
+// Pods returns the names of the pods in namespace, read via `kubectl get
+// pods` under profile.
+//
 //nolint:forcetypeassert
 func (c *Cluster) Pods(ctx context.Context, profile, namespace string) []string {
 	return c.kubectl.cache.Get(profile+"-"+c.name+"-"+namespace+"-pods", func() any {
@@ -164,6 +187,12 @@ func (c *Cluster) Pods(ctx context.Context, profile, namespace string) []string 
 			return strings.Split(string(out), " ")
 		}
 	}).([]string)
+}
+
+// Kubeforward starts a `kubectl port-forward` session to target in namespace
+// under profile. See the package-level Kubeforward function for details.
+func (c *Cluster) Kubeforward(ctx context.Context, profile, target, namespace string, port int) (context.Context, string, context.CancelFunc) {
+	return Kubeforward(ctx, c, profile, target, namespace, port)
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -19,6 +19,7 @@ package main
 type Plugin struct {
   l        log.Logger
   cache    cache.Cache
+  kubectl  *kubectl.Kubectl
   commands command.Commands
 }
 
@@ -31,7 +32,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 
   // ...
 
-  if value, err := gcx.NewCommand(l, inst.cache); err != nil {
+  if value, err := gcx.NewCommand(l, inst.cache, gcx.CommandWithKubectl(inst.kubectl)); err != nil {
     return nil, err
   } else {
     inst.commands.MustAdd(value)
@@ -43,6 +44,8 @@ func New(l log.Logger) (plugin.Plugin, error) {
 }
 ```
 
+`CommandWithKubectl` is only required for environments that set `kubeforward`; omit it otherwise.
+
 ### Config
 
 ```yaml
@@ -51,6 +54,17 @@ gcx:
 ```
 
 Every `*.yaml` / `*.yml` file in `path` is an environment, e.g. `./devops/gcx/dev.yaml` becomes `gcx dev ...`.
+
+An environment can set `kubeforward` to reach a Grafana server that is only reachable from inside a
+cluster. When set, `GRAFANA_SERVER` is the local address of a `kubectl port-forward` to the given
+target instead of `url`:
+
+```yaml
+kubeforward:
+  target: svc/grafana
+  namespace: monitoring
+  port: 3000
+```
 
 ### Install
 

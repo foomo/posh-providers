@@ -4,6 +4,7 @@ import (
 	"github.com/foomo/posh-providers/onepassword"
 )
 
+// Cluster describes a remote cluster reachable through a cloudflared tunnel.
 type Cluster struct {
 	// Local port the tunnel binds on 127.0.0.1
 	Port int `json:"port" yaml:"port"`

@@ -19,12 +19,15 @@ import (
 
 // PortForward command
 type (
+	// SSH manages configured port forwards and SOCKS5 tunnels as gokazi
+	// background processes.
 	SSH struct {
 		l         log.Logger
 		gk        *gokazi.Gokazi
 		cfg       Config
 		configKey string
 	}
+	// Option configures an SSH in New.
 	Option func(*SSH) error
 )
 
@@ -32,6 +35,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// WithConfigKey sets the viper key the Config is unmarshalled from,
+// overriding the default "ssh".
 func WithConfigKey(v string) Option {
 	return func(o *SSH) error {
 		o.configKey = v
@@ -94,10 +99,14 @@ func New(l log.Logger, gk *gokazi.Gokazi, opts ...Option) (*SSH, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Config returns the loaded configuration.
 func (s *SSH) Config() Config {
 	return s.cfg
 }
 
+// StartPortForward starts the named port forward as a background gokazi
+// process, auto-assigning a free local port if none is configured. It is a
+// no-op if the forward is already running.
 func (s *SSH) StartPortForward(ctx context.Context, name string) error {
 	c, ok := s.cfg.PortForward(name)
 	if !ok {
@@ -161,6 +170,8 @@ func (s *SSH) StartPortForward(ctx context.Context, name string) error {
 	return nil
 }
 
+// StopPortForward stops the named port forward's background process. It is a
+// no-op if the forward is not running.
 func (s *SSH) StopPortForward(ctx context.Context, name string) error {
 	err := s.gk.Stop(context.WithoutCancel(ctx), "ssh.pfw."+name)
 	if errors.Is(err, gokazi.ErrNotRunning) {
@@ -172,6 +183,9 @@ func (s *SSH) StopPortForward(ctx context.Context, name string) error {
 	return nil
 }
 
+// StartSocks5Tunnel starts the named SOCKS5 tunnel as a background gokazi
+// process, auto-assigning a free local port if none is configured. It is a
+// no-op if the tunnel is already running.
 func (s *SSH) StartSocks5Tunnel(ctx context.Context, name string) error {
 	c, ok := s.cfg.Socks5Tunnel(name)
 	if !ok {
@@ -237,6 +251,8 @@ func (s *SSH) StartSocks5Tunnel(ctx context.Context, name string) error {
 	return nil
 }
 
+// StopSocks5Tunnel stops the named SOCKS5 tunnel's background process. It is
+// a no-op if the tunnel is not running.
 func (s *SSH) StopSocks5Tunnel(ctx context.Context, name string) error {
 	err := s.gk.Stop(context.WithoutCancel(ctx), "ssh.socks5."+name)
 	if errors.Is(err, gokazi.ErrNotRunning) {

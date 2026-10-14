@@ -13,12 +13,15 @@ import (
 )
 
 type (
+	// Zip creates and extracts zip archives, optionally password-protected
+	// using a secret fetched from 1Password.
 	Zip struct {
 		l         log.Logger
 		cfg       Config
 		configKey string
 		op        *onepassword.OnePassword
 	}
+	// Option configures a Zip in New.
 	Option func(*Zip) error
 )
 
@@ -26,6 +29,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// WithConfigKey sets the viper key the Config is unmarshalled from,
+// overriding the default "zip".
 func WithConfigKey(v string) Option {
 	return func(o *Zip) error {
 		o.configKey = v
@@ -37,6 +42,8 @@ func WithConfigKey(v string) Option {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// New builds a Zip, unmarshalling its Config from the configured viper key.
+// It returns an error if that unmarshal fails or an Option fails.
 func New(l log.Logger, op *onepassword.OnePassword, opts ...Option) (*Zip, error) {
 	inst := &Zip{
 		l:         l,
@@ -63,6 +70,7 @@ func New(l log.Logger, op *onepassword.OnePassword, opts ...Option) (*Zip, error
 // ~ Getter
 // ------------------------------------------------------------------------------------------------
 
+// Config returns the loaded configuration.
 func (c *Zip) Config() Config {
 	return c.cfg
 }
@@ -71,6 +79,7 @@ func (c *Zip) Config() Config {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Create zips filename's basename into "<basename>.zip" alongside it.
 func (c *Zip) Create(ctx context.Context, filename string) error {
 	basename := path.Base(filename)
 	if out, err := shell.New(ctx, c.l, "zip", basename+".zip", basename).
@@ -82,6 +91,7 @@ func (c *Zip) Create(ctx context.Context, filename string) error {
 	return nil
 }
 
+// Extract unzips filename into the directory containing it.
 func (c *Zip) Extract(ctx context.Context, filename string) error {
 	basename := path.Base(filename)
 	if out, err := shell.New(ctx, c.l, "unzip", basename).
@@ -93,6 +103,8 @@ func (c *Zip) Extract(ctx context.Context, filename string) error {
 	return nil
 }
 
+// CreateWithPassword zips filename's basename into "<basename>.zip" alongside
+// it, encrypted with the named credential's password from 1Password.
 func (c *Zip) CreateWithPassword(ctx context.Context, filename, credential string) error {
 	basename := path.Base(filename)
 
@@ -110,6 +122,8 @@ func (c *Zip) CreateWithPassword(ctx context.Context, filename, credential strin
 	return nil
 }
 
+// ExtractWithPassword unzips filename into the directory containing it,
+// decrypting it with the named credential's password from 1Password.
 func (c *Zip) ExtractWithPassword(ctx context.Context, filename, credential string) error {
 	basename := path.Base(filename)
 
@@ -127,6 +141,8 @@ func (c *Zip) ExtractWithPassword(ctx context.Context, filename, credential stri
 	return nil
 }
 
+// GetCredentialPassword fetches the named credential's password from
+// 1Password. It returns an error if the credential is not configured.
 func (c *Zip) GetCredentialPassword(ctx context.Context, name string) (string, error) {
 	secret, ok := c.cfg.Credential(name)
 	if !ok {

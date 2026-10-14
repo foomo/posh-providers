@@ -28,6 +28,8 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command is the posh command.Command implementation that generates
+// gotsrpc code.
 type Command struct {
 	l           log.Logger
 	cache       cache.Namespace
@@ -38,6 +40,7 @@ type Command struct {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds a Command named "gotsrpc".
 func NewCommand(l log.Logger, cache cache.Cache) *Command {
 	inst := &Command{
 		l:     l.Named("gotsrpc"),
@@ -68,18 +71,23 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description of the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Validate rejects more than one path argument, or a path argument that is
+// not an existing file.
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenIs(0):
@@ -95,10 +103,12 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Execute runs the subcommand selected by the given input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

@@ -1,5 +1,6 @@
 package docusaurus
 
+// Config holds the docusaurus provider's configuration.
 type Config struct {
 	// Path to the docusaurus site, added into the image at build time
 	SourcePath string `json:"sourcePath" yaml:"sourcePath"`

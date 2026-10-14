@@ -18,7 +18,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the inline task definitions and an optional directory of further task files."
     },
     "Task": {
       "properties": {
@@ -68,7 +69,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Task is a named shell task: an optional confirmation prompt, preconditions that can skip it, dependencies run before it, and the commands it executes."
     }
   }
 }

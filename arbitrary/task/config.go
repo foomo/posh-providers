@@ -11,6 +11,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Config holds the inline task definitions and an optional directory of
+// further task files.
 type Config struct {
 	// Path to the directory containing tasks
 	Path string `json:"path" yaml:"path"`
@@ -18,6 +20,8 @@ type Config struct {
 	Tasks map[string]Task `json:"tasks" yaml:"tasks"`
 }
 
+// Names returns the names of every non-hidden task, from both Tasks and any
+// .yaml files found under Path, sorted.
 func (c Config) Names() []string {
 	var ret []string
 
@@ -48,6 +52,10 @@ func (c Config) Names() []string {
 	return ret
 }
 
+// AllTasks returns every task from Tasks merged with those loaded from
+// .yaml files under Path, keyed by name; a file task overrides a configured
+// task of the same name. It returns an error if a task file cannot be read
+// or parsed.
 func (c Config) AllTasks() (map[string]Task, error) {
 	// Copy rather than alias: the file tasks below are written into this map, and
 	// aliasing c.Tasks would mutate the caller's config - silently replacing a

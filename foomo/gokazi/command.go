@@ -34,6 +34,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command.Command implementation that lists and
+	// stops processes in the shared gokazi task registry.
 	Command struct {
 		l           log.Logger
 		gk          *gokazi.Gokazi
@@ -42,6 +44,7 @@ type (
 		name        string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command during construction with NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -49,12 +52,15 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName overrides the name the command is registered under.
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// CommandWithConfigKey overrides the viper key the command reads its Config
+// from.
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -65,6 +71,8 @@ func CommandWithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds a Command, applying opts and loading its Config from
+// viper under the configured key.
 func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("gokazi"),
@@ -123,22 +131,29 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description of the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the subcommand selected by the given input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Shutdown signals every running task in the registry to interrupt when
+// Config.Cleanup is enabled and this is the last running posh process; it is
+// a no-op otherwise.
 func (c *Command) Shutdown(ctx context.Context) error {
 	if !c.cfg.Cleanup {
 		return nil
@@ -191,6 +206,7 @@ func (c *Command) Shutdown(ctx context.Context) error {
 	return wg.Wait()
 }
 
+// Help returns the help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

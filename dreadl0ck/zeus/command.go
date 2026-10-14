@@ -27,6 +27,8 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command implements command.Command, running the zeus binary at a given
+// directory or bootstrapping a new zeus installation there.
 type Command struct {
 	l     log.Logger
 	name  string
@@ -37,6 +39,7 @@ type Command struct {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the zeus Command named "zeus".
 func NewCommand(l log.Logger, cache cache.Cache) *Command {
 	return &Command{
 		l:     l.Named("zeus"),
@@ -49,10 +52,12 @@ func NewCommand(l log.Logger, cache cache.Cache) *Command {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the command's registered name.
 func (c *Command) Name() string {
 	return c.name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return "Run zeus in the given directory, or bootstrap a new one"
 }
@@ -101,6 +106,7 @@ func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillM
 	}
 }
 
+// Complete returns path completion suggestions for the [path] argument.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	switch {
 	case r.Args().LenLte(1):
@@ -110,6 +116,8 @@ func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt
 	return nil
 }
 
+// Validate reports an error if the [path] argument is missing, or if it
+// exists but is not a directory.
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	switch {
 	case r.Args().LenLt(1):
@@ -128,6 +136,8 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Execute runs zeus at the given [path], bootstrapping a new zeus
+// installation there first if the path does not yet exist.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	dir, args := r.Args().Shift()
 	if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
@@ -147,6 +157,7 @@ func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	}
 }
 
+// Help returns the command's usage text.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return `Find and run zeus at the given path.
 

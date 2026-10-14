@@ -8,6 +8,8 @@ import (
 	"github.com/foomo/posh/pkg/prompt/check"
 )
 
+// AccessChecker returns a check.Checker reporting whether a cloudflared
+// access process is currently connected for access.
 func AccessChecker(cf *Cloudflared, access Access) check.Checker {
 	return func(ctx context.Context, l log.Logger) []check.Info {
 		name := "Cloudflared"

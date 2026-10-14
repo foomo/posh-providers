@@ -11,11 +11,14 @@ import (
 )
 
 type (
+	// K3d wraps the k3d CLI, exposing the configured clusters and registry and
+	// the running clusters k3d itself reports.
 	K3d struct {
 		l         log.Logger
 		cfg       *Config
 		configKey string
 	}
+	// Option configures a K3d during construction.
 	Option func(*K3d) error
 )
 
@@ -23,6 +26,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// WithConfigKey sets the viper key the instance reads its Config from,
+// overriding the default "k3d".
 func WithConfigKey(v string) Option {
 	return func(o *K3d) error {
 		o.configKey = v
@@ -34,6 +39,10 @@ func WithConfigKey(v string) Option {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// New builds a K3d, reading its Config from the configKey (default "k3d")
+// after applying opts, and sets K3D_FIX_DNS=1 in the process environment to
+// work around github.com/k3d-io/k3d/issues/209. It returns an error if any
+// Option, the config unmarshal, or setting the environment variable fails.
 func New(l log.Logger, opts ...Option) (*K3d, error) {
 	inst := &K3d{
 		l:         l.Named("k3d"),
@@ -64,6 +73,7 @@ func New(l log.Logger, opts ...Option) (*K3d, error) {
 // ~ Getter
 // ------------------------------------------------------------------------------------------------
 
+// Config returns the instance's configuration.
 func (i *K3d) Config() *Config {
 	return i.cfg
 }
@@ -72,6 +82,8 @@ func (i *K3d) Config() *Config {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Registry returns the k3d registry named "k3d-"+name, or nil if no such
+// registry exists.
 func (i *K3d) Registry(ctx context.Context, name string) (*Registry, error) {
 	out, err := shell.New(ctx, i.l, "k3d", "registry", "list", "--output", "json").Output()
 	if err != nil {
@@ -108,6 +120,8 @@ func (i *K3d) Clusters(ctx context.Context) ([]*Cluster, error) {
 	return clusters, nil
 }
 
+// Cluster returns the running k3d cluster named name, or nil if it is not
+// currently running.
 func (i *K3d) Cluster(ctx context.Context, name string) (*Cluster, error) {
 	clusters, err := i.Clusters(ctx)
 	if err != nil {

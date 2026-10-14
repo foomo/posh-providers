@@ -32,6 +32,8 @@ var skill string
 // an agent to run a command the project may not have.
 const skillName = "{{cmd}}"
 
+// Command implements command.Command, exposing `get` and `edit` subcommands
+// for a key inside a configured cluster's etcd pod.
 type Command struct {
 	l           log.Logger
 	etcd        *ETCD
@@ -43,6 +45,9 @@ type Command struct {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the etcd Command tree, wiring the given ETCD and kubectl
+// providers. The Option values are accepted for signature compatibility but
+// apply to the ETCD, not the Command.
 func NewCommand(l log.Logger, etcd *ETCD, kubectl *kubectl.Kubectl, opts ...Option) *Command {
 	inst := &Command{
 		l:       l.Named("etcd"),
@@ -120,22 +125,27 @@ func NewCommand(l log.Logger, etcd *ETCD, kubectl *kubectl.Kubectl, opts ...Opti
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the command's registered name.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell completion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the command tree against the parsed arguments and flags.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's usage text.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

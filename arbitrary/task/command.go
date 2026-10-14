@@ -30,6 +30,7 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh `task` command, running a named Task's shell commands.
 	Command struct {
 		l           log.Logger
 		cfg         Config
@@ -38,6 +39,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -45,12 +47,16 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "task".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// WithConfigKey sets the viper key the command's Config is unmarshalled from,
+// overriding the default "task".
 func WithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -61,6 +67,8 @@ func WithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the task command, unmarshalling its Config from the
+// configured viper key. It returns an error if that unmarshal fails.
 func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("task"),
@@ -109,22 +117,28 @@ func NewCommand(l log.Logger, cache cache.Cache, opts ...CommandOption) (*Comman
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description shown for the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the task named by the current readline input, including its
+// preconditions, prompt and dependencies.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the command tree.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

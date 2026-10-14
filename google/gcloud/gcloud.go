@@ -18,6 +18,8 @@ import (
 )
 
 type (
+	// GCloud holds the resolved gcloud configuration and sets up the local
+	// gcloud SDK state directory (CLOUDSDK_CONFIG) for the project.
 	GCloud struct {
 		l                    log.Logger
 		cfg                  *Config
@@ -25,6 +27,7 @@ type (
 		configKey            string
 		accountFileNameRegex *regexp.Regexp
 	}
+	// Option configures a GCloud in New.
 	Option func(*GCloud)
 )
 
@@ -32,18 +35,24 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// WithConfig sets the Config directly, bypassing viper unmarshalling.
 func WithConfig(v *Config) Option {
 	return func(o *GCloud) {
 		o.cfg = v
 	}
 }
 
+// WithConfigKey sets the viper key New reads its Config from, overriding the
+// default "gcloud". Ignored if WithConfig is also given.
 func WithConfigKey(v string) Option {
 	return func(o *GCloud) {
 		o.configKey = v
 	}
 }
 
+// WithAccountFileNameRegex overrides the regular expression used to parse
+// service account key filenames, replacing the default
+// `(\w+)@(\w+)-(\w+)\.json`.
 func WithAccountFileNameRegex(v *regexp.Regexp) Option {
 	return func(o *GCloud) {
 		o.accountFileNameRegex = v
@@ -54,6 +63,11 @@ func WithAccountFileNameRegex(v *regexp.Regexp) Option {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// New creates a GCloud, unmarshalling its Config from viper under configKey
+// ("gcloud" unless overridden by WithConfigKey or WithConfig), creating the
+// configured ConfigPath, and setting CLOUDSDK_CONFIG to it. It returns an
+// error if the config cannot be unmarshalled, the directory cannot be
+// created, or the environment variable cannot be set.
 func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 	inst := &GCloud{
 		l:                    l,
@@ -90,10 +104,13 @@ func New(l log.Logger, cache cache.Cache, opts ...Option) (*GCloud, error) {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Config returns the resolved gcloud configuration.
 func (p *GCloud) Config() *Config {
 	return p.cfg
 }
 
+// ServiceAccountKeysPath returns the directory where retrieved service
+// account key files are cached, under the configured ConfigPath.
 func (p *GCloud) ServiceAccountKeysPath() string {
 	return path.Join(p.cfg.ConfigPath, "service_account_keys")
 }

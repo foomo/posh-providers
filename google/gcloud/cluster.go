@@ -1,9 +1,12 @@
 package gcloud
 
 const (
+	// ClusterNameDefault is the conventional GKE cluster name "default".
 	ClusterNameDefault string = "default"
 )
 
+// Cluster is a GKE cluster configuration: its name, project, region, and the
+// optional account to authenticate as when fetching credentials.
 type Cluster struct {
 	// Name of the cluster in GKE, which may differ from the key used to select it
 	Name string `json:"name" yaml:"name"`

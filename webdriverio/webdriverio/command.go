@@ -34,6 +34,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command runs WebdriverIO end-to-end tests across configured modes, sites
+	// and environments.
 	Command struct {
 		l           log.Logger
 		op          *onepassword.OnePassword
@@ -43,6 +45,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -50,12 +53,16 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "wdio".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// WithConfigKey sets the viper key the command reads its Config from,
+// overriding the default "webdriverio".
 func WithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -66,6 +73,9 @@ func WithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the wdio command tree (mode, site, env), applying opts
+// after the defaults. It returns an error if the configured viper key cannot
+// be unmarshalled into Config.
 func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("wdio"),
@@ -176,22 +186,27 @@ func NewCommand(l log.Logger, c cache.Cache, op *onepassword.OnePassword, opts .
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the test suite for the parsed readline input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

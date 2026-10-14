@@ -11,6 +11,8 @@ import (
 	"github.com/foomo/posh/pkg/prompt/check"
 )
 
+// Checker returns a check.Checker reporting whether the dockprox process is
+// running, for use with the posh prompt.
 func Checker() check.Checker {
 	gk := gokazi.New(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	gk.Add("dockprox", gokaziconfig.Task{

@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Config holds the terraform provider's configuration.
 type Config struct {
 	// Directory holding one subdirectory per workspace. Workspace names are
 	// discovered from it rather than configured: any child directory containing
@@ -28,6 +29,7 @@ type Config struct {
 	ServicePrincipals map[string]ServicePrincipal `json:"servicePrincipals" yaml:"servicePrincipals"`
 }
 
+// Subscription holds a workspace's Azure subscription and backend settings.
 type Subscription struct {
 	// Azure subscription ID
 	ID string `json:"id" yaml:"id"`
@@ -38,6 +40,7 @@ type Subscription struct {
 	Proxy string `json:"proxy" yaml:"proxy"`
 }
 
+// Backend holds the azurerm backend storage configuration for a workspace.
 type Backend struct {
 	// Resource group containing the storage account
 	ResourceGroupName string `json:"resourceGroupName" yaml:"resourceGroupName"`
@@ -49,6 +52,8 @@ type Backend struct {
 	Key string `json:"key" yaml:"key"`
 }
 
+// ServicePrincipal holds Azure service principal credentials selectable with
+// --service-principal.
 type ServicePrincipal struct {
 	// Tenant ID
 	TenantID string `json:"tenantId" yaml:"tenantId"`
@@ -65,6 +70,8 @@ type ServicePrincipal struct {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// WorkspaceNames returns the names of subdirectories of Path that contain
+// .tf files and are not prefixed with "." or "_".
 func (c Config) WorkspaceNames() []string {
 	var ret []string
 
@@ -87,6 +94,7 @@ func (c Config) WorkspaceNames() []string {
 	return ret
 }
 
+// WorkspacePath returns the directory for the named workspace.
 func (c Config) WorkspacePath(workspace string) string {
 	return filepath.Join(c.Path, workspace)
 }
@@ -162,6 +170,8 @@ func (c Config) WorkspaceTargets(workspace string) []string {
 	return out
 }
 
+// Subscription returns the named subscription, or an error if it is not
+// configured.
 func (c Config) Subscription(name string) (Subscription, error) {
 	value, ok := c.Subscriptions[name]
 	if !ok {
@@ -171,6 +181,8 @@ func (c Config) Subscription(name string) (Subscription, error) {
 	return value, nil
 }
 
+// SubscriptionNames returns the configured subscription names, sorted
+// alphabetically.
 func (c Config) SubscriptionNames() []string {
 	keys := make([]string, 0, len(c.Subscriptions))
 	for k := range c.Subscriptions {
@@ -182,6 +194,8 @@ func (c Config) SubscriptionNames() []string {
 	return keys
 }
 
+// ServicePrincipal returns the named service principal, or an error if it is
+// not configured.
 func (c Config) ServicePrincipal(name string) (ServicePrincipal, error) {
 	value, ok := c.ServicePrincipals[name]
 	if !ok {
@@ -191,6 +205,8 @@ func (c Config) ServicePrincipal(name string) (ServicePrincipal, error) {
 	return value, nil
 }
 
+// ServicePrincipalNames returns the configured service principal names,
+// sorted alphabetically.
 func (c Config) ServicePrincipalNames() []string {
 	keys := make([]string, 0, len(c.ServicePrincipals))
 	for k := range c.ServicePrincipals {

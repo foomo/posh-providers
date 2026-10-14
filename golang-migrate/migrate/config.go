@@ -4,6 +4,8 @@ import (
 	"github.com/samber/lo"
 )
 
+// Config is the migrate provider configuration: named migration sources and
+// named database connection URLs.
 type Config struct {
 	// SourcesMap maps a source name to a golang-migrate source URL, e.g.
 	// `file://migrations`. The names are the values the `source` argument accepts.
@@ -15,10 +17,14 @@ type Config struct {
 	DatabasesMap map[string]string `json:"databases" yaml:"databases" mapstructure:"databases"`
 }
 
+// Sources returns the configured migration source names, in no particular
+// order.
 func (c Config) Sources() []string {
 	return lo.Keys(c.SourcesMap)
 }
 
+// Source returns the golang-migrate source URL registered under name, or an
+// empty string if none is configured for that name.
 func (c Config) Source(name string) string {
 	if value, ok := c.SourcesMap[name]; ok {
 		return value
@@ -27,10 +33,13 @@ func (c Config) Source(name string) string {
 	return ""
 }
 
+// Databases returns the configured database names, in no particular order.
 func (c Config) Databases() []string {
 	return lo.Keys(c.DatabasesMap)
 }
 
+// Database returns the golang-migrate database URL registered under name, or
+// an empty string if none is configured for that name.
 func (c Config) Database(name string) string {
 	if value, ok := c.DatabasesMap[name]; ok {
 		return value

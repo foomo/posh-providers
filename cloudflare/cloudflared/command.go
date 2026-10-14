@@ -30,12 +30,15 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh `cloudflared` command, managing Access connections
+	// and account-level tunnels.
 	Command struct {
 		l           log.Logger
 		name        string
 		cloudflared *Cloudflared
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -43,6 +46,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "cloudflared".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
@@ -53,6 +58,9 @@ func CommandWithName(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the cloudflared command around the given Cloudflared,
+// creating its configured HOME directory. It returns an error if that
+// directory cannot be created.
 func NewCommand(l log.Logger, cloudflared *Cloudflared, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:           l.Named("cloudflared"),
@@ -206,10 +214,12 @@ func NewCommand(l log.Logger, cloudflared *Cloudflared, opts ...CommandOption) (
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the one-line description shown for the command.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
@@ -243,10 +253,12 @@ func (c *Command) SkillMetadata(ctx context.Context, name string) command.SkillM
 	}
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Validate reports an error if the cloudflared executable is not on PATH.
 func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	if _, err := exec.LookPath("cloudflared"); err != nil {
 		c.l.Print()
@@ -256,10 +268,13 @@ func (c *Command) Validate(ctx context.Context, r *readline.Readline) error {
 	return nil
 }
 
+// Execute runs the cloudflared subcommand selected by the current readline
+// input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the help text for the command tree.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

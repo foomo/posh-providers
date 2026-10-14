@@ -14,9 +14,8 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util"
 	"github.com/foomo/posh/pkg/util/browser"
-	"github.com/google/go-github/v47/github"
+	"github.com/google/go-github/v92/github"
 	"github.com/pterm/pterm"
-	"golang.org/x/oauth2"
 )
 
 //go:embed SKILL.md
@@ -29,12 +28,15 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command that signs in to the configured Harbor
+	// registry, either via browser or by logging in the local docker daemon.
 	Command struct {
 		l           log.Logger
 		name        string
 		harbor      *Harbor
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -42,6 +44,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "harbor".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
@@ -52,6 +56,8 @@ func CommandWithName(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand creates a Command wired to harbor's auth and docker login
+// subcommands.
 func NewCommand(l log.Logger, harbor *Harbor, opts ...CommandOption) *Command {
 	inst := &Command{
 		l:      l.Named("harbor"),
@@ -90,22 +96,28 @@ func NewCommand(l log.Logger, harbor *Harbor, opts ...CommandOption) *Command {
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell autocompletion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the auth or docker subcommand named in r's arguments,
+// defaulting to auth when none is given.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }
@@ -148,14 +160,15 @@ func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
-	client := github.NewClient(
-		oauth2.NewClient(
-			ctx,
-			oauth2.StaticTokenSource(
-				&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
-			),
-		),
-	)
+	var opts []github.ClientOptionsFunc
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		opts = append(opts, github.WithAuthToken(token))
+	}
+
+	client, err := github.NewClient(opts...)
+	if err != nil {
+		return err
+	}
 
 	var username string
 

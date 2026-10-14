@@ -10,6 +10,8 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 )
 
+// AuthChecker reports whether `az` has an authenticated account, surfacing
+// the signed-in user's name and type when it does.
 func AuthChecker(ctx context.Context, l log.Logger) []check.Info {
 	name := "Azure"
 

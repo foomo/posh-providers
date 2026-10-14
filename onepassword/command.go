@@ -25,12 +25,15 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command signs in to the configured 1Password account and exposes item
+	// and document access, as a posh command.
 	Command struct {
 		l           log.Logger
 		op          *OnePassword
 		name        string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command during construction.
 	CommandOption func(*Command) error
 )
 
@@ -38,6 +41,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "op".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) error {
 		o.name = v
@@ -49,6 +54,8 @@ func CommandWithName(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand builds the onepassword Command against op after applying opts.
+// It returns an error if any CommandOption fails.
 func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:    l.Named("onePassword"),
@@ -121,22 +128,28 @@ func NewCommand(l log.Logger, op *OnePassword, opts ...CommandOption) (*Command,
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command tree's root description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns completion suggestions for the current readline input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the matched node of the command tree for the given readline
+// input.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the rendered help text for the current readline input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

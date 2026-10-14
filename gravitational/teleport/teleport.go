@@ -25,6 +25,7 @@ type (
 		signedIn     bool
 		signedInTime time.Time
 	}
+	// Option configures a Teleport built by NewTeleport.
 	Option func(*Teleport) error
 )
 
@@ -32,6 +33,8 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithConfigKey overrides the viper key the provider's configuration
+// is read from; the default is "teleport".
 func CommandWithConfigKey(v string) Option {
 	return func(o *Teleport) error {
 		o.configKey = v
@@ -74,10 +77,13 @@ func NewTeleport(l log.Logger, cache cache.Cache, opts ...Option) (*Teleport, er
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Config returns the provider's configuration.
 func (t *Teleport) Config() Config {
 	return t.cfg
 }
 
+// IsAuthenticated reports whether there is a valid tsh session, caching a
+// successful check for 12 hours before shelling out to `tsh status` again.
 func (t *Teleport) IsAuthenticated(ctx context.Context) bool {
 	if t.signedIn && time.Since(t.signedInTime) < 12*time.Hour {
 		return true

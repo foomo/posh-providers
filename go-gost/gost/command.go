@@ -28,6 +28,8 @@ var skill string
 const skillName = "{{cmd}}"
 
 type (
+	// Command is the posh command that starts and stops gost tunnel processes
+	// as background tasks managed through gokazi.
 	Command struct {
 		l           log.Logger
 		gk          *gokazi.Gokazi
@@ -36,6 +38,7 @@ type (
 		configKey   string
 		commandTree tree.Root
 	}
+	// CommandOption configures a Command in NewCommand.
 	CommandOption func(*Command)
 )
 
@@ -43,12 +46,16 @@ type (
 // ~ Options
 // ------------------------------------------------------------------------------------------------
 
+// CommandWithName sets the name the command is registered under, overriding
+// the default "gost".
 func CommandWithName(v string) CommandOption {
 	return func(o *Command) {
 		o.name = v
 	}
 }
 
+// WithConfigKey sets the viper key the command reads its Config from,
+// overriding the default "gost".
 func WithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
@@ -59,6 +66,10 @@ func WithConfigKey(v string) CommandOption {
 // ~ Constructor
 // ------------------------------------------------------------------------------------------------
 
+// NewCommand creates a Command, unmarshalling its Config from viper under
+// configKey ("gost" unless overridden by WithConfigKey) and registering each
+// configured process with gk as a "gost.<name>" background task. It returns
+// an error if the config cannot be unmarshalled.
 func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Command, error) {
 	inst := &Command{
 		l:         l.Named("gost"),
@@ -135,22 +146,27 @@ func NewCommand(l log.Logger, gk *gokazi.Gokazi, opts ...CommandOption) (*Comman
 // ~ Public methods
 // ------------------------------------------------------------------------------------------------
 
+// Name returns the name the command is registered under.
 func (c *Command) Name() string {
 	return c.commandTree.Node().Name
 }
 
+// Description returns the command's one-line description.
 func (c *Command) Description() string {
 	return c.commandTree.Node().Description
 }
 
+// Complete returns shell autocompletion suggestions for the current input.
 func (c *Command) Complete(ctx context.Context, r *readline.Readline) []goprompt.Suggest {
 	return c.commandTree.Complete(ctx, r)
 }
 
+// Execute runs the start or stop subcommand named in r's arguments.
 func (c *Command) Execute(ctx context.Context, r *readline.Readline) error {
 	return c.commandTree.Execute(ctx, r)
 }
 
+// Help returns the command's help text for the current input.
 func (c *Command) Help(ctx context.Context, r *readline.Readline) string {
 	return c.commandTree.Help(ctx, r)
 }

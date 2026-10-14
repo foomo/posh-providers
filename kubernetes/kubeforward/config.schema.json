@@ -7,7 +7,8 @@
       "additionalProperties": {
         "$ref": "#/$defs/PortForward"
       },
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the configured port forwards, keyed by name."
     },
     "PortForward": {
       "properties": {
@@ -33,7 +34,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "PortForward configures one named `kubectl port-forward` target."
     }
   }
 }

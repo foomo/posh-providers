@@ -4,6 +4,8 @@ import (
 	"github.com/foomo/posh-providers/onepassword"
 )
 
+// Backend holds the Azure Blob Storage location and credentials used as a
+// Pulumi state backend for one environment.
 type Backend struct {
 	// Location is the Azure region the resource group and storage account are
 	// created in. Only read by `backend create`; it is not used when logging in
