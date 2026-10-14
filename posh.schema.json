@@ -1510,6 +1510,10 @@
               "description": "URL of the grafana server",
               "type": "string"
             },
+            "kubeforward": {
+              "description": "KubeForward target config",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1gcx~1config.schema.json/$defs/ConfigKubeForward"
+            },
             "env": {
               "description": "Env to pass to the cli",
               "type": "array",
@@ -1531,6 +1535,24 @@
               "items": {
                 "type": "string"
               }
+            }
+          },
+          "additionalProperties": false
+        },
+        "ConfigKubeForward": {
+          "type": "object",
+          "properties": {
+            "port": {
+              "description": "Port on the target",
+              "type": "integer"
+            },
+            "target": {
+              "description": "Target pod or service",
+              "type": "string"
+            },
+            "namespace": {
+              "description": "Namespace of the target pod or service",
+              "type": "string"
             }
           },
           "additionalProperties": false

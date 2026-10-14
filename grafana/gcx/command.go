@@ -206,6 +206,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		}
 
 		var cancel context.CancelFunc
+
 		ctx, server, cancel = cluster.Kubeforward(ctx, "", env.KubeForward.Target, env.KubeForward.Namespace, env.KubeForward.Port)
 		defer cancel()
 	}

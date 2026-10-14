@@ -20,12 +20,14 @@ func Kubeforward(ctx context.Context, cluster *Cluster, profile, target, namespa
 	if err != nil {
 		cancel(err)
 	}
+
 	portMapping := fmt.Sprintf("%d:%d", freePort, port)
 
-	pf := exec.CommandContext(ctx, "kubectl", //nolint:gosec
+	pf := exec.CommandContext(ctx, "kubectl",
 		"--namespace", namespace,
 		"port-forward", target, portMapping,
 	)
+
 	pf.Env = append(os.Environ(), cluster.Env(profile))
 
 	pterm.Debug.Printfln("Starting kubectl port-forward %s.%s [%s]", namespace, target, portMapping)
