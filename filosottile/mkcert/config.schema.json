@@ -18,7 +18,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Certificate describes one certificate/key pair that `generate` produces with a single mkcert invocation."
     },
     "Config": {
       "properties": {
@@ -35,7 +36,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the mkcert provider's configuration."
     }
   }
 }

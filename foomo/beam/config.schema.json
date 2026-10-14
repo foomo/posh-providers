@@ -19,7 +19,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Cluster describes a remote cluster reachable through a cloudflared tunnel."
     },
     "Config": {
       "properties": {
@@ -39,7 +40,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the beam provider's configuration."
     },
     "Database": {
       "properties": {
@@ -53,7 +55,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Database describes a remote database reachable through a cloudflared tunnel."
     },
     "Secret": {
       "properties": {

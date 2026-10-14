@@ -19,7 +19,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config is the Harbor provider configuration: the registry URL, its OIDC login page, and the project used for the authentication probe."
     }
   }
 }

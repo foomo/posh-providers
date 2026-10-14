@@ -22,7 +22,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the k3d provider's settings."
     },
     "ConfigCharts": {
       "properties": {
@@ -36,7 +37,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "ConfigCharts configures where predefined helm charts live and how their target namespace is named."
     },
     "ConfigCluster": {
       "properties": {
@@ -65,7 +67,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "ConfigCluster configures a single creatable cluster."
     },
     "ConfigRegistry": {
       "properties": {
@@ -79,7 +82,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "ConfigRegistry configures the shared container registry used by every cluster."
     }
   }
 }

@@ -14,7 +14,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the stern provider's configuration."
     },
     "Query": {
       "properties": {
@@ -34,7 +35,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Query is one level of a nested, named stern argument tree."
     }
   }
 }

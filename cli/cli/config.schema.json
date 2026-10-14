@@ -17,7 +17,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the required gh OAuth scopes per hostname, checked by ScopesChecker."
     }
   }
 }

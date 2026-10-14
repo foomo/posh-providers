@@ -14,7 +14,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the named 1Password secrets usable as archive passwords."
     },
     "Secret": {
       "properties": {

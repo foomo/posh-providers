@@ -14,9 +14,8 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util"
 	"github.com/foomo/posh/pkg/util/browser"
-	"github.com/google/go-github/v47/github"
+	"github.com/google/go-github/v92/github"
 	"github.com/pterm/pterm"
-	"golang.org/x/oauth2"
 )
 
 //go:embed SKILL.md
@@ -161,14 +160,15 @@ func (c *Command) auth(ctx context.Context, r *readline.Readline) error {
 }
 
 func (c *Command) docker(ctx context.Context, r *readline.Readline) error {
-	client := github.NewClient(
-		oauth2.NewClient(
-			ctx,
-			oauth2.StaticTokenSource(
-				&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
-			),
-		),
-	)
+	var opts []github.ClientOptionsFunc
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		opts = append(opts, github.WithAuthToken(token))
+	}
+
+	client, err := github.NewClient(opts...)
+	if err != nil {
+		return err
+	}
 
 	var username string
 

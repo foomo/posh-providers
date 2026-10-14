@@ -1,6 +1,6 @@
 module github.com/foomo/posh-providers/jondot
 
-go 1.26.3
+go 1.27
 
 replace (
 	github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
@@ -9,7 +9,7 @@ replace (
 )
 
 require (
-	github.com/foomo/go v0.16.0
+	github.com/foomo/go v0.17.1
 	github.com/foomo/posh v0.22.0
 	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
 	github.com/invopop/jsonschema v0.14.0
@@ -41,6 +41,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.3.1 // indirect
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/pterm/pterm v0.12.83 // indirect
+	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/samber/lo v1.53.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
@@ -50,7 +51,7 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
-	golang.org/x/sync v0.23.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/term v0.46.0 // indirect
 	golang.org/x/text v0.42.0 // indirect

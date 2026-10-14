@@ -21,7 +21,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config is the migrate provider configuration: named migration sources and named database connection URLs."
     }
   }
 }

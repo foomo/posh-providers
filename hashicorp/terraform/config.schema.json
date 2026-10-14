@@ -23,7 +23,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Backend holds the azurerm backend storage configuration for a workspace."
     },
     "Config": {
       "properties": {
@@ -51,7 +52,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the terraform provider's configuration."
     },
     "ServicePrincipal": {
       "properties": {
@@ -73,7 +75,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "ServicePrincipal holds Azure service principal credentials selectable with --service-principal."
     },
     "Subscription": {
       "properties": {
@@ -91,7 +94,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Subscription holds a workspace's Azure subscription and backend settings."
     }
   }
 }

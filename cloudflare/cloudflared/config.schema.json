@@ -19,7 +19,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Access configures one `cloudflared access` tunnel to a Cloudflare Access target."
     },
     "Config": {
       "properties": {
@@ -36,7 +37,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the cloudflared HOME directory and the named Access targets available to the cloudflared command."
     }
   }
 }

@@ -26,7 +26,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Cluster identifies an etcd pod this command can read from and write to."
     },
     "Config": {
       "properties": {
@@ -43,7 +44,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the etcd provider's configuration."
     }
   }
 }

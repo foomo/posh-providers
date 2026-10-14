@@ -11,7 +11,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Cluster identifies a DigitalOcean Kubernetes cluster addressable by this command."
     },
     "Config": {
       "properties": {
@@ -28,7 +29,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the doctl provider's configuration."
     }
   }
 }

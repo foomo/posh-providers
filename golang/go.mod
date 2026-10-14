@@ -1,6 +1,6 @@
 module github.com/foomo/posh-providers/golang
 
-go 1.26.3
+go 1.27
 
 replace (
 	github.com/c-bata/go-prompt v0.2.6 => github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5
@@ -10,11 +10,11 @@ replace (
 
 require (
 	github.com/c-bata/go-prompt v0.2.6
-	github.com/foomo/go v0.16.0
+	github.com/foomo/go v0.17.1
 	github.com/foomo/posh v0.22.0
 	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/sync v0.23.0
+	golang.org/x/sync v0.24.0
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
 )
 

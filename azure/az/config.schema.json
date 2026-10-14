@@ -15,7 +15,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Artifactory identifies an Azure Container Registry by name and resource group."
     },
     "Cluster": {
       "properties": {
@@ -33,7 +34,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Cluster identifies an AKS cluster by name, resource group, and an optional proxy URL to write into its retrieved kubeconfig."
     },
     "Config": {
       "properties": {
@@ -65,7 +67,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the Azure CLI's local config directory, tenant and the subscriptions and service principals available to the az command."
     },
     "ServicePrincipal": {
       "properties": {
@@ -83,7 +86,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "ServicePrincipal holds the credentials for a non-interactive `az login`."
     },
     "Subscription": {
       "properties": {
@@ -114,7 +118,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Subscription holds an Azure subscription's name and the vaults, clusters and artifactories configured within it."
     },
     "Vault": {
       "properties": {
@@ -128,7 +133,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Vault identifies an Azure Key Vault by name and resource group."
     }
   }
 }

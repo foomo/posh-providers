@@ -11,7 +11,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Cluster identifies a single SKE cluster within a configured Project."
     },
     "Config": {
       "properties": {
@@ -24,7 +25,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Config holds the stackit provider's configuration."
     },
     "Project": {
       "properties": {
@@ -41,7 +43,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "Project identifies a STACKIT project and its configured SKE clusters."
     }
   }
 }

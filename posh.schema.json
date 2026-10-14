@@ -486,12 +486,14 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1open~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config maps router names to their ConfigRouter definitions.",
           "type": "object",
           "additionalProperties": {
             "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1open~1config.schema.json/$defs/ConfigRouter"
           }
         },
         "ConfigRoute": {
+          "description": "ConfigRoute is a single route path, optionally nesting further routes and a 1Password-backed basic-auth secret.",
           "type": "object",
           "properties": {
             "path": {
@@ -517,6 +519,7 @@
           "additionalProperties": false
         },
         "ConfigRouter": {
+          "description": "ConfigRouter is a named base URL together with its nested routes.",
           "type": "object",
           "properties": {
             "url": {
@@ -567,6 +570,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1task~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the inline task definitions and an optional directory of further task files.",
           "type": "object",
           "properties": {
             "path": {
@@ -584,6 +588,7 @@
           "additionalProperties": false
         },
         "Task": {
+          "description": "Task is a named shell task: an optional confirmation prompt, preconditions that can skip it, dependencies run before it, and the commands it executes.",
           "type": "object",
           "properties": {
             "prompt": {
@@ -640,6 +645,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1arbitrary~1zip~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the named 1Password secrets usable as archive passwords.",
           "type": "object",
           "properties": {
             "credentials": {
@@ -682,6 +688,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1azure~1az~1config.schema.json/$defs/Config",
       "$defs": {
         "Artifactory": {
+          "description": "Artifactory identifies an Azure Container Registry by name and resource group.",
           "type": "object",
           "properties": {
             "name": {
@@ -696,6 +703,7 @@
           "additionalProperties": false
         },
         "Cluster": {
+          "description": "Cluster identifies an AKS cluster by name, resource group, and an optional proxy URL to write into its retrieved kubeconfig.",
           "type": "object",
           "properties": {
             "name": {
@@ -714,6 +722,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the Azure CLI's local config directory, tenant and the subscriptions and service principals available to the az command.",
           "type": "object",
           "properties": {
             "configPath": {
@@ -746,6 +755,7 @@
           "additionalProperties": false
         },
         "ServicePrincipal": {
+          "description": "ServicePrincipal holds the credentials for a non-interactive `az login`.",
           "type": "object",
           "properties": {
             "tenantId": {
@@ -764,6 +774,7 @@
           "additionalProperties": false
         },
         "Subscription": {
+          "description": "Subscription holds an Azure subscription's name and the vaults, clusters and artifactories configured within it.",
           "type": "object",
           "properties": {
             "name": {
@@ -795,6 +806,7 @@
           "additionalProperties": false
         },
         "Vault": {
+          "description": "Vault identifies an Azure Key Vault by name and resource group.",
           "type": "object",
           "properties": {
             "name": {
@@ -815,6 +827,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1cli~1cli~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the required gh OAuth scopes per hostname, checked by ScopesChecker.",
           "type": "object",
           "properties": {
             "scopes": {
@@ -837,6 +850,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1cloudflare~1cloudflared~1config.schema.json/$defs/Config",
       "$defs": {
         "Access": {
+          "description": "Access configures one `cloudflared access` tunnel to a Cloudflare Access target.",
           "type": "object",
           "properties": {
             "type": {
@@ -855,6 +869,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the cloudflared HOME directory and the named Access targets available to the cloudflared command.",
           "type": "object",
           "properties": {
             "path": {
@@ -878,6 +893,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1digitalocean~1doctl~1config.schema.json/$defs/Config",
       "$defs": {
         "Cluster": {
+          "description": "Cluster identifies a DigitalOcean Kubernetes cluster addressable by this command.",
           "type": "object",
           "properties": {
             "name": {
@@ -888,6 +904,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the doctl provider's configuration.",
           "type": "object",
           "properties": {
             "configPath": {
@@ -911,6 +928,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1etcd-io~1etcd~1config.schema.json/$defs/Config",
       "$defs": {
         "Cluster": {
+          "description": "Cluster identifies an etcd pod this command can read from and write to.",
           "type": "object",
           "properties": {
             "name": {
@@ -936,6 +954,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the etcd provider's configuration.",
           "type": "object",
           "properties": {
             "configPath": {
@@ -959,6 +978,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1facebook~1docusaurus~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the docusaurus provider's configuration.",
           "type": "object",
           "properties": {
             "sourcePath": {
@@ -998,6 +1018,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1filosottile~1mkcert~1config.schema.json/$defs/Config",
       "$defs": {
         "Certificate": {
+          "description": "Certificate describes one certificate/key pair that `generate` produces with a single mkcert invocation.",
           "type": "object",
           "properties": {
             "name": {
@@ -1015,6 +1036,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the mkcert provider's configuration.",
           "type": "object",
           "properties": {
             "certificatePath": {
@@ -1038,6 +1060,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1beam~1config.schema.json/$defs/Config",
       "$defs": {
         "Cluster": {
+          "description": "Cluster describes a remote cluster reachable through a cloudflared tunnel.",
           "type": "object",
           "properties": {
             "port": {
@@ -1056,6 +1079,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the beam provider's configuration.",
           "type": "object",
           "properties": {
             "clusters": {
@@ -1076,6 +1100,7 @@
           "additionalProperties": false
         },
         "Database": {
+          "description": "Database describes a remote database reachable through a cloudflared tunnel.",
           "type": "object",
           "properties": {
             "port": {
@@ -1171,6 +1196,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1foomo~1squadron~1config.schema.json/$defs/Config",
       "$defs": {
         "Cluster": {
+          "description": "Cluster describes one Kubernetes cluster squadron can deploy to.",
           "type": "object",
           "properties": {
             "name": {
@@ -1196,6 +1222,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the squadron provider's configuration.",
           "type": "object",
           "properties": {
             "path": {
@@ -1219,6 +1246,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1gnat~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config is the gnat provider configuration: the color theme, an optional XDG config directory, and the named NATS server profiles.",
           "type": "object",
           "properties": {
             "theme": {
@@ -1240,6 +1268,7 @@
           "additionalProperties": false
         },
         "Profile": {
+          "description": "Profile identifies a NATS server by URL, with a description shown in shell autocompletion.",
           "type": "object",
           "properties": {
             "url": {
@@ -1260,6 +1289,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1tempo~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config is the tempo provider configuration: the color theme, an optional XDG config directory, and the named Temporal connection profiles.",
           "type": "object",
           "properties": {
             "theme": {
@@ -1281,6 +1311,7 @@
           "additionalProperties": false
         },
         "Profile": {
+          "description": "Profile identifies a Temporal server by address, with a description shown in shell autocompletion.",
           "type": "object",
           "properties": {
             "url": {
@@ -1301,6 +1332,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1goharbor~1harbor~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config is the Harbor provider configuration: the registry URL, its OIDC login page, and the project used for the authentication probe.",
           "type": "object",
           "properties": {
             "url": {
@@ -1325,6 +1357,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1golang-migrate~1migrate~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config is the migrate provider configuration: named migration sources and named database connection URLs.",
           "type": "object",
           "properties": {
             "sources": {
@@ -1351,6 +1384,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1google~1chrome~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config is the chrome provider configuration: the profile data directory, an optional browser binary override, a default incognito setting, and the named profiles.",
           "type": "object",
           "properties": {
             "path": {
@@ -1376,6 +1410,7 @@
           "additionalProperties": false
         },
         "Profile": {
+          "description": "Profile is a named Chrome browser environment: its default URL, launch mode, proxy and incognito setting.",
           "type": "object",
           "properties": {
             "app": {
@@ -1404,6 +1439,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1google~1gcloud~1config.schema.json/$defs/Config",
       "$defs": {
         "Account": {
+          "description": "Account is a gcloud account configuration: the identity to authenticate as and, optionally, a 1Password-backed service account key.",
           "type": "object",
           "properties": {
             "name": {
@@ -1422,6 +1458,7 @@
           "additionalProperties": false
         },
         "Cluster": {
+          "description": "Cluster is a GKE cluster configuration: its name, project, region, and the optional account to authenticate as when fetching credentials.",
           "type": "object",
           "properties": {
             "name": {
@@ -1444,6 +1481,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config is the gcloud provider configuration: the CLOUDSDK_CONFIG path and the named accounts and clusters.",
           "type": "object",
           "properties": {
             "configPath": {
@@ -1504,6 +1542,7 @@
           }
         },
         "ConfigEnv": {
+          "description": "ConfigEnv is a single gcx environment: the Grafana server, org, credential source, optional kubeforward target, and extra environment variables passed to the gcx CLI.",
           "type": "object",
           "properties": {
             "url": {
@@ -1540,6 +1579,7 @@
           "additionalProperties": false
         },
         "ConfigKubeForward": {
+          "description": "ConfigKubeForward identifies the pod or service a kubectl port-forward is opened against to reach a Grafana server only reachable from inside the cluster.",
           "type": "object",
           "properties": {
             "port": {
@@ -1564,6 +1604,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1k6~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the k6 provider's configuration.",
           "type": "object",
           "properties": {
             "path": {
@@ -1581,6 +1622,7 @@
           "additionalProperties": false
         },
         "Env": {
+          "description": "Env holds environment variables passed to a k6 scenario, upper-cased and exposed to the script via __ENV.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -1593,6 +1635,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1gravitational~1teleport~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the teleport provider's configuration.",
           "type": "object",
           "properties": {
             "path": {
@@ -1632,6 +1675,7 @@
           "additionalProperties": false
         },
         "Database": {
+          "description": "Database holds database-specific teleport settings.",
           "type": "object",
           "properties": {
             "user": {
@@ -1642,6 +1686,7 @@
           "additionalProperties": false
         },
         "Kubernetes": {
+          "description": "Kubernetes holds kubernetes-specific teleport settings.",
           "type": "object",
           "properties": {
             "aliases": {
@@ -1661,6 +1706,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1gruntwork-io~1terragrunt~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the terragrunt provider's configuration.",
           "type": "object",
           "properties": {
             "path": {
@@ -1681,6 +1727,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1cdktf~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the cdktf provider's configuration.",
           "type": "object",
           "properties": {
             "path": {
@@ -1701,6 +1748,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1hashicorp~1terraform~1config.schema.json/$defs/Config",
       "$defs": {
         "Backend": {
+          "description": "Backend holds the azurerm backend storage configuration for a workspace.",
           "type": "object",
           "properties": {
             "resourceGroupName": {
@@ -1723,6 +1771,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the terraform provider's configuration.",
           "type": "object",
           "properties": {
             "path": {
@@ -1751,6 +1800,7 @@
           "additionalProperties": false
         },
         "ServicePrincipal": {
+          "description": "ServicePrincipal holds Azure service principal credentials selectable with --service-principal.",
           "type": "object",
           "properties": {
             "tenantId": {
@@ -1773,6 +1823,7 @@
           "additionalProperties": false
         },
         "Subscription": {
+          "description": "Subscription holds a workspace's Azure subscription and backend settings.",
           "type": "object",
           "properties": {
             "id": {
@@ -1797,6 +1848,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1jondot~1hygen~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the hygen provider's settings.",
           "type": "object",
           "properties": {
             "templatePath": {
@@ -1813,6 +1865,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1k3d-io~1k3d~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the k3d provider's settings.",
           "type": "object",
           "properties": {
             "charts": {
@@ -1834,6 +1887,7 @@
           "additionalProperties": false
         },
         "ConfigCharts": {
+          "description": "ConfigCharts configures where predefined helm charts live and how their target namespace is named.",
           "type": "object",
           "properties": {
             "path": {
@@ -1848,6 +1902,7 @@
           "additionalProperties": false
         },
         "ConfigCluster": {
+          "description": "ConfigCluster configures a single creatable cluster.",
           "type": "object",
           "properties": {
             "alias": {
@@ -1877,6 +1932,7 @@
           "additionalProperties": false
         },
         "ConfigRegistry": {
+          "description": "ConfigRegistry configures the shared container registry used by every cluster.",
           "type": "object",
           "properties": {
             "name": {
@@ -1897,6 +1953,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1kubernetes~1kubectl~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the kubectl provider's settings.",
           "type": "object",
           "properties": {
             "configPath": {
@@ -1913,12 +1970,14 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1kubernetes~1kubeforward~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the configured port forwards, keyed by name.",
           "type": "object",
           "additionalProperties": {
             "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1kubernetes~1kubeforward~1config.schema.json/$defs/PortForward"
           }
         },
         "PortForward": {
+          "description": "PortForward configures one named `kubectl port-forward` target.",
           "type": "object",
           "properties": {
             "cluster": {
@@ -1951,6 +2010,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1onepassword~1op~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the onepassword provider's settings.",
           "type": "object",
           "properties": {
             "account": {
@@ -1971,6 +2031,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pivotal~1licensefinder~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the licensefinder provider's configuration.",
           "type": "object",
           "properties": {
             "logPath": {
@@ -1998,6 +2059,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1azure~1config.schema.json/$defs/Config",
       "$defs": {
         "Backend": {
+          "description": "Backend holds the Azure Blob Storage location and credentials used as a Pulumi state backend for one environment.",
           "type": "object",
           "properties": {
             "location": {
@@ -2028,6 +2090,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the pulumi provider's configuration.",
           "type": "object",
           "properties": {
             "path": {
@@ -2078,6 +2141,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1pulumi~1pulumi~1gcloud~1config.schema.json/$defs/Config",
       "$defs": {
         "Backend": {
+          "description": "Backend holds the Google Cloud Storage location and credentials used as a Pulumi state backend for one environment.",
           "type": "object",
           "properties": {
             "location": {
@@ -2100,6 +2164,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the pulumi provider's configuration.",
           "type": "object",
           "properties": {
             "path": {
@@ -2150,6 +2215,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1rclone~1rclone~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the rclone provider's configuration.",
           "type": "object",
           "properties": {
             "path": {
@@ -2170,6 +2236,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1slack-go~1slack~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the slack provider's configuration.",
           "type": "object",
           "properties": {
             "token": {
@@ -2220,6 +2287,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1sqlc-dev~1sqlc~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the sqlc provider's configuration.",
           "type": "object",
           "properties": {
             "tempDir": {
@@ -2240,6 +2308,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stackitcloud~1stackit~1config.schema.json/$defs/Config",
       "$defs": {
         "Cluster": {
+          "description": "Cluster identifies a single SKE cluster within a configured Project.",
           "type": "object",
           "properties": {
             "name": {
@@ -2250,6 +2319,7 @@
           "additionalProperties": false
         },
         "Config": {
+          "description": "Config holds the stackit provider's configuration.",
           "type": "object",
           "properties": {
             "projects": {
@@ -2263,6 +2333,7 @@
           "additionalProperties": false
         },
         "Project": {
+          "description": "Project identifies a STACKIT project and its configured SKE clusters.",
           "type": "object",
           "properties": {
             "id": {
@@ -2286,6 +2357,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1stern~1stern~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the stern provider's configuration.",
           "type": "object",
           "properties": {
             "queries": {
@@ -2299,6 +2371,7 @@
           "additionalProperties": false
         },
         "Query": {
+          "description": "Query is one level of a nested, named stern argument tree.",
           "type": "object",
           "properties": {
             "query": {
@@ -2325,6 +2398,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1usebruno~1bruno~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the location of the Bruno collection the command operates on.",
           "type": "object",
           "properties": {
             "path": {
@@ -2341,6 +2415,7 @@
       "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/Config",
       "$defs": {
         "Config": {
+          "description": "Config holds the modes, sites and secrets the wdio command runs against.",
           "type": "object",
           "properties": {
             "dirs": {
@@ -2373,6 +2448,7 @@
           "additionalProperties": false
         },
         "ConfigEnv": {
+          "description": "ConfigEnv holds the domain and optional basic auth secret for one site environment.",
           "type": "object",
           "properties": {
             "auth": {
@@ -2387,12 +2463,14 @@
           "additionalProperties": false
         },
         "ConfigEnvs": {
+          "description": "ConfigEnvs maps an environment name to its settings.",
           "type": "object",
           "additionalProperties": {
             "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/ConfigEnv"
           }
         },
         "ConfigMode": {
+          "description": "ConfigMode holds the host prefix and port a run mode applies to a site's domain.",
           "type": "object",
           "properties": {
             "port": {
@@ -2407,12 +2485,14 @@
           "additionalProperties": false
         },
         "ConfigModes": {
+          "description": "ConfigModes maps a run mode name to its settings.",
           "type": "object",
           "additionalProperties": {
             "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/ConfigMode"
           }
         },
         "ConfigSites": {
+          "description": "ConfigSites maps a site name to its configured environments.",
           "type": "object",
           "additionalProperties": {
             "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1webdriverio~1webdriverio~1config.schema.json/$defs/ConfigEnvs"

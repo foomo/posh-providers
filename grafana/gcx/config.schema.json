@@ -44,7 +44,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "ConfigEnv is a single gcx environment: the Grafana server, org, credential source, optional kubeforward target, and extra environment variables passed to the gcx CLI."
     },
     "ConfigKubeForward": {
       "properties": {
@@ -62,7 +63,8 @@
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "ConfigKubeForward identifies the pod or service a kubectl port-forward is opened against to reach a Grafana server only reachable from inside the cluster."
     }
   }
 }
