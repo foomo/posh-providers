@@ -16,6 +16,10 @@
           "type": "string",
           "description": "URL of the grafana server"
         },
+        "kubeforward": {
+          "$ref": "#/$defs/ConfigKubeForward",
+          "description": "KubeForward target config"
+        },
         "env": {
           "items": {
             "type": "string"
@@ -37,6 +41,24 @@
           },
           "type": "array",
           "description": "TokenCmd to execute returning the token"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ConfigKubeForward": {
+      "properties": {
+        "port": {
+          "type": "integer",
+          "description": "Port on the target"
+        },
+        "target": {
+          "type": "string",
+          "description": "Target pod or service"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Namespace of the target pod or service"
         }
       },
       "additionalProperties": false,

@@ -166,6 +166,10 @@ func (c *Cluster) Pods(ctx context.Context, profile, namespace string) []string 
 	}).([]string)
 }
 
+func (c *Cluster) Kubeforward(ctx context.Context, profile, target, namespace string, port int) (context.Context, string, context.CancelFunc) {
+	return Kubeforward(ctx, c, profile, target, namespace, port)
+}
+
 // ------------------------------------------------------------------------------------------------
 // ~ Private methods
 // ------------------------------------------------------------------------------------------------

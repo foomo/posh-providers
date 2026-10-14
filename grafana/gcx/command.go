@@ -6,6 +6,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	exec2 "github.com/foomo/posh-providers/pkg/exec"
 	"github.com/foomo/posh-providers/pkg/os"
 	"github.com/foomo/posh/pkg/cache"
@@ -34,6 +35,7 @@ type (
 		name        string
 		cfg         Config
 		cache       cache.Namespace
+		kubectl     *kubectl.Kubectl
 		configKey   string
 		commandTree tree.Root
 	}
@@ -53,6 +55,12 @@ func CommandWithName(v string) CommandOption {
 func CommandWithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
+	}
+}
+
+func CommandWithKubectl(kubectl *kubectl.Kubectl) CommandOption {
+	return func(o *Command) {
+		o.kubectl = kubectl
 	}
 }
 
@@ -189,12 +197,25 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return errors.New("no token provided")
 	}
 
+	server := env.URL
+
+	if c.kubectl != nil && env.KubeForward != nil {
+		cluster := c.kubectl.Cluster(envName)
+		if cluster == nil {
+			return errors.New("no cluster found")
+		}
+
+		var cancel context.CancelFunc
+		ctx, server, cancel = cluster.Kubeforward(ctx, "", env.KubeForward.Target, env.KubeForward.Namespace, env.KubeForward.Port)
+		defer cancel()
+	}
+
 	envs := []string{
 		"DO_NOT_TRACK=1",
 		"GRAFANA_ORG_ID=" + env.OrgID,
 		"GCX_TELEMETRY=0",
 		"GCX_NO_UPDATE_NOTIFIER=1",
-		"GRAFANA_SERVER=" + env.URL,
+		"GRAFANA_SERVER=" + server,
 		"GRAFANA_TOKEN=" + token,
 	}
 
