@@ -35,8 +35,8 @@ with fields; map keys are the names the first argument accepts.
 prefix makes it a 1Password lookup. `tokenCmd` is an argv array that gets executed; `token`
 wins when both are set.
 
-`urlForward` (`resource`, `namespace`, `port`, `profile`) routes the server through a port-forward
-instead of `url` — env name doubles as kubectl cluster name.
+`urlForward` (`resource`, `namespace`, `port`, `cluster`, `profile`) routes the server through a
+port-forward instead of `url` — `cluster` picks the kubectl cluster, else the env name does.
 
 Field shapes: [`grafana/gcx/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/grafana/gcx/config.schema.json).
 

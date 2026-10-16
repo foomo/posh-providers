@@ -11,7 +11,8 @@ type ConfigEnv struct {
 	// URL of the grafana server
 	URL string `json:"url,omitempty" yaml:"url,omitempty"`
 	// URLForward replaces URL with the local address of a kubectl port-forward
-	// to the given target. The env name is used as the kubectl cluster name.
+	// to the given target. Its cluster, or the env name if unset, is used as the
+	// kubectl cluster name.
 	URLForward *kubectl.PortForwardTarget `json:"urlForward,omitempty" yaml:"urlForward,omitempty"`
 	// Env to pass to the cli
 	Env []string `json:"env" yaml:"env"`

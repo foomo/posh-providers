@@ -8,7 +8,7 @@ Holds a color theme and a map of name → NATS server profile. The names autocom
 
 A profile can set `urlForward` instead of `url` to reach a server only reachable from inside a
 cluster: a `kubectl port-forward` to the given resource is opened and its local address
-(`127.0.0.1:<port>`) is passed as `-url`. The profile name is used as the kubectl cluster name, and
+(`127.0.0.1:<port>`) is passed as `-url`. `urlForward.cluster` selects the kubectl cluster (defaults to the profile name), and
 the command must be created with `gnat.CommandWithKubectl(...)`.
 
 An optional `configDir` sets `$XDG_CONFIG_HOME` for the `gnat` process, so its configuration files
@@ -60,6 +60,7 @@ gnat:
         resource: svc/nats
         namespace: gnat
         port: 4222
+        cluster: ""
         profile: ""
       description: In-cluster server via port-forward
 ```

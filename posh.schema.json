@@ -1271,6 +1271,10 @@
           "description": "PortForwardTarget identifies the pod or service a kubectl port-forward is opened against to reach a server only reachable from inside the cluster.",
           "type": "object",
           "properties": {
+            "cluster": {
+              "description": "Cluster to use for the kubectl command, optional; defaults to the\nconsumer's profile or env name",
+              "type": "string"
+            },
             "port": {
               "description": "Port on the target",
               "type": "integer"
@@ -1299,7 +1303,7 @@
               "type": "string"
             },
             "urlForward": {
-              "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. The profile name is used as the kubectl cluster name.",
+              "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. Its cluster, or the profile name if unset, is used as\nthe kubectl cluster name.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1gnat~1config.schema.json/$defs/PortForwardTarget"
             },
             "description": {
@@ -1345,6 +1349,10 @@
           "description": "PortForwardTarget identifies the pod or service a kubectl port-forward is opened against to reach a server only reachable from inside the cluster.",
           "type": "object",
           "properties": {
+            "cluster": {
+              "description": "Cluster to use for the kubectl command, optional; defaults to the\nconsumer's profile or env name",
+              "type": "string"
+            },
             "port": {
               "description": "Port on the target",
               "type": "integer"
@@ -1373,7 +1381,7 @@
               "type": "string"
             },
             "urlForward": {
-              "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. The profile name is used as the kubectl cluster name.",
+              "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. Its cluster, or the profile name if unset, is used as\nthe kubectl cluster name.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1tempo~1config.schema.json/$defs/PortForwardTarget"
             },
             "description": {
@@ -1612,7 +1620,7 @@
               "type": "string"
             },
             "urlForward": {
-              "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. The env name is used as the kubectl cluster name.",
+              "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. Its cluster, or the env name if unset, is used as the\nkubectl cluster name.",
               "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1gcx~1config.schema.json/$defs/PortForwardTarget"
             },
             "env": {
@@ -1644,6 +1652,10 @@
           "description": "PortForwardTarget identifies the pod or service a kubectl port-forward is opened against to reach a server only reachable from inside the cluster.",
           "type": "object",
           "properties": {
+            "cluster": {
+              "description": "Cluster to use for the kubectl command, optional; defaults to the\nconsumer's profile or env name",
+              "type": "string"
+            },
             "port": {
               "description": "Port on the target",
               "type": "integer"

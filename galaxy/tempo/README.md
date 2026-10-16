@@ -8,7 +8,7 @@ shell (with their description); the selected name resolves to its profile and it
 
 A profile can set `urlForward` instead of `url` to reach a server only reachable from inside a
 cluster: a `kubectl port-forward` to the given resource is opened and its local address
-(`127.0.0.1:<port>`) is passed as `--address`. The profile name is used as the kubectl cluster name, and
+(`127.0.0.1:<port>`) is passed as `--address`. `urlForward.cluster` selects the kubectl cluster (defaults to the profile name), and
 the command must be created with `tempo.CommandWithKubectl(...)`.
 
 An optional `configDir` sets `$XDG_CONFIG_HOME` for the `tempo` process, so its configuration files
@@ -60,6 +60,7 @@ tempo:
         resource: svc/temporal-frontend
         namespace: temporal
         port: 7233
+        cluster: ""
         profile: ""
       description: In-cluster server via port-forward
 ```

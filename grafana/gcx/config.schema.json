@@ -18,7 +18,7 @@
         },
         "urlForward": {
           "$ref": "#/$defs/PortForwardTarget",
-          "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. The env name is used as the kubectl cluster name."
+          "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. Its cluster, or the env name if unset, is used as the\nkubectl cluster name."
         },
         "env": {
           "items": {
@@ -51,7 +51,7 @@
       "properties": {
         "cluster": {
           "type": "string",
-          "description": "Cluster to use for the kubectl command"
+          "description": "Cluster to use for the kubectl command, optional; defaults to the\nconsumer's profile or env name"
         },
         "port": {
           "type": "integer",

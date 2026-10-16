@@ -18,8 +18,8 @@ An unknown profile name *is* rejected with `given profile not found: <name>`
 rather than falling through to an empty URL, and the argument is required, so
 there is no "all profiles" default.
 
-**`urlForward` starts a `kubectl port-forward`** on the cluster named like the
-profile, left running on a crash. Without `CommandWithKubectl` it is ignored.
+**`urlForward` starts a `kubectl port-forward`** on `urlForward.cluster`, else the
+cluster named like the profile, left running on a crash. Without `CommandWithKubectl` it is ignored.
 
 #### Behaviour
 

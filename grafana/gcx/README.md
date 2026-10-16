@@ -57,13 +57,14 @@ Every `*.yaml` / `*.yml` file in `path` is an environment, e.g. `./devops/gcx/de
 
 An environment can set `urlForward` to reach a Grafana server that is only reachable from inside a
 cluster. When set, `GRAFANA_SERVER` is the local address of a `kubectl port-forward` to the given
-resource instead of `url`. The environment name is used as the kubectl cluster name; `profile` is optional:
+resource instead of `url`. `cluster` selects the kubectl cluster (defaults to the environment name); `cluster` and `profile` are optional:
 
 ```yaml
 urlForward:
   resource: svc/grafana
   namespace: monitoring
   port: 3000
+  cluster: ""
   profile: ""
 ```
 
