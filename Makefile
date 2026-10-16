@@ -96,8 +96,7 @@ test.nocache:
 ## Run security audit
 audit:
 	@echo "〉security audit"
-	@go install golang.org/x/vuln/cmd/govulncheck@latest
-	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && govulncheck ./...) &&) true
+	@osv-scanner --call-analysis=all --config=.osv-scanner.toml $(if $(GITHUB_ACTIONS),--format=gh-annotations) -r .
 
 ### Dependencies
 

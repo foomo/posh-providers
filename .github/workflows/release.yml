@@ -5,12 +5,20 @@ on:
     tags:
       - v*.*.*
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag
+        required: true
 
 permissions:
   contents: read
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
   release:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: write
