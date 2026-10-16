@@ -16,6 +16,7 @@ import (
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
+	"github.com/foomo/posh/pkg/util"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
@@ -216,17 +217,17 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return errors.New("no token provided")
 	}
 
-	server := env.URL
+	url := env.URL
 
-	if c.kubectl != nil && env.KubeForward != nil {
-		cluster := c.kubectl.Cluster(envName)
+	if c.kubectl != nil && env.URLForward != nil {
+		cluster := c.kubectl.Cluster(util.Pick(env.URLForward.Cluster != "", env.URLForward.Cluster, envName))
 		if cluster == nil {
 			return errors.New("no cluster found")
 		}
 
 		var cancel context.CancelFunc
 
-		ctx, server, cancel = cluster.Kubeforward(ctx, "", env.KubeForward.Target, env.KubeForward.Namespace, env.KubeForward.Port)
+		ctx, url, cancel = cluster.PortForward(ctx, *env.URLForward)
 		defer cancel()
 	}
 
@@ -235,7 +236,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		"GRAFANA_ORG_ID=" + env.OrgID,
 		"GCX_TELEMETRY=0",
 		"GCX_NO_UPDATE_NOTIFIER=1",
-		"GRAFANA_SERVER=" + server,
+		"GRAFANA_SERVER=" + url,
 		"GRAFANA_TOKEN=" + token,
 	}
 

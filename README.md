@@ -1,5 +1,6 @@
-[![GoDoc](https://img.shields.io/badge/GoDoc-✓-informational.svg?style=flat-square&logo=go)](https://godoc.org/github.com/foomo/posh-providers)
+[![CodeQL](https://github.com/foomo/posh-providers/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/foomo/posh-providers/actions/workflows/github-code-scanning/codeql)
 [![Coverage](https://img.shields.io/codecov/c/github/foomo/posh-providers?style=flat-square&logo=github)](https://app.codecov.io/gh/foomo/posh-providers)
+[![GoDoc](https://godoc.org/github.com/foomo/posh-providers?status.svg)](https://godoc.org/github.com/foomo/posh-providers)
 [![GitHub Stars](https://img.shields.io/github/stars/foomo/posh-providers.svg?style=flat-square&logo=github)](https://github.com/foomo/posh-providers)
 
 <p align="center">

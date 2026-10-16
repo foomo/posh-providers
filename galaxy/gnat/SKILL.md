@@ -18,6 +18,9 @@ An unknown profile name *is* rejected with `given profile not found: <name>`
 rather than falling through to an empty URL, and the argument is required, so
 there is no "all profiles" default.
 
+**`urlForward` starts a `kubectl port-forward`** on `urlForward.cluster`, else the
+cluster named like the profile, left running on a crash. Without `CommandWithKubectl` it is ignored.
+
 #### Behaviour
 
 `configDir` is exported as `XDG_CONFIG_HOME` for the child process only, keeping
@@ -25,9 +28,7 @@ the tool's own config and history with the project. Left unset, the tool reads
 and writes the user's real `$XDG_CONFIG_HOME`, shared with every other instance
 on the machine.
 
-Profile suggestions carry each profile's `description`, so tab completion in the
-interactive shell is the reliable way to see what a name points at - the
-descriptions never appear in the rendered usage block.
+Tab completion shows each profile's `description`; the usage block does not.
 
 Everything after the profile name is forwarded to the binary, including args and
 flags after a `--` separator, so upstream flags this tree does not model still

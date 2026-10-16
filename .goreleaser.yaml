@@ -1,11 +1,13 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
 
-builds:
-  - skip: true
+project_name: posh-providers
 
 release:
   prerelease: auto
+
+builds:
+  - skip: true
 
 archives:
   - format: tar.gz
@@ -13,6 +15,9 @@ archives:
       - goos: windows
         format: zip
     files: [ LICENSE, README.md ]
+
+checksum:
+  name_template: checksums.txt
 
 changelog:
   use: github-native

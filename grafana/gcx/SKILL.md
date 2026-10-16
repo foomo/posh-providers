@@ -17,9 +17,9 @@ token. An ordinary read can trigger a 1Password prompt or run an arbitrary confi
 Neither set fails with `no token provided`. The token stays out of the
 process list — but `tokenCmd` runs as a visible child process.
 
-**An env with `kubeforward` set starts a `kubectl port-forward`**, torn down on exit but
-left running on a crash between start and defer. Needs `CommandWithKubectl` wired in, else
-`kubeforward` is ignored and `GRAFANA_SERVER` falls back to `url`.
+**An env with `urlForward` set starts a `kubectl port-forward`**, torn down on exit,
+left running on a crash. Needs `CommandWithKubectl` wired in, else it is
+ignored and `GRAFANA_SERVER` falls back to `url`.
 
 #### Behaviour
 
@@ -35,8 +35,8 @@ with fields; map keys are the names the first argument accepts.
 prefix makes it a 1Password lookup. `tokenCmd` is an argv array that gets executed; `token`
 wins when both are set.
 
-`kubeforward` (`target`, `namespace`, `port`) routes the server through a port-forward
-instead of `url` — env name doubles as kubectl cluster name.
+`urlForward` (`resource`, `namespace`, `port`, `cluster`, `profile`) routes the server through a
+port-forward instead of `url` — `cluster` picks the kubectl cluster, else the env name does.
 
 Field shapes: [`grafana/gcx/config.schema.json`](https://raw.githubusercontent.com/foomo/posh-providers/main/grafana/gcx/config.schema.json).
 

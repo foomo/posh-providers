@@ -25,15 +25,50 @@
       "type": "object",
       "description": "Config is the gnat provider configuration: the color theme, an optional XDG config directory, and the named NATS server profiles."
     },
+    "PortForwardTarget": {
+      "properties": {
+        "cluster": {
+          "type": "string",
+          "description": "Cluster to use for the kubectl command, optional; defaults to the\nconsumer's profile or env name"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Port on the target"
+        },
+        "resource": {
+          "type": "string",
+          "description": "Resource pod or service, e.g. svc/grafana"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Namespace of the target pod or service"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Profile to use for the kubectl command, optional"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "PortForwardTarget identifies the pod or service a kubectl port-forward is opened against to reach a server only reachable from inside the cluster."
+    },
     "Profile": {
       "properties": {
         "url": {
           "type": "string",
           "description": "URL is the NATS server URL, passed to the CLI via -url."
         },
+        "urlForward": {
+          "$ref": "#/$defs/PortForwardTarget",
+          "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. Its cluster, or the profile name if unset, is used as\nthe kubectl cluster name."
+        },
         "description": {
           "type": "string",
           "description": "Description is shown in shell autocompletion."
+        },
+        "kubeforward": {
+          "$ref": "#/$defs/PortForwardTarget",
+          "description": "Kubeforward is the port forwarding configuration for the NATS server."
         }
       },
       "additionalProperties": false,
