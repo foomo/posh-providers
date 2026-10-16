@@ -30,7 +30,7 @@ func PortForward(ctx context.Context, cluster *Cluster, target PortForwardTarget
 
 	pf.Env = append(os.Environ(), cluster.Env(target.Profile))
 
-	pterm.Debug.Printfln("Starting kubectl port-forward %s.%s [%s]", target.Namespace, target, portMapping)
+	pterm.Debug.Printfln("Starting kubectl port-forward %s.%s [%s]", target.Namespace, target.Resource, portMapping)
 
 	if err := pf.Start(); err != nil {
 		cancel(err)

@@ -8,7 +8,7 @@ import (
 // in shell autocompletion.
 type Profile struct {
 	// URL is the Temporal server address (host:port), passed to the CLI via --address.
-	URL string `json:"url,omitempty,omitempty" yaml:"url,omitempty"`
+	URL string `json:"url,omitempty" yaml:"url,omitempty"`
 	// URLForward replaces URL with the local address of a kubectl port-forward
 	// to the given target. The profile name is used as the kubectl cluster name.
 	URLForward *kubectl.PortForwardTarget `json:"urlForward,omitempty" yaml:"urlForward,omitempty"`
