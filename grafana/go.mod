@@ -13,7 +13,7 @@ require (
 	github.com/foomo/go v0.17.1
 	github.com/foomo/posh v0.22.0
 	github.com/foomo/posh-providers v0.0.0-00010101000000-000000000000
-	github.com/foomo/posh-providers/kubernetes v0.60.0
+	github.com/foomo/posh-providers/kubernetes v0.61.0
 	github.com/foomo/posh-providers/onepassword v0.56.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
