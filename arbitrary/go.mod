@@ -18,7 +18,7 @@ require (
 	github.com/foomo/posh-providers/onepassword v0.56.0
 	github.com/invopop/jsonschema v0.14.0
 	github.com/pkg/errors v0.9.1
-	github.com/pterm/pterm v0.12.83
+	github.com/pterm/pterm v0.12.84
 	github.com/samber/lo v1.53.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
@@ -41,7 +41,6 @@ require (
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/gofrs/flock v0.13.0 // indirect
-	github.com/gookit/color v1.6.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/lufia/plan9stats v0.0.0-20260330125221-c963978e514e // indirect
@@ -65,7 +64,6 @@ require (
 	github.com/tklauser/numcpus v0.12.0 // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
-	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect

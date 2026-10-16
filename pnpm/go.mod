@@ -26,7 +26,6 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/containerd/console v1.0.5 // indirect
 	github.com/gofrs/flock v0.13.0 // indirect
-	github.com/gookit/color v1.6.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
@@ -35,11 +34,10 @@ require (
 	github.com/mattn/go-tty v0.0.8 // indirect
 	github.com/neilotoole/slogt v1.1.0 // indirect
 	github.com/pkg/term v1.1.0 // indirect
-	github.com/pterm/pterm v0.12.83 // indirect
+	github.com/pterm/pterm v0.12.84 // indirect
 	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/samber/lo v1.53.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
