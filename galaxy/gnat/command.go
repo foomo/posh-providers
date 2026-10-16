@@ -62,8 +62,7 @@ func WithConfigKey(v string) CommandOption {
 }
 
 // CommandWithKubectl sets the kubectl client used to open a port-forward for
-// environments that configure kubeforward. Required only for those
-// environments.
+// profiles that configure urlForward. Required only for those profiles.
 func CommandWithKubectl(kubectl *kubectl.Kubectl) CommandOption {
 	return func(o *Command) {
 		o.kubectl = kubectl

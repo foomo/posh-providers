@@ -28,20 +28,25 @@
     "PortForwardTarget": {
       "properties": {
         "port": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Port on the target"
         },
         "resource": {
-          "type": "string"
+          "type": "string",
+          "description": "Resource pod or service, e.g. svc/grafana"
         },
         "namespace": {
-          "type": "string"
+          "type": "string",
+          "description": "Namespace of the target pod or service"
         },
         "profile": {
-          "type": "string"
+          "type": "string",
+          "description": "Profile to use for the kubectl command, optional"
         }
       },
       "additionalProperties": false,
-      "type": "object"
+      "type": "object",
+      "description": "PortForwardTarget identifies the pod or service a kubectl port-forward is opened against to reach a server only reachable from inside the cluster."
     },
     "Profile": {
       "properties": {
@@ -51,7 +56,7 @@
         },
         "urlForward": {
           "$ref": "#/$defs/PortForwardTarget",
-          "description": "URLForward dynamically uses kubernetes port forwarding"
+          "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. The profile name is used as the kubectl cluster name."
         },
         "description": {
           "type": "string",

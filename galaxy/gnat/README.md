@@ -6,6 +6,11 @@ Holds a color theme and a map of name → NATS server profile. The names autocom
 (with their description); the selected name resolves to its profile and its URL is passed to the
 `gnat` CLI as `-url`, along with `-theme`.
 
+A profile can set `urlForward` instead of `url` to reach a server only reachable from inside a
+cluster: a `kubectl port-forward` to the given resource is opened and its local address
+(`127.0.0.1:<port>`) is passed as `-url`. The profile name is used as the kubectl cluster name, and
+the command must be created with `gnat.CommandWithKubectl(...)`.
+
 An optional `configDir` sets `$XDG_CONFIG_HOME` for the `gnat` process, so its configuration files
 can be kept alongside the project instead of the user's home directory.
 
@@ -25,7 +30,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
     commands: command.Commands{},
   }
 
-  cmd, err := gnat.NewCommand(l)
+  cmd, err := gnat.NewCommand(l, gnat.CommandWithKubectl(inst.kubectl)) // kubectl only needed for urlForward
   if err != nil {
     return nil, errors.Wrap(err, "failed to create gnat command")
   }
@@ -50,4 +55,11 @@ gnat:
     prod:
       url: nats://nats.prod.example.com:4222
       description: Production
+    cluster:
+      urlForward:
+        resource: svc/nats
+        namespace: gnat
+        port: 4222
+        profile: ""
+      description: In-cluster server via port-forward
 ```

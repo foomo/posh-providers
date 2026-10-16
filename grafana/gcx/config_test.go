@@ -26,6 +26,10 @@ func TestConfig(t *testing.T) {
 	reflector := new(jsonschema.Reflector)
 	reflector.RequiredFromJSONSchemaTags = true
 	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/grafana/gcx", "./"))
+	// URLForward is kubectl.PortForwardTarget, documented in another module.
+	// AddGoComments joins the base with each walked dir, so the base needs two
+	// extra segments to cancel the "../.." prefix.
+	require.NoError(t, reflector.AddGoComments("github.com/foomo/posh-providers/x/y", "../../kubernetes/kubectl"))
 	schema := reflector.Reflect(&gcx.Config{})
 	schema.ID = "https://raw.githubusercontent.com/foomo/posh-providers/main/grafana/gcx/config.schema.json"
 	actual, err := json.MarshalIndent(schema, "", "  ")

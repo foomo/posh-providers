@@ -44,7 +44,7 @@ func New(l log.Logger) (plugin.Plugin, error) {
 }
 ```
 
-`CommandWithKubectl` is only required for environments that set `kubeforward`; omit it otherwise.
+`CommandWithKubectl` is only required for environments that set `urlForward`; omit it otherwise.
 
 ### Config
 
@@ -55,15 +55,16 @@ gcx:
 
 Every `*.yaml` / `*.yml` file in `path` is an environment, e.g. `./devops/gcx/dev.yaml` becomes `gcx dev ...`.
 
-An environment can set `kubeforward` to reach a Grafana server that is only reachable from inside a
+An environment can set `urlForward` to reach a Grafana server that is only reachable from inside a
 cluster. When set, `GRAFANA_SERVER` is the local address of a `kubectl port-forward` to the given
-target instead of `url`:
+resource instead of `url`. The environment name is used as the kubectl cluster name; `profile` is optional:
 
 ```yaml
-kubeforward:
-  target: svc/grafana
+urlForward:
+  resource: svc/grafana
   namespace: monitoring
   port: 3000
+  profile: ""
 ```
 
 ### Install

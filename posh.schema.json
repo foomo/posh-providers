@@ -1267,6 +1267,29 @@
           },
           "additionalProperties": false
         },
+        "PortForwardTarget": {
+          "description": "PortForwardTarget identifies the pod or service a kubectl port-forward is opened against to reach a server only reachable from inside the cluster.",
+          "type": "object",
+          "properties": {
+            "port": {
+              "description": "Port on the target",
+              "type": "integer"
+            },
+            "resource": {
+              "description": "Resource pod or service, e.g. svc/grafana",
+              "type": "string"
+            },
+            "namespace": {
+              "description": "Namespace of the target pod or service",
+              "type": "string"
+            },
+            "profile": {
+              "description": "Profile to use for the kubectl command, optional",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "Profile": {
           "description": "Profile identifies a NATS server by URL, with a description shown in shell autocompletion.",
           "type": "object",
@@ -1275,9 +1298,17 @@
               "description": "URL is the NATS server URL, passed to the CLI via -url.",
               "type": "string"
             },
+            "urlForward": {
+              "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. The profile name is used as the kubectl cluster name.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1gnat~1config.schema.json/$defs/PortForwardTarget"
+            },
             "description": {
               "description": "Description is shown in shell autocompletion.",
               "type": "string"
+            },
+            "kubeforward": {
+              "description": "Kubeforward is the port forwarding configuration for the NATS server.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1gnat~1config.schema.json/$defs/PortForwardTarget"
             }
           },
           "additionalProperties": false
@@ -1310,6 +1341,29 @@
           },
           "additionalProperties": false
         },
+        "PortForwardTarget": {
+          "description": "PortForwardTarget identifies the pod or service a kubectl port-forward is opened against to reach a server only reachable from inside the cluster.",
+          "type": "object",
+          "properties": {
+            "port": {
+              "description": "Port on the target",
+              "type": "integer"
+            },
+            "resource": {
+              "description": "Resource pod or service, e.g. svc/grafana",
+              "type": "string"
+            },
+            "namespace": {
+              "description": "Namespace of the target pod or service",
+              "type": "string"
+            },
+            "profile": {
+              "description": "Profile to use for the kubectl command, optional",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
         "Profile": {
           "description": "Profile identifies a Temporal server by address, with a description shown in shell autocompletion.",
           "type": "object",
@@ -1318,9 +1372,17 @@
               "description": "URL is the Temporal server address (host:port), passed to the CLI via --address.",
               "type": "string"
             },
+            "urlForward": {
+              "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. The profile name is used as the kubectl cluster name.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1tempo~1config.schema.json/$defs/PortForwardTarget"
+            },
             "description": {
               "description": "Description is shown in shell autocompletion.",
               "type": "string"
+            },
+            "kubeforward": {
+              "description": "Kubeforward is the port forwarding configuration for the Temporal server.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1galaxy~1tempo~1config.schema.json/$defs/PortForwardTarget"
             }
           },
           "additionalProperties": false
@@ -1542,16 +1604,16 @@
           }
         },
         "ConfigEnv": {
-          "description": "ConfigEnv is a single gcx environment: the Grafana server, org, credential source, optional kubeforward target, and extra environment variables passed to the gcx CLI.",
+          "description": "ConfigEnv is a single gcx environment: the Grafana server, org, credential source, optional urlForward target, and extra environment variables passed to the gcx CLI.",
           "type": "object",
           "properties": {
             "url": {
               "description": "URL of the grafana server",
               "type": "string"
             },
-            "kubeforward": {
-              "description": "KubeForward target config",
-              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1gcx~1config.schema.json/$defs/ConfigKubeForward"
+            "urlForward": {
+              "description": "URLForward replaces URL with the local address of a kubectl port-forward\nto the given target. The env name is used as the kubectl cluster name.",
+              "$ref": "#/$defs/https:~1~1raw.githubusercontent.com~1foomo~1posh-providers~1main~1grafana~1gcx~1config.schema.json/$defs/PortForwardTarget"
             },
             "env": {
               "description": "Env to pass to the cli",
@@ -1578,20 +1640,24 @@
           },
           "additionalProperties": false
         },
-        "ConfigKubeForward": {
-          "description": "ConfigKubeForward identifies the pod or service a kubectl port-forward is opened against to reach a Grafana server only reachable from inside the cluster.",
+        "PortForwardTarget": {
+          "description": "PortForwardTarget identifies the pod or service a kubectl port-forward is opened against to reach a server only reachable from inside the cluster.",
           "type": "object",
           "properties": {
             "port": {
               "description": "Port on the target",
               "type": "integer"
             },
-            "target": {
-              "description": "Target pod or service",
+            "resource": {
+              "description": "Resource pod or service, e.g. svc/grafana",
               "type": "string"
             },
             "namespace": {
               "description": "Namespace of the target pod or service",
+              "type": "string"
+            },
+            "profile": {
+              "description": "Profile to use for the kubectl command, optional",
               "type": "string"
             }
           },

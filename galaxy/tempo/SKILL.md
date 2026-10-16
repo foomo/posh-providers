@@ -18,6 +18,9 @@ An unknown profile name *is* rejected with `given profile not found: <name>`
 rather than falling through to an empty address, and the argument is required, so
 there is no "all profiles" default.
 
+**`urlForward` starts a `kubectl port-forward`** on the cluster named like the
+profile, left running on a crash. Without `CommandWithKubectl` it is ignored.
+
 #### Behaviour
 
 `--address` takes a `host:port`, not a URL, despite the config field being called
@@ -26,12 +29,10 @@ passed through unchanged and fails at the Temporal client rather than here.
 
 `configDir` is exported as `XDG_CONFIG_HOME` for the child process only, keeping
 the tool's own config files with the project rather than the user's home
-directory. The sibling `gnat` command has the same option and behaves the same
-way.
+directory.
 
-Profile suggestions carry each profile's `description`, so tab completion is the
-reliable way to see what a name points at - the descriptions never appear in the
-rendered usage block. Everything after the profile name is forwarded to the
+Tab completion shows each profile's `description`; the usage block does not.
+Everything after the profile name is forwarded to the
 binary, including args and flags after a `--` separator. `--address` is always
 supplied from the profile and `--theme` whenever the config sets one, so passing
 either yourself sends it twice.
