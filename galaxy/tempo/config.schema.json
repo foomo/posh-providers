@@ -25,15 +25,41 @@
       "type": "object",
       "description": "Config is the tempo provider configuration: the color theme, an optional XDG config directory, and the named Temporal connection profiles."
     },
+    "PortForwardTarget": {
+      "properties": {
+        "port": {
+          "type": "integer"
+        },
+        "resource": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "Profile": {
       "properties": {
         "url": {
           "type": "string",
           "description": "URL is the Temporal server address (host:port), passed to the CLI via --address."
         },
+        "urlForward": {
+          "$ref": "#/$defs/PortForwardTarget",
+          "description": "URLForward dynamically uses kubernetes port forwarding"
+        },
         "description": {
           "type": "string",
           "description": "Description is shown in shell autocompletion."
+        },
+        "kubeforward": {
+          "$ref": "#/$defs/PortForwardTarget",
+          "description": "Kubeforward is the port forwarding configuration for the NATS server."
         }
       },
       "additionalProperties": false,

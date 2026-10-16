@@ -3,9 +3,11 @@ package gnat
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/foomo/posh-providers/kubernetes/kubectl"
 	"github.com/foomo/posh/pkg/command"
 	"github.com/foomo/posh/pkg/command/tree"
 	"github.com/foomo/posh/pkg/log"
@@ -32,6 +34,7 @@ type (
 		cfg         Config
 		name        string
 		configKey   string
+		kubectl     *kubectl.Kubectl
 		commandTree tree.Root
 	}
 	// CommandOption configures a Command in NewCommand.
@@ -55,6 +58,15 @@ func WithName(v string) CommandOption {
 func WithConfigKey(v string) CommandOption {
 	return func(o *Command) {
 		o.configKey = v
+	}
+}
+
+// CommandWithKubectl sets the kubectl client used to open a port-forward for
+// environments that configure kubeforward. Required only for those
+// environments.
+func CommandWithKubectl(kubectl *kubectl.Kubectl) CommandOption {
+	return func(o *Command) {
+		o.kubectl = kubectl
 	}
 }
 
@@ -175,7 +187,21 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 		return err
 	}
 
-	args := []string{"-url", profile.URL}
+	url := profile.URL
+
+	if c.kubectl != nil && profile.URLForward != nil {
+		cluster := c.kubectl.Cluster(name)
+		if cluster == nil {
+			return errors.New("no cluster found")
+		}
+
+		var cancel context.CancelFunc
+
+		ctx, url, cancel = cluster.PortForward(ctx, *profile.URLForward)
+		defer cancel()
+	}
+
+	args := []string{"-url", url}
 	if theme := c.cfg.Theme; theme != "" {
 		args = append(args, "-theme", theme)
 	}

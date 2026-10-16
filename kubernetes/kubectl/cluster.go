@@ -189,10 +189,10 @@ func (c *Cluster) Pods(ctx context.Context, profile, namespace string) []string 
 	}).([]string)
 }
 
-// Kubeforward starts a `kubectl port-forward` session to target in namespace
-// under profile. See the package-level Kubeforward function for details.
-func (c *Cluster) Kubeforward(ctx context.Context, profile, target, namespace string, port int) (context.Context, string, context.CancelFunc) {
-	return Kubeforward(ctx, c, profile, target, namespace, port)
+// PortForward starts a `kubectl port-forward` session to target in namespace
+// under profile. See the package-level PortForward function for details.
+func (c *Cluster) PortForward(ctx context.Context, target PortForwardTarget) (context.Context, string, context.CancelFunc) {
+	return PortForward(ctx, c, target)
 }
 
 // ------------------------------------------------------------------------------------------------

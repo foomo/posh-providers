@@ -11,9 +11,9 @@ import (
 	"github.com/pterm/pterm"
 )
 
-// Kubeforward sets up a `kubectl port-forward` session to forward a local port to a target in a Kubernetes cluster.
+// PortForward sets up a `kubectl port-forward` session to forward a local port to a target in a Kubernetes cluster.
 // It returns a new context, the local address for the port forward, and a function to cancel the port-forward session.
-func Kubeforward(ctx context.Context, cluster *Cluster, profile, target, namespace string, port int) (context.Context, string, context.CancelFunc) {
+func PortForward(ctx context.Context, cluster *Cluster, target PortForwardTarget) (context.Context, string, context.CancelFunc) {
 	ctx, cancel := context.WithCancelCause(ctx)
 
 	freePort, err := gonet.FreePort(ctx)
@@ -21,16 +21,16 @@ func Kubeforward(ctx context.Context, cluster *Cluster, profile, target, namespa
 		cancel(err)
 	}
 
-	portMapping := fmt.Sprintf("%d:%d", freePort, port)
+	portMapping := fmt.Sprintf("%d:%d", freePort, target.Port)
 
 	pf := exec.CommandContext(ctx, "kubectl",
-		"--namespace", namespace,
-		"port-forward", target, portMapping,
+		"--namespace", target.Namespace,
+		"port-forward", target.Resource, portMapping,
 	)
 
-	pf.Env = append(os.Environ(), cluster.Env(profile))
+	pf.Env = append(os.Environ(), cluster.Env(target.Profile))
 
-	pterm.Debug.Printfln("Starting kubectl port-forward %s.%s [%s]", namespace, target, portMapping)
+	pterm.Debug.Printfln("Starting kubectl port-forward %s.%s [%s]", target.Namespace, target, portMapping)
 
 	if err := pf.Start(); err != nil {
 		cancel(err)

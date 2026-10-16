@@ -16,9 +16,9 @@
           "type": "string",
           "description": "URL of the grafana server"
         },
-        "kubeforward": {
-          "$ref": "#/$defs/ConfigKubeForward",
-          "description": "KubeForward target config"
+        "urlForward": {
+          "$ref": "#/$defs/PortForwardTarget",
+          "description": "URLForward dynamically uses kubernetes port forwarding"
         },
         "env": {
           "items": {
@@ -47,24 +47,23 @@
       "type": "object",
       "description": "ConfigEnv is a single gcx environment: the Grafana server, org, credential source, optional kubeforward target, and extra environment variables passed to the gcx CLI."
     },
-    "ConfigKubeForward": {
+    "PortForwardTarget": {
       "properties": {
         "port": {
-          "type": "integer",
-          "description": "Port on the target"
+          "type": "integer"
         },
-        "target": {
-          "type": "string",
-          "description": "Target pod or service"
+        "resource": {
+          "type": "string"
         },
         "namespace": {
-          "type": "string",
-          "description": "Namespace of the target pod or service"
+          "type": "string"
+        },
+        "profile": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "description": "ConfigKubeForward identifies the pod or service a kubectl port-forward is opened against to reach a Grafana server only reachable from inside the cluster."
+      "type": "object"
     }
   }
 }
