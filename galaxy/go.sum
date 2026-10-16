@@ -12,6 +12,8 @@ github.com/bahlo/generic-list-go v0.2.0 h1:5sz/EEAK+ls5wF+NeqDpk5+iNdMDXrh3z3nPn
 github.com/bahlo/generic-list-go v0.2.0/go.mod h1:2KvAjgMlE5NNynlg/5iLrrCCZ2+5xWbdbCW3pNTGyYg=
 github.com/buger/jsonparser v1.2.0 h1:4EFcvK1kD4jyj6YqNK6skK6w+y7FHHBR+XBCtxwu/6g=
 github.com/buger/jsonparser v1.2.0/go.mod h1:6RYKKt7H4d4+iWqouImQ9R2FZql3VbhNgx27UK13J/0=
+github.com/charlievieth/fastwalk v1.0.14 h1:3Eh5uaFGwHZd8EGwTjJnSpBkfwfsak9h6ICgnWlhAyg=
+github.com/charlievieth/fastwalk v1.0.14/go.mod h1:diVcUreiU1aQ4/Wu3NbxxH4/KYdKpLDojrQ1Bb2KgNY=
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
 github.com/clipperhouse/uax29/v2 v2.7.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
 github.com/containerd/console v1.0.5 h1:R0ymNeydRqH2DmakFNdmjR2k0t7UPuiOV/N/27/qqsc=
@@ -22,6 +24,8 @@ github.com/foomo/go v0.17.1 h1:tDrovWbh1dOzsBX19pII6nAPIECswhBmNSPEGBYNawY=
 github.com/foomo/go v0.17.1/go.mod h1:Zz5aBFte6ayLEJ17n4L1bqYmEEja9xTeLKC0Z1wAy+0=
 github.com/foomo/posh v0.22.0 h1:TnzPf3/P0WraY/Mw/ecZezwmU+wsLxFEHG7nzES4rgw=
 github.com/foomo/posh v0.22.0/go.mod h1:8I6BFfOeBT7lAG1nS78iB3HeLX6PFX1y1MGQ24e5Vt4=
+github.com/foomo/posh-providers/kubernetes v0.61.0 h1:1Qy6cTGDj2oGk1NVsksVYMX4ZQK0UYmPsG7+zDUtMgM=
+github.com/foomo/posh-providers/kubernetes v0.61.0/go.mod h1:ad9SC1gJ99pXDRr5pFL5LSiGmmlEUwt3eCyAtAkbWd8=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/franklinkim/go-prompt v0.2.7-0.20210427061716-a8f4995d7aa5 h1:kXNtle4AoQnngdm+gwt4ku6Llbzw3EFHgZYpL618JaI=
