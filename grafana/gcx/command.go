@@ -16,6 +16,7 @@ import (
 	"github.com/foomo/posh/pkg/prompt/goprompt"
 	"github.com/foomo/posh/pkg/readline"
 	"github.com/foomo/posh/pkg/shell"
+	"github.com/foomo/posh/pkg/util"
 	"github.com/foomo/posh/pkg/util/suggests"
 	"github.com/spf13/viper"
 )
@@ -219,7 +220,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	url := env.URL
 
 	if c.kubectl != nil && env.URLForward != nil {
-		cluster := c.kubectl.Cluster(envName)
+		cluster := c.kubectl.Cluster(util.Pick(env.URLForward.Cluster != "", env.URLForward.Cluster, envName))
 		if cluster == nil {
 			return errors.New("no cluster found")
 		}

@@ -27,6 +27,10 @@
     },
     "PortForwardTarget": {
       "properties": {
+        "cluster": {
+          "type": "string",
+          "description": "Cluster to use for the kubectl command"
+        },
         "port": {
           "type": "integer",
           "description": "Port on the target"
