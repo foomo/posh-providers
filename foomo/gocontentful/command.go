@@ -208,10 +208,7 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 			cfg.Environment = "master"
 		}
 
-		if err := shell.New(ctx, c.l, "gocontentful",
-			"-spaceid", cfg.SpaceID, "-cmakey", cfg.CMAKey, "-environment", cfg.Environment,
-			"-region", cfg.Region,
-			"-contenttypes", strings.Join(cfg.ContentTypes, ","), dir).
+		if err := shell.New(ctx, c.l, "gocontentful", buildArgs(cfg, dir)).
 			Args(r.AdditionalArgs()...).
 			Run(); err != nil {
 			return err
@@ -219,6 +216,28 @@ func (c *Command) execute(ctx context.Context, r *readline.Readline) error {
 	}
 
 	return nil
+}
+
+// buildArgs returns the gocontentful arguments for cfg, with dir as the last
+// positional argument. Optional flags are only added when their value is set:
+// posh joins the arguments and runs them through `sh -c`, so an empty value
+// vanishes and the flag would swallow the next argument as its value.
+func buildArgs(cfg Config, dir string) []string {
+	args := []string{"-spaceid", cfg.SpaceID}
+	if cfg.CMAKey != "" {
+		args = append(args, "-cmakey", cfg.CMAKey)
+	}
+
+	args = append(args, "-environment", cfg.Environment)
+	if cfg.Region != "" {
+		args = append(args, "-region", cfg.Region)
+	}
+
+	if contentTypes := strings.Join(cfg.ContentTypes, ","); contentTypes != "" {
+		args = append(args, "-contenttypes", contentTypes)
+	}
+
+	return append(args, dir)
 }
 
 //nolint:forcetypeassert

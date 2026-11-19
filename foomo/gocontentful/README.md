@@ -54,6 +54,8 @@ gocontentful:
   cmaKey: <cma-key>
   # Contentful environment; defaults to "master" when empty
   environment: master
+  # Contentful API region, "us" or "eu"; optional, defaults to US when omitted
+  region: eu
   # Content types to generate code for
   contentTypes:
     - foo
