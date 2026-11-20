@@ -41,14 +41,14 @@ jobs:
       - name: Run tidy
         run: make tidy && git diff --exit-code
 
-      - name: Run audit
-        run: make audit
-
       - name: Run lint
         run: make lint
 
       - name: Run test
         run: make test
+
+      - name: Run audit
+        run: make audit
 
       - name: Generate schema
         run: make schema & git diff --exit-code

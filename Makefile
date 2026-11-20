@@ -38,7 +38,7 @@ go.work:
 
 .PHONY: check
 ## Run tidy, generate, schema, lint & tests
-check: tidy generate schema lint.fix test audit
+check: tidy generate schema actionlint lint.fix test.race audit
 
 .PHONY: lint
 ## Run linter
@@ -96,7 +96,7 @@ test.nocache:
 ## Run security audit
 audit:
 	@echo "〉security audit"
-	@osv-scanner --call-analysis=all --config=.osv-scanner.toml $(if $(GITHUB_ACTIONS),--format=gh-annotations) -r .
+	@$(foreach mod,$(GOMODS), (cd $(dir $(mod)) && echo "📂 $(dir $(mod))" && govulncheck -tags=safe ./...) &&) true
 
 ### Dependencies
 
