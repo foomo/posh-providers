@@ -23,12 +23,6 @@ tmp/
 ## Lefthook
 !.lefthook.yaml
 
-## VSCode
-!.vscode/
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.default.json
-
 ## Editorconfig
 !.editorconfig
 
@@ -41,6 +35,3 @@ go.work.sum
 ## Vitepress
 node_modules/
 !docs/.vitepress
-
-## OSV Scanner
-!.osv-scanner.toml

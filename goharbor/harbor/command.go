@@ -14,7 +14,7 @@ import (
 	"github.com/foomo/posh/pkg/shell"
 	"github.com/foomo/posh/pkg/util"
 	"github.com/foomo/posh/pkg/util/browser"
-	"github.com/google/go-github/v92/github"
+	"github.com/google/go-github/v93/github"
 	"github.com/pterm/pterm"
 )
 
