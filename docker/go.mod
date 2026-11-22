@@ -10,7 +10,7 @@ replace (
 
 require (
 	github.com/foomo/posh v0.22.0
-	github.com/moby/moby/client v0.6.2
+	github.com/moby/moby/client v0.6.3
 )
 
 require (
@@ -32,7 +32,7 @@ require (
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
-	github.com/moby/moby/api v1.56.1 // indirect
+	github.com/moby/moby/api v1.57.0 // indirect
 	github.com/neilotoole/slogt v1.1.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
